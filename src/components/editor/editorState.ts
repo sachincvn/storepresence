@@ -1,4 +1,6 @@
-import type { HeadlineFontId, Project, Screenshot, SlideEntry } from "@/types/project";
+import type { BlockKind, ElementEdit, HeadlineFontId, Project, Screenshot, SlideEntry } from "@/types/project";
+import { clampEdit } from "@/templates/edits";
+import { blockOptions, placeBlock } from "@/templates/blocks";
 import type { ImageSlotKey, NormRect, ResolvedTemplate, ThemeKey, ThemeTokens } from "@/types/template";
 import { getTemplate } from "@/templates/registry";
 import { designFor, getSlideCount, getSlideKey, getSlides, ownDesign, slideEntries, slideIndexForShot, textLayoutFor } from "@/templates/resolve";
@@ -22,6 +24,13 @@ export type EditorAction =
   | { type: "color"; key: ThemeKey; value: string }
   | { type: "resetColors" }
   | { type: "exportSizes"; sizes: string[] }
+  /** Sets one element's nudge on the selected slide (clamped to safe bounds); null resets it. */
+  | { type: "elementEdit"; id: string; edit: ElementEdit | null }
+  /** Resets every nudge on the selected slide. */
+  | { type: "resetElementEdits" }
+  /** Adds a block to the selected slide in the freest spot. `id` is made by the caller. */
+  | { type: "addBlock"; kind: BlockKind; id: string }
+  | { type: "removeBlock"; id: string }
   /** Replaces all user colors at once (e.g. a brand suggestion), as one undo step. */
   | { type: "theme"; theme: ThemeTokens }
   | { type: "deviceFrame"; on: boolean }
@@ -99,6 +108,8 @@ function copySlideChoices(project: Project, from: string, to: string, layout?: s
   return {
     ...project,
     slideLayouts,
+    slideBlocks: project.slideBlocks?.[from] && !layout ? { ...project.slideBlocks, [to]: [...project.slideBlocks[from]] } : project.slideBlocks,
+    elementEdits: project.elementEdits?.[from] && !layout ? { ...project.elementEdits, [to]: { ...project.elementEdits[from] } } : project.elementEdits,
     slideVariables: project.slideVariables[from] ? { ...project.slideVariables, [to]: { ...project.slideVariables[from] } } : project.slideVariables,
     calloutRegions: project.calloutRegions?.[from] ? { ...project.calloutRegions, [to]: { ...project.calloutRegions[from] } } : project.calloutRegions,
   };
@@ -163,6 +174,49 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "theme":
       return { ...state, project: { ...project, theme: { ...action.theme } } };
+
+    case "elementEdit": {
+      const template = getTemplate(project.templateId);
+      const el = template && designFor(template, state.slide, project).elements.find((e) => e.id === action.id);
+      if (!template || !el) return state;
+      const key = getSlideKey(template, project, state.slide);
+      const slide = { ...project.elementEdits?.[key] };
+      const edit = action.edit && clampEdit(el, action.edit, template.canvas);
+      if (edit && Object.keys(edit).length > 0) slide[action.id] = edit;
+      else delete slide[action.id];
+      return { ...state, project: { ...project, elementEdits: { ...project.elementEdits, [key]: slide } } };
+    }
+
+    case "addBlock": {
+      const template = getTemplate(project.templateId);
+      if (!template) return state;
+      const design = designFor(template, state.slide, project);
+      if (blockOptions(template, design).find((o) => o.kind === action.kind)?.reason !== undefined) return state;
+      const key = getSlideKey(template, project, state.slide);
+      const block = { id: action.id, kind: action.kind, ...placeBlock(action.kind, design.elements, template.canvas) };
+      return { ...state, project: { ...project, slideBlocks: { ...project.slideBlocks, [key]: [...(project.slideBlocks?.[key] ?? []), block] } } };
+    }
+
+    case "removeBlock": {
+      const template = getTemplate(project.templateId);
+      if (!template) return state;
+      const key = getSlideKey(template, project, state.slide);
+      const blocks = (project.slideBlocks?.[key] ?? []).filter((b) => b.id !== action.id);
+      const edits = { ...project.elementEdits?.[key] };
+      delete edits[action.id];
+      return {
+        ...state,
+        project: { ...project, slideBlocks: { ...project.slideBlocks, [key]: blocks }, elementEdits: { ...project.elementEdits, [key]: edits } },
+      };
+    }
+
+    case "resetElementEdits": {
+      const template = getTemplate(project.templateId);
+      if (!template) return state;
+      const elementEdits = { ...project.elementEdits };
+      delete elementEdits[getSlideKey(template, project, state.slide)];
+      return { ...state, project: { ...project, elementEdits } };
+    }
 
     case "exportSizes":
       return { ...state, project: { ...project, exportSizes: [...action.sizes] } };

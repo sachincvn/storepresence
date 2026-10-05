@@ -134,7 +134,9 @@ Screenshots are not allowed in the panorama.
 
 ## 6. Elements
 
-All elements need `type`, `id`, `x`, `y`, `width`, `height`. Optional on all of them: `rotation` (degrees), `opacity` (0–1), `layer`.
+All elements need `type`, `id`, `x`, `y`, `width`, `height`. Optional on all of them: `rotation` (degrees), `scale` (0.2–3, around the center), `opacity` (0–1), `layer`.
+
+Users can move, resize, rotate and hide any slide element in the editor. Their edits are stored as deltas on top of your template and kept inside safe bounds (text and blocks stay 24 px inside the canvas; phones, shapes and images may bleed but keep their center on the slide). Users can also **add blocks** to any slide (rating, review, big number, award, app icon, pop-out). A block copies the look of the same kind of element from your template's layouts, so style one rating, review and stat in your template overrides and added blocks will match. Give elements meaningful ids: the editor shows `headline`, `shot`, `rating` and so on by name, other shapes as "Decoration".
 
 **text**
 - Content: `text` (may contain `{{variable}}`).

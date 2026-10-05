@@ -1,6 +1,8 @@
 import { mixHex } from "@/lib/color";
 import type { Project, Screenshot, SlideEntry } from "@/types/project";
 import { regionCenterY } from "@/renderer/calloutRenderer";
+import { applyEdit, clampEdit } from "./edits";
+import { blockElement } from "./blocks";
 import { getHeadlineFont, HEADLINE_FONT_KEYS, type HeadlineFont } from "./headlineFonts";
 import type {
   Background,
@@ -139,7 +141,7 @@ export function fillPlaceholders(text: string, values: Record<string, string>): 
 }
 
 /** What slide lookups need from a project. */
-export type SlideSource = Pick<Project, "screenshots" | "slideLayouts" | "slides">;
+export type SlideSource = Pick<Project, "screenshots" | "slideLayouts" | "slides" | "slideBlocks">;
 
 /** One output image: which design it uses, its key for user choices, and its main screenshot. */
 export type SlidePlan = { key: string; design: number; shot: Screenshot | null };
@@ -211,7 +213,11 @@ export function designFor(template: ResolvedTemplate, slideIndex: number, projec
   const plan = project ? getSlides(template, project)[slideIndex] : undefined;
   const index = plan ? plan.design : slideIndex % template.designs.length;
   const picked = plan && project?.slideLayouts?.[plan.key];
-  return (picked && template.alternates[index]?.[picked]) || template.designs[index];
+  const design = (picked && template.alternates[index]?.[picked]) || template.designs[index];
+  // Blocks the user added sit on top of the layout.
+  const blocks = plan ? (project?.slideBlocks?.[plan.key] ?? []) : [];
+  const extra = blocks.flatMap((b) => blockElement(template, b) ?? []).filter((el) => el.type !== "callout" || design.slots > 0);
+  return extra.length > 0 ? { ...design, elements: [...design.elements, ...extra] } : design;
 }
 
 /** The slide's template design, ignoring any layout the user picked. */
@@ -315,8 +321,11 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
   const { design, regions, resolve, background } = slideContext(template, project, slideIndex);
   const plan = getSlides(template, project)[slideIndex];
   const screenshots = slotScreenshots(template, project, slideIndex);
-  // A callout set to null is hidden on this slide.
-  const elements = design.elements.filter((el) => !(el.type === "callout" && regions[el.id] === null)).map(resolve);
+  const edits = project.elementEdits?.[getSlideKey(template, project, slideIndex)] ?? {};
+  // A callout set to null is hidden on this slide; any element can be hidden with an edit.
+  const elements = design.elements
+    .filter((el) => !(el.type === "callout" && regions[el.id] === null) && !edits[el.id]?.hidden)
+    .map((el) => resolve(edits[el.id] ? applyEdit(el, clampEdit(el, edits[el.id], template.canvas)) : el));
 
   return {
     canvas: template.canvas,

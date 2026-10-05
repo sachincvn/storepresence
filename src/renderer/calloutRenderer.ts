@@ -59,8 +59,10 @@ export function regionCenterY(shot: ScreenshotElement, image: { w: number; h: nu
   const fit = safeFitMode(image.w, image.h, screen.w, screen.h, shot.fit);
   const f = fitImageToSlot(image.w, image.h, screen.w, screen.h, fit, shot.align);
   const r = clampRegion(region);
-  const y = screen.y + f.dy + ((r.y + r.h / 2) * image.h - f.sy) * (f.dh / f.sh);
-  return clamp(y, screen.y + f.dy, screen.y + f.dy + f.dh);
+  const y = clamp(screen.y + f.dy + ((r.y + r.h / 2) * image.h - f.sy) * (f.dh / f.sh), screen.y + f.dy, screen.y + f.dy + f.dh);
+  // A scaled phone grows around its center.
+  const cy = shot.y + shot.height / 2;
+  return cy + (y - cy) * (shot.scale ?? 1);
 }
 
 export function drawCallout(ctx: CanvasRenderingContext2D, el: CalloutElement, img: ImageSource | undefined, scale: number): void {

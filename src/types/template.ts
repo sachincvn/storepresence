@@ -70,6 +70,8 @@ type Box = {
   height: number;
   /** Degrees, clockwise, around the box center. */
   rotation?: number;
+  /** Uniform scale around the box center (text, devices and shadows scale together). */
+  scale?: number;
   /** 0–1 */
   opacity?: number;
   /** Extra elements default to "back" (behind layout elements). */

@@ -211,8 +211,8 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 
 ### Phase F — Freedom without chaos (≈ 3 weeks)
 
-1. Select and nudge on canvas with safe bounds and snapping (4.2).
-2. Blocks menu (4.3).
+1. ☑ Select and nudge on canvas with safe bounds and snapping (4.2): click/drag/corner-scale on the preview, keyboard nudges, snapping guides, per-slide element edits (move, size, rotation, hide) as deltas over the template, Elements list as accessible fallback.
+2. ☑ Blocks menu (4.3): Add menu with Rating, Review, Big number, Award, App icon and Pop-out; blocks borrow the template's styling, use its text fields, drop into the spot covering the least text, and can be moved, resized, hidden or removed. ☐ Feature list, sticker and free text blocks.
 3. Perspective device presets and slide-straddling phones (3.2).
 4. Gallery filters and hover preview (4.7).
 

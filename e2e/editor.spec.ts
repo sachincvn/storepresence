@@ -74,13 +74,13 @@ test("ZIP contains every slide in order at exact size", async ({ page }) => {
 });
 
 test("long text is capped and empty optional fields still export", async ({ page }) => {
-  const headline = page.getByLabel("Headline");
+  const headline = page.getByRole("textbox", { name: "Headline", exact: true });
   await headline.fill("Track every habit, goal and streak in one place and then some more words");
   await expect(headline).toHaveValue(/^.{1,48}$/);
   expect(pngSize((await exportFrom(page, /Export slide 1 as PNG/)).buffer).height).toBe(1920);
 
   await headline.fill("");
-  await page.getByLabel("Description").fill("");
+  await page.getByRole("textbox", { name: "Description", exact: true }).fill("");
   expect(pngSize((await exportFrom(page, /Export slide 1 as PNG/)).buffer).height).toBe(1920);
 });
 
@@ -122,9 +122,9 @@ test("layout picker switches the current slide and markup styles text", async ({
 
   // Inline markup renders without the markers.
   await page.getByRole("button", { name: "Slide 1", exact: true }).click();
-  await page.getByLabel("Headline").fill("Learn **anywhere**");
+  await page.getByRole("textbox", { name: "Headline", exact: true }).fill("Learn **anywhere**");
   const marked = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
-  await page.getByLabel("Headline").fill("Learn anywhere");
+  await page.getByRole("textbox", { name: "Headline", exact: true }).fill("Learn anywhere");
   const plain = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
   expect(marked.equals(plain)).toBe(false);
 });
@@ -134,16 +134,16 @@ test("undo and redo edits from the header and keyboard", async ({ page }) => {
   const redo = page.getByRole("button", { name: "Redo" });
   await expect(undo).toBeDisabled();
 
-  await page.getByLabel("Headline").fill("First");
+  await page.getByRole("textbox", { name: "Headline", exact: true }).fill("First");
   await page.getByText("Editorial serif").click();
   await undo.click();
   await expect(page.getByRole("radio", { name: "Editorial serif" })).not.toBeChecked();
   await undo.click();
-  await expect(page.getByLabel("Headline")).not.toHaveValue("First");
+  await expect(page.getByRole("textbox", { name: "Headline", exact: true })).not.toHaveValue("First");
   await expect(undo).toBeDisabled();
 
   await redo.click();
-  await expect(page.getByLabel("Headline")).toHaveValue("First");
+  await expect(page.getByRole("textbox", { name: "Headline", exact: true })).toHaveValue("First");
 
   // Outside text fields, Ctrl+Z / Ctrl+Shift+Z drive the editor history.
   await page.getByRole("button", { name: "Slide 1", exact: true }).focus();
@@ -165,7 +165,7 @@ test("undo and redo edits from the header and keyboard", async ({ page }) => {
 test("work is saved in the browser and restored after reload; start over clears it", async ({ page }) => {
   await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 3));
   await expect(yourScreenshots(page)).toHaveCount(3);
-  await page.getByLabel("Headline").fill("Saved headline");
+  await page.getByRole("textbox", { name: "Headline", exact: true }).fill("Saved headline");
   await page.getByText("Editorial serif").click();
   await expect(page.getByText("Saved in this browser only")).toBeVisible();
   await page.waitForTimeout(800); // past the save debounce
@@ -174,7 +174,7 @@ test("work is saved in the browser and restored after reload; start over clears 
   await page.goto("/editor");
   await expect(yourScreenshots(page)).toHaveCount(3);
   await expect(page.getByRole("button", { name: /^Lilac Clay/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByLabel("Headline")).toHaveValue("Saved headline");
+  await expect(page.getByRole("textbox", { name: "Headline", exact: true })).toHaveValue("Saved headline");
   await expect(page.getByRole("radio", { name: "Editorial serif" })).toBeChecked();
   await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
   const zip = await JSZip.loadAsync((await exportFrom(page, /Download all 3 slides as ZIP/)).buffer);
@@ -190,7 +190,7 @@ test("work is saved in the browser and restored after reload; start over clears 
   await page.waitForTimeout(800);
   await page.reload();
   await expect(page.getByText("Showing 4 sample screenshots")).toBeVisible();
-  await expect(page.getByLabel("Headline")).not.toHaveValue("Saved headline");
+  await expect(page.getByRole("textbox", { name: "Headline", exact: true })).not.toHaveValue("Saved headline");
 });
 
 test("pop-out area can be re-picked from the keyboard and hidden per slide", async ({ page }) => {
@@ -233,7 +233,7 @@ test("slides can be added, duplicated, moved and deleted; text slides export wit
   await page.getByRole("button", { name: "Text slide" }).click();
   await expect(strip).toHaveCount(5);
   await expect(page.getByRole("button", { name: "Slide 2", exact: true })).toHaveAttribute("aria-current", "true");
-  await expect(page.getByLabel("Headline")).toHaveValue(/in one place/);
+  await expect(page.getByRole("textbox", { name: "Headline", exact: true })).toHaveValue(/in one place/);
   // Text slides have no screenshot to pick.
   await expect(page.getByRole("heading", { name: /^Screenshot, slide/ })).toBeHidden();
 
@@ -329,4 +329,67 @@ test("export dialog adds store sizes as folders at exact pixel sizes", async ({ 
   expect(pngSize((await exportFrom(page, /Export slide 1 as PNG/)).buffer)).toEqual({ width: 2064, height: 2752 });
   await page.getByRole("combobox", { name: "Size" }).selectOption("play-feature");
   expect(pngSize((await exportFrom(page, /Export feature graphic as PNG/)).buffer)).toEqual({ width: 1024, height: 500 });
+});
+
+test("elements can be selected on the canvas, dragged, nudged, resized and hidden", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  const canvas = page.getByRole("group", { name: /^Slide canvas/ });
+  const box = (await canvas.boundingBox())!;
+  const at = (x: number, y: number) => [box.x + (x / 1080) * box.width, box.y + (y / 1920) * box.height] as const;
+
+  // Drag the phone (Lilac Clay slide 1 is a tilted phone) by mouse.
+  await page.mouse.move(...at(560, 1300));
+  await page.mouse.down();
+  await page.mouse.move(...at(500, 1250), { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByRole("group", { name: /^Phone selected/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Phone/, pressed: true })).toContainText("edited");
+  const dragged = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(dragged.equals(before)).toBe(false);
+
+  // Keyboard: nudge and resize the selection.
+  await page.getByRole("group", { name: /^Phone selected/ }).focus();
+  await page.keyboard.press("Shift+ArrowUp");
+  await page.keyboard.press("-");
+  await expect(page.getByRole("slider", { name: /^Size/ })).toHaveValue("95");
+
+  // Accessible list: select the headline, rotate it with the slider, hide the description.
+  await page.getByRole("button", { name: "Headline", exact: true }).click();
+  await page.getByRole("slider", { name: /^Rotation/ }).fill("8");
+  await page.getByRole("button", { name: "Hide description" }).click();
+  await expect(page.getByRole("button", { name: "Show description" })).toBeVisible();
+  const edited = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(pngSize(edited)).toEqual({ width: 1080, height: 1920 });
+
+  // Undo steps back; Reset all clears the slide.
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByRole("button", { name: "Hide description" })).toBeVisible();
+  await page.getByRole("button", { name: "Reset all" }).click();
+  const reset = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(reset.equals(before)).toBe(true);
+});
+
+test("blocks can be added from the Add menu, edited, and removed", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  const menu = page.getByRole("menu", { name: "Add to slide" });
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("menuitem").first()).toBeFocused();
+  await menu.getByRole("menuitem", { name: /^Review/ }).click();
+  await expect(menu).toBeHidden();
+
+  // The new block is selected and its text fields appear.
+  await expect(page.getByRole("button", { name: "Review card (added)", pressed: true })).toBeVisible();
+  await page.getByRole("textbox", { name: "Review", exact: true }).fill("Best app I have ever used.");
+  const added = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(added.equals(before)).toBe(false);
+
+  // Keyboard menu: Escape closes and returns focus.
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Add", exact: true })).toBeFocused();
+
+  await page.getByRole("button", { name: "Remove review card (added)" }).click();
+  await expect(page.getByRole("button", { name: /Review card \(added\)/ })).toHaveCount(0);
+  expect((await exportFrom(page, /Export slide 1 as PNG/)).buffer.equals(before)).toBe(true);
 });

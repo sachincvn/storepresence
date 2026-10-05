@@ -66,11 +66,12 @@ function drawGrain(ctx: CanvasRenderingContext2D, amount: number, { width, heigh
 function drawElement(ctx: CanvasRenderingContext2D, el: TemplateElement, spec: SlideSpec, images: LoadedImages, scale: number): void {
     ctx.save();
     ctx.globalAlpha = el.opacity ?? 1;
-    if (el.rotation) {
+    if (el.rotation || (el.scale && el.scale !== 1)) {
       const cx = el.x + el.width / 2;
       const cy = el.y + el.height / 2;
       ctx.translate(cx, cy);
-      ctx.rotate((el.rotation * Math.PI) / 180);
+      if (el.rotation) ctx.rotate((el.rotation * Math.PI) / 180);
+      if (el.scale) ctx.scale(el.scale, el.scale);
       ctx.translate(-cx, -cy);
     }
 

@@ -12,8 +12,9 @@ import { createSampleScreenshots } from "@/lib/sampleShots";
 import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
-import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
-import type { Screenshot } from "@/types/project";
+import { designFor, getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
+import { blockOptions } from "@/templates/blocks";
+import type { BlockKind, ElementEdit, Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
 import { BrandColors } from "./BrandColors";
 import { ExportDialog } from "@/components/export/ExportDialog";
@@ -63,10 +64,16 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
   /** Store size shown in the preview (and used by "Export slide"). */
   const [previewSize, setPreviewSize] = useState<SizeId>("play-phone");
   const [exportOpen, setExportOpen] = useState(false);
+  /** Element selected for move/resize, remembered per slide key so it clears when the slide changes. */
+  const [selection, setSelection] = useState<{ key: string; id: string } | null>(null);
 
   const { project, slide } = state;
   const template = getTemplate(project.templateId) ?? templates[0];
   const slideCount = getSlideCount(template, project);
+  const slideKey = getSlides(template, project)[slide]?.key ?? "";
+  const selectedElement = selection?.key === slideKey ? selection.id : null;
+  const selectElement = (id: string | null) => setSelection(id ? { key: slideKey, id } : null);
+  const editElement = (id: string, edit: ElementEdit | null) => dispatch({ type: "elementEdit", id, edit });
   const upload = useScreenshotUpload({ dispatch, uploadedCount: state.usingSamples ? 0 : project.screenshots.length });
   // One app name for templates, the store preview and the ZIP file name.
   const appName = project.variables.appName ?? "Taskly";
@@ -163,6 +170,12 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
 
   const slideActions = {
     canAddText: canAddTextSlide(template, project, slide),
+    blocks: blockOptions(template, designFor(template, slide, project)),
+    onAddBlock: (kind: BlockKind) => {
+      const id = `block-${kind}-${newSlideKey().slice(-6)}`;
+      dispatch({ type: "addBlock", kind, id });
+      setSelection({ key: slideKey, id });
+    },
     onDuplicate: () => dispatch({ type: "duplicateSlide", key: newSlideKey() }),
     onAddText: () => dispatch({ type: "addTextSlide", key: newSlideKey() }),
     onMove: (offset: -1 | 1) => dispatch({ type: "moveSlide", offset }),
@@ -179,6 +192,8 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       dispatch={dispatch}
       sections={sections}
       bare={bare}
+      selectedElement={selectedElement}
+      onSelectElement={selectElement}
       brandColors={
         <BrandColors
           template={template}
@@ -241,6 +256,10 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       slideActions={slideActions}
       size={getSize(previewSize)}
       onSizeChange={setPreviewSize}
+      selectedElement={selectedElement}
+      onSelectElement={selectElement}
+      onEditElement={editElement}
+      onRemoveElement={(id) => dispatch({ type: "removeBlock", id })}
       />
     </>
   );

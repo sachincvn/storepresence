@@ -303,6 +303,7 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
     for (const key of ["x", "y"]) if (!isNum(el[key])) bad(`${key} must be a number`);
     for (const key of ["width", "height"]) if (!isNum(el[key]) || (el[key] as number) <= 0) bad(`${key} must be a positive number`);
     if (el.rotation !== undefined && !isNum(el.rotation)) bad("rotation must be a number (degrees)");
+    if (el.scale !== undefined && (!isNum(el.scale) || el.scale < 0.2 || el.scale > 3)) bad("scale must be 0.2–3");
     if (el.opacity !== undefined && (!isNum(el.opacity) || el.opacity < 0 || el.opacity > 1)) bad("opacity must be 0–1");
     if (el.layer !== undefined && !oneOf(el.layer, ["back", "front"])) bad('layer must be "back" or "front"');
     if (ctx.canvas && [el.x, el.y, el.width, el.height].every(isNum)) {
