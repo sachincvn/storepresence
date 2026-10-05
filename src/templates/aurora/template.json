@@ -1,0 +1,150 @@
+{
+  "id": "aurora",
+  "name": "Aurora",
+  "category": "Gradient",
+  "description": "Deep navy with glowing color fields that flow across the whole set.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#0D1033",
+    "foreground": "#FFFFFF",
+    "primary": "#4F6BFF",
+    "accent": "#FF5FA2",
+    "surface": "#1C2155"
+  },
+  "editableColors": [
+    "background",
+    "primary",
+    "accent"
+  ],
+  "background": {
+    "type": "solid",
+    "color": "$background"
+  },
+  "grain": 0.08,
+  "overrides": {
+    "shot": {
+      "shadow": {
+        "y": 50,
+        "blur": 110,
+        "color": "rgba(0, 0, 0, 0.55)"
+      }
+    },
+    "shot-back": {
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(0, 0, 0, 0.5)"
+      }
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "glow-1",
+      "shape": "circle",
+      "x": -260,
+      "y": 860,
+      "width": 1050,
+      "height": 1050,
+      "fill": "$primary",
+      "blur": 160,
+      "opacity": 0.85
+    },
+    {
+      "type": "shape",
+      "id": "glow-2",
+      "shape": "circle",
+      "x": 660,
+      "y": -180,
+      "width": 900,
+      "height": 900,
+      "fill": "$accent",
+      "blur": 160,
+      "opacity": 0.7
+    },
+    {
+      "type": "shape",
+      "id": "glow-3",
+      "shape": "circle",
+      "x": 1700,
+      "y": 980,
+      "width": 1050,
+      "height": 1050,
+      "fill": "#7B5CFF",
+      "blur": 160,
+      "opacity": 0.8
+    },
+    {
+      "type": "shape",
+      "id": "glow-4",
+      "shape": "circle",
+      "x": 2780,
+      "y": -120,
+      "width": 920,
+      "height": 920,
+      "fill": "$primary",
+      "blur": 160,
+      "opacity": 0.75
+    },
+    {
+      "type": "shape",
+      "id": "glow-5",
+      "shape": "circle",
+      "x": 3460,
+      "y": 1080,
+      "width": 1050,
+      "height": 1050,
+      "fill": "$accent",
+      "blur": 160,
+      "opacity": 0.7
+    }
+  ],
+  "slides": [
+    {
+      "layout": "badge-hero",
+      "defaults": {
+        "badge": "New: Smart lists",
+        "headline": "Plan your day in seconds",
+        "description": "Every task sorted by what matters most."
+      },
+      "overrides": {
+        "badge": {
+          "color": "$foreground",
+          "pill": {
+            "fill": "rgba(255, 255, 255, 0.12)",
+            "paddingX": 36,
+            "paddingY": 20,
+            "stroke": {
+              "color": "rgba(255, 255, 255, 0.3)",
+              "width": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "See your progress grow",
+        "description": "Clear stats that keep you going."
+      }
+    },
+    {
+      "layout": "zoom",
+      "defaults": {
+        "headline": "Stay in sync with your team",
+        "description": "Chat and share without switching apps."
+      }
+    },
+    {
+      "layout": "phone-center",
+      "defaults": {
+        "headline": "Never miss a deadline",
+        "description": "Smart reminders, right on time."
+      }
+    }
+  ]
+}

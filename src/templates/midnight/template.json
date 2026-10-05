@@ -1,0 +1,145 @@
+{
+  "id": "midnight",
+  "name": "Midnight",
+  "category": "Dark",
+  "description": "Editorial serif type on deep ink with warm glows.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#111018",
+    "foreground": "#F5F1E8",
+    "primary": "#1E1B2B",
+    "accent": "#FFC53D",
+    "surface": "#1E1B2B"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "$background",
+        "at": 0
+      },
+      {
+        "color": "$primary",
+        "at": 1
+      }
+    ]
+  },
+  "grain": 0.06,
+  "overrides": {
+    "headline": {
+      "font": "serif",
+      "weight": 500,
+      "size": 112,
+      "minSize": 72,
+      "letterSpacing": -0.02,
+      "lineHeight": 1.04
+    },
+    "description": {
+      "opacity": 0.68
+    },
+    "shot": {
+      "frameColor": "#2B2838",
+      "shadow": {
+        "y": 50,
+        "blur": 120,
+        "color": "rgba(0, 0, 0, 0.6)"
+      }
+    },
+    "shot-back": {
+      "frameColor": "#2B2838",
+      "shadow": {
+        "y": 40,
+        "blur": 100,
+        "color": "rgba(0, 0, 0, 0.55)"
+      }
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "glow-1",
+      "shape": "circle",
+      "x": 200,
+      "y": 760,
+      "width": 1000,
+      "height": 1000,
+      "fill": "$accent",
+      "blur": 170,
+      "opacity": 0.5
+    },
+    {
+      "type": "shape",
+      "id": "glow-2",
+      "shape": "circle",
+      "x": 1460,
+      "y": 1180,
+      "width": 1000,
+      "height": 1000,
+      "fill": "#FF7A45",
+      "blur": 170,
+      "opacity": 0.45
+    },
+    {
+      "type": "shape",
+      "id": "glow-3",
+      "shape": "circle",
+      "x": 2520,
+      "y": 120,
+      "width": 960,
+      "height": 960,
+      "fill": "$accent",
+      "blur": 170,
+      "opacity": 0.45
+    },
+    {
+      "type": "shape",
+      "id": "glow-4",
+      "shape": "circle",
+      "x": 3520,
+      "y": 1100,
+      "width": 1000,
+      "height": 1000,
+      "fill": "#FF7A45",
+      "blur": 170,
+      "opacity": 0.42
+    }
+  ],
+  "slides": [
+    {
+      "layout": "phone-center",
+      "defaults": {
+        "headline": "Plan your day in seconds",
+        "description": "Every task sorted by what matters most."
+      }
+    },
+    {
+      "layout": "zoom",
+      "defaults": {
+        "headline": "See your progress grow",
+        "description": "Clear stats that keep you going."
+      }
+    },
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "Stay in sync with your team",
+        "description": "Chat and share without switching apps."
+      }
+    },
+    {
+      "layout": "phone-tilt",
+      "defaults": {
+        "headline": "Never miss a deadline",
+        "description": "Smart reminders, right on time."
+      }
+    }
+  ]
+}

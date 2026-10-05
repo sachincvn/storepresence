@@ -1,0 +1,83 @@
+{
+  "id": "text-bottom",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "variables": [
+    {
+      "key": "headline",
+      "label": "Headline",
+      "default": "Your app, beautifully presented",
+      "perSlide": true,
+      "maxLength": 48
+    },
+    {
+      "key": "description",
+      "label": "Description",
+      "default": "",
+      "perSlide": true,
+      "multiline": true,
+      "maxLength": 90
+    }
+  ],
+  "elements": [
+    {
+      "type": "screenshot",
+      "id": "shot",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(22, 19, 31, 0.3)"
+      },
+      "x": 240,
+      "y": 120,
+      "width": 600,
+      "height": 1300,
+      "radius": 58
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "text": "{{headline}}",
+      "font": "display",
+      "size": 110,
+      "minSize": 72,
+      "weight": 800,
+      "lineHeight": 1,
+      "letterSpacing": -0.035,
+      "align": "center",
+      "verticalAlign": "middle",
+      "color": "$foreground",
+      "maxLines": 2,
+      "x": 80,
+      "y": 1480,
+      "width": 920,
+      "height": 236
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "text": "{{description}}",
+      "font": "sans",
+      "size": 38,
+      "minSize": 30,
+      "weight": 500,
+      "lineHeight": 1.32,
+      "align": "center",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "opacity": 0.78,
+      "maxLines": 2,
+      "x": 140,
+      "y": 1736,
+      "width": 800,
+      "height": 104
+    }
+  ]
+}

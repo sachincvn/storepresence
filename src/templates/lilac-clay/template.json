@@ -1,0 +1,138 @@
+{
+  "id": "lilac-clay",
+  "name": "Lilac Clay",
+  "category": "Soft",
+  "description": "Soft lilac gradient and glossy clay shapes across the set.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#CDBDFF",
+    "foreground": "#16131F",
+    "primary": "#3D5AFE",
+    "accent": "#FF8FC0",
+    "surface": "#F3F4F6"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "#EEE8FF",
+        "at": 0
+      },
+      {
+        "color": "$background",
+        "at": 1
+      }
+    ]
+  },
+  "overrides": {
+    "shot": {
+      "shadow": {
+        "y": 50,
+        "blur": 100,
+        "color": "rgba(76, 46, 150, 0.35)"
+      }
+    },
+    "shot-back": {
+      "shadow": {
+        "y": 40,
+        "blur": 80,
+        "color": "rgba(76, 46, 150, 0.3)"
+      }
+    },
+    "badge": {
+      "color": "$foreground",
+      "pill": {
+        "fill": "#FFFFFF",
+        "paddingX": 36,
+        "paddingY": 20
+      }
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "sphere-1",
+      "shape": "circle",
+      "x": 800,
+      "y": 1380,
+      "width": 500,
+      "height": 500,
+      "fill": "$accent",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "sphere-2",
+      "shape": "circle",
+      "x": 1990,
+      "y": 520,
+      "width": 210,
+      "height": 210,
+      "fill": "$primary",
+      "style": "clay",
+      "layer": "front"
+    },
+    {
+      "type": "shape",
+      "id": "pill",
+      "shape": "pill",
+      "x": 3060,
+      "y": 1300,
+      "width": 420,
+      "height": 160,
+      "rotation": 20,
+      "fill": "#FFFFFF",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "sphere-3",
+      "shape": "circle",
+      "x": 4060,
+      "y": 1480,
+      "width": 340,
+      "height": 340,
+      "fill": "$accent",
+      "style": "clay"
+    }
+  ],
+  "slides": [
+    {
+      "layout": "phone-tilt",
+      "defaults": {
+        "headline": "Plan your day in seconds",
+        "description": "Every task sorted by what matters most."
+      }
+    },
+    {
+      "layout": "phone-center",
+      "defaults": {
+        "headline": "See your progress grow",
+        "description": "Clear stats that keep you going."
+      }
+    },
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "Stay in sync with your team",
+        "description": "Chat and share without switching apps."
+      }
+    },
+    {
+      "layout": "badge-hero",
+      "defaults": {
+        "badge": "Never late again",
+        "headline": "Never miss a deadline",
+        "description": "Smart reminders, right on time."
+      }
+    }
+  ]
+}

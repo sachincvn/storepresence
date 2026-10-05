@@ -1,0 +1,112 @@
+{
+  "id": "badge-hero",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "variables": [
+    {
+      "key": "badge",
+      "label": "Badge",
+      "default": "New",
+      "perSlide": true,
+      "maxLength": 28
+    },
+    {
+      "key": "headline",
+      "label": "Headline",
+      "default": "Your app, beautifully presented",
+      "perSlide": true,
+      "maxLength": 48
+    },
+    {
+      "key": "description",
+      "label": "Description",
+      "default": "",
+      "perSlide": true,
+      "multiline": true,
+      "maxLength": 90
+    }
+  ],
+  "elements": [
+    {
+      "type": "text",
+      "id": "badge",
+      "text": "{{badge}}",
+      "x": 90,
+      "y": 150,
+      "width": 900,
+      "height": 100,
+      "font": "sans",
+      "size": 34,
+      "weight": 700,
+      "lineHeight": 1.2,
+      "align": "center",
+      "verticalAlign": "middle",
+      "color": "$background",
+      "maxLines": 1,
+      "pill": {
+        "fill": "$foreground",
+        "paddingX": 36,
+        "paddingY": 20
+      }
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "text": "{{headline}}",
+      "font": "display",
+      "size": 104,
+      "minSize": 68,
+      "weight": 800,
+      "lineHeight": 1,
+      "letterSpacing": -0.035,
+      "align": "center",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "maxLines": 2,
+      "x": 80,
+      "y": 284,
+      "width": 920,
+      "height": 224
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "text": "{{description}}",
+      "font": "sans",
+      "size": 38,
+      "minSize": 30,
+      "weight": 500,
+      "lineHeight": 1.32,
+      "align": "center",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "opacity": 0.78,
+      "maxLines": 2,
+      "x": 140,
+      "y": 530,
+      "width": 800,
+      "height": 104
+    },
+    {
+      "type": "screenshot",
+      "id": "shot",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 50,
+        "blur": 100,
+        "color": "rgba(22, 19, 31, 0.35)"
+      },
+      "x": 235,
+      "y": 770,
+      "width": 610,
+      "height": 1325,
+      "radius": 60
+    }
+  ]
+}

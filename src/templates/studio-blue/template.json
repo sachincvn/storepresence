@@ -1,0 +1,132 @@
+{
+  "id": "studio-blue",
+  "name": "Studio Blue",
+  "category": "Product",
+  "description": "Electric blue with clay shapes that bridge every slide.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#3D5AFE",
+    "foreground": "#FFFFFF",
+    "primary": "#2A3FD1",
+    "accent": "#FFD43B",
+    "surface": "#F3F4F6"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "solid",
+    "color": "$background"
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "sun",
+      "shape": "circle",
+      "x": 840,
+      "y": 1330,
+      "width": 480,
+      "height": 480,
+      "fill": "$accent",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "dots",
+      "shape": "circle",
+      "x": 1820,
+      "y": 120,
+      "width": 660,
+      "height": 660,
+      "fill": "#FFFFFF",
+      "style": "halftone",
+      "opacity": 0.28
+    },
+    {
+      "type": "shape",
+      "id": "pill",
+      "shape": "pill",
+      "x": 3000,
+      "y": 1440,
+      "width": 470,
+      "height": 170,
+      "rotation": -24,
+      "fill": "#FF6FAE",
+      "style": "clay",
+      "layer": "front"
+    },
+    {
+      "type": "shape",
+      "id": "pearl",
+      "shape": "circle",
+      "x": 3310,
+      "y": 1180,
+      "width": 150,
+      "height": 150,
+      "fill": "#FFFFFF",
+      "style": "clay"
+    }
+  ],
+  "slides": [
+    {
+      "layout": "phone-center",
+      "defaults": {
+        "headline": "Plan your day in seconds",
+        "description": "Every task sorted by what matters most."
+      }
+    },
+    {
+      "layout": "phone-tilt",
+      "defaults": {
+        "headline": "See your progress grow",
+        "description": "Clear stats that keep you going."
+      },
+      "background": {
+        "type": "linear",
+        "angle": 180,
+        "stops": [
+          {
+            "color": "$background",
+            "at": 0
+          },
+          {
+            "color": "$primary",
+            "at": 1
+          }
+        ]
+      }
+    },
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "Stay in sync with your team",
+        "description": "Chat and share without switching apps."
+      }
+    },
+    {
+      "layout": "text-bottom",
+      "defaults": {
+        "headline": "Never miss a deadline",
+        "description": "Smart reminders, right on time."
+      },
+      "background": {
+        "type": "linear",
+        "angle": 160,
+        "stops": [
+          {
+            "color": "$primary",
+            "at": 0
+          },
+          {
+            "color": "$background",
+            "at": 1
+          }
+        ]
+      }
+    }
+  ]
+}
