@@ -21,6 +21,7 @@ export type EditorAction =
   | { type: "variable"; key: string; value: string; perSlide: boolean }
   | { type: "color"; key: ThemeKey; value: string }
   | { type: "resetColors" }
+  | { type: "exportSizes"; sizes: string[] }
   /** Replaces all user colors at once (e.g. a brand suggestion), as one undo step. */
   | { type: "theme"; theme: ThemeTokens }
   | { type: "deviceFrame"; on: boolean }
@@ -162,6 +163,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "theme":
       return { ...state, project: { ...project, theme: { ...action.theme } } };
+
+    case "exportSizes":
+      return { ...state, project: { ...project, exportSizes: [...action.sizes] } };
 
     case "resetColors":
       return { ...state, project: { ...project, theme: {} } };

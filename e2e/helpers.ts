@@ -54,9 +54,12 @@ export async function readDownload(download: Download): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-/** Clicks a header export button and returns the downloaded file. */
+/** Clicks a header export button (confirming the Export dialog for ZIPs) and returns the downloaded file. */
 export async function exportFrom(page: Page, label: RegExp): Promise<{ name: string; buffer: Buffer }> {
-  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: label }).click()]);
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: label }).click();
+  if (/ZIP/.test(label.source)) await page.getByRole("dialog", { name: "Export" }).getByRole("button", { name: "Download ZIP" }).click();
+  const download = await downloading;
   return { name: download.suggestedFilename(), buffer: await readDownload(download) };
 }
 

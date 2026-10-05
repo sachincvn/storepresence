@@ -1,6 +1,7 @@
 import JSZip from "jszip";
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { createFixtures, exportFrom, pngSize, yourScreenshots } from "./helpers";
+import { createFixtures, exportFrom, pngSize, readDownload, yourScreenshots } from "./helpers";
 
 let fixtures: Awaited<ReturnType<typeof createFixtures>>;
 
@@ -292,4 +293,40 @@ test("collage background and full screen layout render and export", async ({ pag
   await expect(page.getByRole("radio", { name: "Full screen" })).toBeChecked();
   const full = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
   expect(pngSize(full)).toEqual({ width: 1080, height: 1920 });
+});
+
+test("export dialog adds store sizes as folders at exact pixel sizes", async ({ page }) => {
+  await page.getByRole("button", { name: /Download all 4 slides as ZIP/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Export" });
+  await expect(dialog).toBeVisible();
+  expect((await new AxeBuilder({ page }).include("dialog").analyze()).violations).toEqual([]);
+  await dialog.getByText("Feature graphic").click();
+  await dialog.getByText('iPhone 6.9"').click();
+  await expect(dialog.getByRole("status")).toHaveText("9 files");
+
+  const [download] = await Promise.all([page.waitForEvent("download"), dialog.getByRole("button", { name: "Download ZIP" }).click()]);
+  const zip = await JSZip.loadAsync(await readDownload(download));
+  const files = Object.keys(zip.files).filter((n) => !zip.files[n].dir).sort();
+  expect(files).toEqual([
+    "app-store/iphone-6.9/01.png",
+    "app-store/iphone-6.9/02.png",
+    "app-store/iphone-6.9/03.png",
+    "app-store/iphone-6.9/04.png",
+    "google-play/feature-graphic.png",
+    "google-play/phone/01.png",
+    "google-play/phone/02.png",
+    "google-play/phone/03.png",
+    "google-play/phone/04.png",
+  ]);
+  const size = async (name: string) => pngSize(await zip.file(name)!.async("nodebuffer"));
+  expect(await size("app-store/iphone-6.9/01.png")).toEqual({ width: 1320, height: 2868 });
+  expect(await size("google-play/feature-graphic.png")).toEqual({ width: 1024, height: 500 });
+  expect(await size("google-play/phone/04.png")).toEqual({ width: 1080, height: 1920 });
+  await expect(dialog).toBeHidden();
+
+  // The preview size switch drives "Export slide" too.
+  await page.getByRole("combobox", { name: "Size" }).selectOption("ipad-13");
+  expect(pngSize((await exportFrom(page, /Export slide 1 as PNG/)).buffer)).toEqual({ width: 2064, height: 2752 });
+  await page.getByRole("combobox", { name: "Size" }).selectOption("play-feature");
+  expect(pngSize((await exportFrom(page, /Export feature graphic as PNG/)).buffer)).toEqual({ width: 1024, height: 500 });
 });

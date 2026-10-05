@@ -16,6 +16,8 @@ import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/t
 import type { Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
 import { BrandColors } from "./BrandColors";
+import { ExportDialog } from "@/components/export/ExportDialog";
+import { chosenSizes, getSize, type SizeId } from "@/templates/sizes";
 import { canAddTextSlide, type EditorAction } from "./editorState";
 import { canRedo, canUndo, historyReducer, initialHistory, referencedImages } from "./history";
 import { useAutosave } from "./useAutosave";
@@ -58,6 +60,9 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  /** Store size shown in the preview (and used by "Export slide"). */
+  const [previewSize, setPreviewSize] = useState<SizeId>("play-phone");
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { project, slide } = state;
   const template = getTemplate(project.templateId) ?? templates[0];
@@ -124,16 +129,17 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
   const exportCurrent = () =>
     runExport(async () => {
       setExportStatus("Exporting…");
-      const file = await exportSlide(template, project, slide);
+      const file = await exportSlide(template, project, slide, getSize(previewSize));
       downloadBlob(file.blob, file.name);
     });
 
   const exportZip = () =>
     runExport(async () => {
       setExportStatus(`Rendering 0 of ${slideCount}…`);
-      const files = await exportSet(template, project, (done, total) => setExportStatus(`Rendering ${done} of ${total}…`));
+      const files = await exportSet(template, project, chosenSizes(project.exportSizes), (done, total) => setExportStatus(`Rendering ${done} of ${total}…`));
       setExportStatus("Zipping…");
       downloadBlob(await buildZip(files), zipName(appName));
+      setExportOpen(false);
     });
 
   // Page-wide drop target: files can land anywhere in the editor.
@@ -233,6 +239,8 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       onSlideChange={selectSlide}
       onAppNameChange={setAppName}
       slideActions={slideActions}
+      size={getSize(previewSize)}
+      onSizeChange={setPreviewSize}
       />
     </>
   );
@@ -261,13 +269,18 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
           <p role="status" className="sr-only text-sm font-semibold text-muted tabular-nums md:not-sr-only">
             {exportStatus ?? ""}
           </p>
-          <Button variant="secondary" onClick={exportCurrent} disabled={exportStatus !== null} aria-label={`Export slide ${slide + 1} as PNG`}>
+          <Button
+            variant="secondary"
+            onClick={exportCurrent}
+            disabled={exportStatus !== null}
+            aria-label={getSize(previewSize).kind === "feature" ? "Export feature graphic as PNG" : `Export slide ${slide + 1} as PNG`}
+          >
             <span aria-hidden="true">
-              <span className="hidden sm:inline">Export slide {slide + 1}</span>
+              <span className="hidden sm:inline">{getSize(previewSize).kind === "feature" ? "Export banner" : `Export slide ${slide + 1}`}</span>
               <span className="sm:hidden">PNG</span>
             </span>
           </Button>
-          <Button onClick={exportZip} disabled={exportStatus !== null} aria-label={`Download all ${slideCount} slides as ZIP`}>
+          <Button onClick={() => setExportOpen(true)} disabled={exportStatus !== null} aria-haspopup="dialog" aria-label={`Download all ${slideCount} slides as ZIP`}>
             <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
               <path d="M8 2v8m0 0-3-3m3 3 3-3M3 13h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -278,6 +291,17 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
           </Button>
         </div>
       </header>
+
+      <ExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        slideCount={slideCount}
+        sizes={chosenSizes(project.exportSizes)}
+        onSizesChange={(sizes) => dispatch({ type: "exportSizes", sizes })}
+        onDownload={exportZip}
+        status={exportStatus}
+        error={exportError}
+      />
 
       {exportError && (
         <div role="alert" className="flex items-center justify-between gap-3 border-b border-[#F3B5CC] bg-[#FFF0F5] px-4 py-2.5 text-sm font-semibold text-[#9E1846] sm:px-6">

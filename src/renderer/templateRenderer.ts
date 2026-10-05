@@ -1,6 +1,8 @@
 import type { Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
 import { resolveSlide } from "@/templates/resolve";
+import { resolveFeatureGraphic } from "@/templates/featureGraphic";
+import { adaptSpec, type OutputSize } from "@/templates/sizes";
 import { drawSlide, type ImageSource } from "./canvasRenderer";
 import { ensureFonts } from "./fonts";
 
@@ -34,6 +36,8 @@ export type RenderOptions = {
   scale?: number;
   /** Draw into this canvas instead of a new one. */
   canvas?: HTMLCanvasElement;
+  /** Store size to render; at scale 1 the canvas matches it exactly. Defaults to the template size. */
+  size?: OutputSize;
 };
 
 /** Renders one output image. Images that fail to load are drawn as placeholders. */
@@ -41,9 +45,18 @@ export async function renderSlide(
   template: ResolvedTemplate,
   project: Project,
   slideIndex: number,
-  { scale = 1, canvas = document.createElement("canvas") }: RenderOptions = {},
+  { scale = 1, canvas = document.createElement("canvas"), size }: RenderOptions = {},
 ): Promise<HTMLCanvasElement> {
-  const spec = resolveSlide(template, project, slideIndex);
+  let spec = resolveSlide(template, project, slideIndex);
+  let drawScale = scale;
+  if (size?.kind === "feature") {
+    spec = resolveFeatureGraphic(template, project);
+    drawScale = scale * (size.width / spec.canvas.width);
+  } else if (size) {
+    const adapted = adaptSpec(spec, size);
+    spec = adapted.spec;
+    drawScale = scale * adapted.scale;
+  }
 
   const allElements = [...spec.panorama, ...spec.elements];
   const urls = [
@@ -60,6 +73,6 @@ export async function renderSlide(
   const images = new Map<string, ImageSource>();
   for (const r of results) if (r.status === "fulfilled") images.set(r.value[0], r.value[1]);
 
-  drawSlide(canvas, spec, images, scale);
+  drawSlide(canvas, spec, images, drawScale);
   return canvas;
 }

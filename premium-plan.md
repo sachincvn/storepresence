@@ -218,7 +218,7 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 
 ### Phase G — Scale (≈ 3–4 weeks)
 
-1. Multi-size output incl. App Store and Play feature graphic (3.8).
+1. ☑ Multi-size output incl. App Store and Play feature graphic (3.8): reflow from 1080 × 1920 to iPhone 6.9"/6.5" and iPad 13", feature graphic banner, preview size switch, Export dialog with store folders in the ZIP.
 2. Localization with per-language export (3.9).
 3. Worker-based export, PNG optimization (6).
 4. Template count to 20+.
@@ -256,4 +256,4 @@ The renderer stays pure: template + project (+ size + language) → canvas.
 
 ## 9. Recommended next step
 
-Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. The 4 new templates are in (14 total). Phase E is done except saved brand kits, multiple projects, comparison/feature-grid slides and the callout connector. Next: **Phase F** (select and nudge on canvas, blocks menu) or **multi-size output** (3.8) for App Store sizes.
+Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. The 4 new templates are in (14 total). Phase E is done except saved brand kits, multiple projects, comparison/feature-grid slides and the callout connector. Multi-size output is in. Next: **Phase F** (select and nudge on canvas, blocks menu) or **localization** (3.9).

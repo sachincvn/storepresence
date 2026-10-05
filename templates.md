@@ -192,6 +192,16 @@ All elements need `type`, `id`, `x`, `y`, `width`, `height`. Optional on all of 
 
 ---
 
+## Store sizes
+
+Design every template at **1080 × 1920**. Other sizes are made from it automatically:
+
+- **iPhone 6.9" / 6.5"** (taller) and **iPad 13"** (wider) reflow the design: it scales to fit, a quarter of the spare space goes above the first element, a quarter below the last, the rest between. Elements that touch or bleed off an edge keep doing so, and pop-outs move with their phone. Backgrounds and panoramas fill the new size.
+- The **Play feature graphic** (1024 × 500) is a banner built from the `feature-graphic` layout: app icon, app name, the first slide's headline and a tilted phone, with the template's background, text fonts and colors, and device.
+- Check sizes with the editor's **Size** switch above the preview. Let phones bleed off the bottom rather than ending just above it, so taller sizes never show a phone floating in space.
+
+---
+
 ## 7. Quality bar (from `design.md`)
 
 - At least 4 slides that look designed together: vary layouts and connect slides with a panorama or deliberate per-slide backgrounds.

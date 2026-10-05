@@ -287,25 +287,33 @@ export function getSlideValues(template: ResolvedTemplate, project: Project, sli
 }
 
 /** Flattens template + project into a draw-ready spec for one output image. */
-export function resolveSlide(template: ResolvedTemplate, project: Project, slideIndex: number): SlideSpec {
+/** Everything needed to turn a slide's template elements into draw-ready ones. */
+export function slideContext(template: ResolvedTemplate, project: Project, slideIndex: number) {
   const theme = themeFor(template, project);
-  const values = getSlideValues(template, project, slideIndex);
-  const color = (c: Color) => resolveColor(c, theme);
   const design = designFor(template, slideIndex, project);
-  const plan = getSlides(template, project)[slideIndex];
   const regions = project.calloutRegions?.[getSlideKey(template, project, slideIndex)] ?? {};
-  const background = resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, (c) => resolveColor(c, theme));
+  const color = (c: Color) => resolveColor(c, theme);
   const ctx: ResolveContext = {
     regions,
     color,
-    values,
+    values: getSlideValues(template, project, slideIndex),
     deviceFrame: project.deviceFrame,
     deviceModel: project.deviceModel,
     deviceColor: project.deviceColor,
     headlineFont: getHeadlineFont(project.headlineFont),
     accent: theme.accent ?? theme.foreground ?? "#000000",
   };
-  const resolve = (el: TemplateElement) => resolveElement(el, ctx);
+  return {
+    design,
+    regions,
+    resolve: (el: TemplateElement) => resolveElement(el, ctx),
+    background: resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, color),
+  };
+}
+
+export function resolveSlide(template: ResolvedTemplate, project: Project, slideIndex: number): SlideSpec {
+  const { design, regions, resolve, background } = slideContext(template, project, slideIndex);
+  const plan = getSlides(template, project)[slideIndex];
   const screenshots = slotScreenshots(template, project, slideIndex);
   // A callout set to null is hidden on this slide.
   const elements = design.elements.filter((el) => !(el.type === "callout" && regions[el.id] === null)).map(resolve);

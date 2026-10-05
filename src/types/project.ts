@@ -50,6 +50,8 @@ export type Project = {
   slideLayouts?: Record<string, string>;
   /** Per-slide callout areas by element id, keyed like `slideVariables`. `null` hides that callout. */
   calloutRegions?: Record<string, Record<string, NormRect | null>>;
+  /** Store sizes to export (ids from `OUTPUT_SIZES`). Undefined = Google Play phone only. */
+  exportSizes?: string[];
   /** User-arranged slides. Undefined = one slide per screenshot (text-only designs added in place). */
   slides?: SlideEntry[];
 };
