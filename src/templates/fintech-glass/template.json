@@ -1,0 +1,135 @@
+{
+  "id": "fintech-glass",
+  "name": "Fintech Glass",
+  "category": "Gradient",
+  "description": "Deep navy mesh, silver frames and frosted glass number cards.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#0B1533",
+    "foreground": "#F4F7FF",
+    "primary": "#1B2A5C",
+    "accent": "#5EEAD4",
+    "surface": "#16224A"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "mesh",
+    "colors": [
+      "$background",
+      "#1E3A8A",
+      "#0E7490",
+      "#3B1D7A",
+      "#1B2A5C"
+    ],
+    "seed": 7
+  },
+  "overrides": {
+    "headline": {
+      "weight": 700,
+      "letterSpacing": -0.04,
+      "emphasis": {
+        "color": "$accent"
+      },
+      "marker": "rgba(94, 234, 212, 0.28)"
+    },
+    "description": {
+      "opacity": 0.7
+    },
+    "shot": {
+      "device": "phone-island",
+      "frameColor": "#C7CEDB",
+      "shadow": {
+        "y": 50,
+        "blur": 110,
+        "color": "rgba(3, 8, 24, 0.7)"
+      }
+    },
+    "shot-back": {
+      "device": "phone-island",
+      "frameColor": "#C7CEDB",
+      "shadow": {
+        "y": 40,
+        "blur": 100,
+        "color": "rgba(3, 8, 24, 0.65)"
+      }
+    },
+    "callout": {
+      "style": "glass",
+      "padding": 20,
+      "radius": 40
+    },
+    "callout-2": {
+      "style": "glass",
+      "padding": 20,
+      "radius": 40
+    },
+    "stat": {
+      "color": "$accent"
+    }
+  },
+  "slides": [
+    {
+      "layout": "stat-hero",
+      "defaults": {
+        "statValue": "2× faster",
+        "statLabel": "weekly planning",
+        "headline": "Your time, **managed**"
+      }
+    },
+    {
+      "layout": "pop-out",
+      "defaults": {
+        "headline": "Track every **goal**",
+        "description": "Progress you can see at a glance."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.04,
+            "y": 0.62,
+            "w": 0.92,
+            "h": 0.175
+          }
+        }
+      }
+    },
+    {
+      "layout": "pop-duo",
+      "defaults": {
+        "headline": "Share in **real time**",
+        "description": "Decisions move as fast as you do."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.186,
+            "w": 0.74,
+            "h": 0.095
+          }
+        },
+        "callout-2": {
+          "region": {
+            "x": 0.23,
+            "y": 0.286,
+            "w": 0.74,
+            "h": 0.095
+          }
+        }
+      }
+    },
+    {
+      "layout": "phone-tilt",
+      "defaults": {
+        "headline": "Never miss a **deadline**",
+        "description": "Smart reminders, right on time."
+      }
+    }
+  ]
+}

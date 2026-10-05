@@ -13,6 +13,10 @@ const TEMPLATES = [
   ["pro-productivity", "Pro Productivity"],
   ["health-stats", "Health Stats"],
   ["fresh-mint", "Fresh Mint"],
+  ["playful-learning", "Playful Learning"],
+  ["cinematic", "Cinematic"],
+  ["fintech-glass", "Fintech Glass"],
+  ["social-pop", "Social Pop"],
 ] as const;
 
 let images: string[];

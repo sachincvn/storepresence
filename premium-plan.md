@@ -207,7 +207,7 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 3. Intro/outro/text-only slides and slide list (3.7, 4.4).
 4. Brand match from app icon (4.5).
 5. ◐ Undo/redo, autosave, projects (4.4): ☑ undo/redo (header + Ctrl+Z, typing merged per field), autosave to IndexedDB with restore and undoable Start over; ☐ multiple named projects.
-6. 4 new templates: Playful Learning, Cinematic, Fintech Glass, Social Pop.
+6. ☑ 4 new templates: Playful Learning (bubble pop-outs, clay blobs), Cinematic (flat devices, glass, red glow), Fintech Glass (mesh, silver frames, glass cards), Social Pop (sunset gradient, pop-duo, review). 14 total.
 
 ### Phase F — Freedom without chaos (≈ 3 weeks)
 
@@ -256,4 +256,4 @@ The renderer stays pure: template + project (+ size + language) → canvas.
 
 ## 9. Recommended next step
 
-Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. Next: **4 new templates** (Playful Learning, Cinematic, Fintech Glass, Social Pop) using pop-outs, then intro/outro slides.
+Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. The 4 new templates are in (14 total). Next: **intro/outro and text-only slides with a slide list** (3.7, 4.4), then brand match from the app icon.

@@ -16,6 +16,10 @@ import textBottom from "./layouts/text-bottom.json";
 import zoom from "./layouts/zoom.json";
 
 import aurora from "./aurora/template.json";
+import cinematic from "./cinematic/template.json";
+import fintechGlass from "./fintech-glass/template.json";
+import playfulLearning from "./playful-learning/template.json";
+import socialPop from "./social-pop/template.json";
 import calmWellness from "./calm-wellness/template.json";
 import freshMint from "./fresh-mint/template.json";
 import healthStats from "./health-stats/template.json";
@@ -42,6 +46,10 @@ const templateSources: unknown[] = [
   proProductivity,
   healthStats,
   freshMint,
+  playfulLearning,
+  cinematic,
+  fintechGlass,
+  socialPop,
 ];
 
 export type TemplateIssue = {

@@ -1,0 +1,209 @@
+{
+  "id": "social-pop",
+  "name": "Social Pop",
+  "category": "Bright",
+  "description": "Sunset gradient, fanned phones, floating review and pop-out cards.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#FF7A45",
+    "foreground": "#FFFFFF",
+    "primary": "#FF3D7F",
+    "accent": "#FFE14D",
+    "surface": "#FFFFFF"
+  },
+  "editableColors": [
+    "background",
+    "primary",
+    "accent"
+  ],
+  "background": {
+    "type": "linear",
+    "angle": 160,
+    "stops": [
+      {
+        "color": "$primary",
+        "at": 0
+      },
+      {
+        "color": "$background",
+        "at": 1
+      }
+    ]
+  },
+  "overrides": {
+    "headline": {
+      "weight": 800,
+      "letterSpacing": -0.04,
+      "emphasis": {
+        "color": "$accent"
+      }
+    },
+    "description": {
+      "opacity": 0.85
+    },
+    "shot": {
+      "device": "phone-island",
+      "frameColor": "#1D1424",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(120, 20, 60, 0.45)"
+      }
+    },
+    "shot-back": {
+      "device": "phone-island",
+      "frameColor": "#1D1424",
+      "shadow": {
+        "y": 30,
+        "blur": 80,
+        "color": "rgba(120, 20, 60, 0.4)"
+      }
+    },
+    "callout": {
+      "radius": 44,
+      "shadow": {
+        "y": 26,
+        "blur": 60,
+        "color": "rgba(120, 20, 60, 0.4)"
+      }
+    },
+    "callout-2": {
+      "radius": 44,
+      "shadow": {
+        "y": 26,
+        "blur": 60,
+        "color": "rgba(120, 20, 60, 0.4)"
+      }
+    },
+    "review": {
+      "shadow": {
+        "y": 26,
+        "blur": 60,
+        "color": "rgba(120, 20, 60, 0.4)"
+      }
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "bubble-1",
+      "shape": "circle",
+      "x": 900,
+      "y": 640,
+      "width": 300,
+      "height": 300,
+      "fill": "$accent",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "bubble-2",
+      "shape": "circle",
+      "x": 1980,
+      "y": 1580,
+      "width": 260,
+      "height": 260,
+      "fill": "#FFFFFF",
+      "style": "clay",
+      "opacity": 0.95
+    },
+    {
+      "type": "shape",
+      "id": "bubble-3",
+      "shape": "circle",
+      "x": 3100,
+      "y": 1480,
+      "width": 220,
+      "height": 220,
+      "fill": "$accent",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "chat-1",
+      "shape": "pill",
+      "x": 980,
+      "y": 1700,
+      "width": 220,
+      "height": 90,
+      "fill": "#FFFFFF",
+      "opacity": 0.35,
+      "rotation": -8
+    },
+    {
+      "type": "shape",
+      "id": "chat-2",
+      "shape": "pill",
+      "x": 3880,
+      "y": 1640,
+      "width": 260,
+      "height": 100,
+      "fill": "#FFFFFF",
+      "opacity": 0.35,
+      "rotation": 6
+    }
+  ],
+  "slides": [
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "Where plans **come alive**",
+        "description": "Your people, your projects, one app."
+      }
+    },
+    {
+      "layout": "pop-duo",
+      "defaults": {
+        "headline": "Celebrate every **win**",
+        "description": "Progress your whole crew can see."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.04,
+            "y": 0.44,
+            "w": 0.46,
+            "h": 0.16
+          }
+        },
+        "callout-2": {
+          "region": {
+            "x": 0.5,
+            "y": 0.44,
+            "w": 0.46,
+            "h": 0.16
+          }
+        }
+      }
+    },
+    {
+      "layout": "review-phone",
+      "defaults": {
+        "headline": "Talk without **switching**",
+        "description": "Chat lives next to your tasks.",
+        "reviewQuote": "My whole team lives in here now.",
+        "reviewAuthor": "Priya K."
+      }
+    },
+    {
+      "layout": "pop-out",
+      "defaults": {
+        "headline": "Plans made **together**",
+        "description": "Invite anyone, in one tap."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.535,
+            "w": 0.94,
+            "h": 0.087
+          }
+        }
+      }
+    }
+  ]
+}
