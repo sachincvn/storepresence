@@ -294,6 +294,7 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
   const design = designFor(template, slideIndex, project);
   const plan = getSlides(template, project)[slideIndex];
   const regions = project.calloutRegions?.[getSlideKey(template, project, slideIndex)] ?? {};
+  const background = resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, (c) => resolveColor(c, theme));
   const ctx: ResolveContext = {
     regions,
     color,
@@ -311,7 +312,8 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
 
   return {
     canvas: template.canvas,
-    background: resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, color),
+    background,
+    collage: background.type === "collage" ? project.screenshots : [],
     grain: template.grain,
     panorama: template.panorama.map(resolve),
     // Panorama segments belong to designs, so a slide shows its design's piece.
@@ -343,6 +345,8 @@ function resolveBackground(bg: Background, color: ColorFn): Background {
       return { ...bg, colors: bg.colors.map(color) };
     case "pattern":
       return { ...bg, color: color(bg.color), ink: color(bg.ink) };
+    case "collage":
+      return { ...bg, color: color(bg.color) };
     default:
       return { ...bg, stops: bg.stops.map((s) => ({ ...s, color: color(s.color) })) };
   }
@@ -350,6 +354,11 @@ function resolveBackground(bg: Background, color: ColorFn): Background {
 
 /** The user's generated background, built from the template's own theme colors. */
 export function backdropBackground(backdrop: NonNullable<Project["backdrop"]>, theme: ThemeTokens): Background {
+  if (backdrop.kind === "collage") {
+    // Tilt direction and tile order change with Shuffle.
+    const tilts = [-12, 10, -7, 14];
+    return { type: "collage", color: "$background", dim: 0.78, blur: 4, tilt: tilts[backdrop.seed % tilts.length], seed: backdrop.seed };
+  }
   if (backdrop.kind === "mesh") {
     // Harmonious blobs: the background mixed towards the accent, white and black.
     const bg = theme.background ?? "#FFFFFF";

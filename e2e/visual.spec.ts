@@ -7,7 +7,8 @@ import { expect, test } from "@playwright/test";
  * built-in sample screenshots, compared to stored PNGs. Catches renderer or
  * template changes that silently alter output.
  *
- * Baselines are per platform (fonts rasterize differently). After an intended
+ * Baselines are per platform (fonts rasterize differently). The per-pixel
+ * threshold is tighter than the default so subtle dark-on-dark changes count. After an intended
  * visual change, review the diff and run: npx playwright test e2e/visual.spec.ts --update-snapshots
  */
 
@@ -35,7 +36,7 @@ for (const id of templateIds) {
     }
 
     for (const [i, frame] of frames.entries()) {
-      expect(Buffer.from(frame.split(",")[1], "base64")).toMatchSnapshot(`${id}-${i + 1}.png`, { maxDiffPixelRatio: 0.002 });
+      expect(Buffer.from(frame.split(",")[1], "base64")).toMatchSnapshot(`${id}-${i + 1}.png`, { maxDiffPixelRatio: 0.002, threshold: 0.1 });
     }
   });
 }

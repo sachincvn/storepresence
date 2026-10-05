@@ -203,7 +203,7 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 ### Phase E — Signature looks (≈ 3 weeks)
 
 1. ◐ Pop-out callouts with region picker (3.1): ☑ `callout` element (card, glass, bubble; `follow` lifts it over its own spot), per-slide area picker with keyboard support and hide toggle, layouts `pop-out` and `pop-duo` (adopted in Studio Blue, Mono Minimal, Midnight, Pro Productivity); ☐ connector line from the phone.
-2. Screenshot collage backdrop and full-bleed mode (3.6).
+2. ☑ Screenshot collage backdrop and full-bleed mode (3.6): `collage` background (set-wide tilted wall, blur, dim, shuffle; Background control and Cinematic) and `full-bleed` layout ("Full screen").
 3. ◐ Intro/outro/text-only slides and slide list (3.7, 4.4): ☑ layouts `intro`, `statement`, `outro`; text-only designs no longer use a screenshot; slide toolbar (duplicate, text slide, move, delete) and per-slide screenshot picker; ☐ comparison and feature-grid slides.
 4. ◐ Brand match from app icon (4.5): ☑ palette from the icon (`src/lib/palette.ts`), Accent / Bold / Soft suggestions limited to editable colors with WCAG contrast kept (4.5:1 text, 3:1 accents), one-click apply as one undo step; ☐ saved brand kit.
 5. ◐ Undo/redo, autosave, projects (4.4): ☑ undo/redo (header + Ctrl+Z, typing merged per field), autosave to IndexedDB with restore and undoable Start over; ☐ multiple named projects.
@@ -256,4 +256,4 @@ The renderer stays pure: template + project (+ size + language) → canvas.
 
 ## 9. Recommended next step
 
-Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. The 4 new templates are in (14 total). Text slides, the slide list and brand match are in. Next: **screenshot collage backdrop and full-bleed mode** (3.6), then multi-size output (3.8).
+Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. The 4 new templates are in (14 total). Phase E is done except saved brand kits, multiple projects, comparison/feature-grid slides and the callout connector. Next: **Phase F** (select and nudge on canvas, blocks menu) or **multi-size output** (3.8) for App Store sizes.

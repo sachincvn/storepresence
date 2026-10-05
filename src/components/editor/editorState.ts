@@ -31,7 +31,7 @@ export type EditorAction =
   | { type: "image"; key: ImageSlotKey; image: Screenshot | null }
   | { type: "device"; model?: Project["deviceModel"]; color?: string | null }
   /** `kind: null` restores the template background; `shuffle` moves to the next seed. */
-  | { type: "backdrop"; kind?: "mesh" | "grid" | "dots" | null; shuffle?: boolean }
+  | { type: "backdrop"; kind?: NonNullable<Project["backdrop"]>["kind"] | null; shuffle?: boolean }
   | { type: "samplesReady"; samples: Screenshot[] }
   | { type: "addScreenshots"; screenshots: Screenshot[] }
   | { type: "removeScreenshot"; id: string }

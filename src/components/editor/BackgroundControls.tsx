@@ -9,6 +9,7 @@ const KINDS = [
   { id: "mesh", label: "Mesh" },
   { id: "grid", label: "Grid" },
   { id: "dots", label: "Dots" },
+  { id: "collage", label: "Collage" },
 ] as const;
 
 /** Template background, or a generated one from the theme colors, with Shuffle. */

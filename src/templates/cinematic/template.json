@@ -2,7 +2,7 @@
   "id": "cinematic",
   "name": "Cinematic",
   "category": "Dark",
-  "description": "Pitch black, red glow, screen-only devices and frosted pop-outs.",
+  "description": "Pitch black poster wall of your screens, red glow and frosted pop-outs.",
   "canvas": {
     "width": 1080,
     "height": 1920
@@ -18,22 +18,12 @@
     "accent"
   ],
   "background": {
-    "type": "linear",
-    "angle": 180,
-    "stops": [
-      {
-        "color": "$background",
-        "at": 0
-      },
-      {
-        "color": "$background",
-        "at": 0.55
-      },
-      {
-        "color": "$primary",
-        "at": 1
-      }
-    ]
+    "type": "collage",
+    "color": "$background",
+    "dim": 0.8,
+    "blur": 3,
+    "tilt": -12,
+    "seed": 1
   },
   "grain": 0.08,
   "overrides": {

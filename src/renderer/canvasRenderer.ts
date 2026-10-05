@@ -28,7 +28,8 @@ export function drawSlide(canvas: HTMLCanvasElement, spec: SlideSpec, images: Lo
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  drawBackground(ctx, spec.background, spec.canvas, spec.panoramaOffset, spec.setWidth);
+  const tiles = spec.collage.flatMap((s) => images.get(s.url) ?? []);
+  drawBackground(ctx, spec.background, spec.canvas, spec.panoramaOffset, spec.setWidth, tiles, scale);
 
   // Panorama back layer, shifted so this slide shows its own segment of the set.
   const panoramaBack = spec.panorama.filter((el) => el.layer !== "front");
@@ -108,7 +109,15 @@ function drawElement(ctx: CanvasRenderingContext2D, el: TemplateElement, spec: S
     ctx.restore();
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D, bg: Background, { width, height }: Canvas, offset: number, setWidth: number): void {
+function drawBackground(
+  ctx: CanvasRenderingContext2D,
+  bg: Background,
+  { width, height }: Canvas,
+  offset: number,
+  setWidth: number,
+  tiles: ImageSource[],
+  scale: number,
+): void {
   switch (bg.type) {
     case "solid":
       ctx.fillStyle = bg.color;
@@ -129,6 +138,8 @@ function drawBackground(ctx: CanvasRenderingContext2D, bg: Background, { width, 
       return drawMesh(ctx, bg.colors, bg.seed ?? 1, width, height, offset, setWidth);
     case "pattern":
       return drawPattern(ctx, bg, width, height, offset);
+    case "collage":
+      return drawCollage(ctx, bg, width, height, offset, setWidth, tiles, scale);
   }
   ctx.fillRect(0, 0, width, height);
 }
@@ -161,6 +172,72 @@ function drawMesh(ctx: CanvasRenderingContext2D, colors: string[], seed: number,
     ctx.fillStyle = gradient;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
+  ctx.restore();
+}
+
+const COLLAGE_TILE = { w: 300, h: 640, gap: 36, radius: 34 };
+
+/**
+ * A tilted wall of screenshots laid out across the whole set (so it runs on
+ * across slide edges), then covered with the background color at `dim`.
+ */
+function drawCollage(
+  ctx: CanvasRenderingContext2D,
+  bg: Extract<Background, { type: "collage" }>,
+  width: number,
+  height: number,
+  offset: number,
+  setWidth: number,
+  tiles: ImageSource[],
+  scale: number,
+): void {
+  ctx.fillStyle = bg.color;
+  ctx.fillRect(0, 0, width, height);
+  if (tiles.length > 0) {
+    const { w, h, gap, radius } = COLLAGE_TILE;
+    const angle = ((bg.tilt ?? -12) * Math.PI) / 180;
+    const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+    const cx = setWidth / 2;
+    const cy = height / 2;
+    const reach = Math.hypot(setWidth, height);
+    const cols = Math.ceil(reach / (w + gap)) + 2;
+    const rows = Math.ceil(reach / (h + gap)) + 2;
+    const seed = bg.seed ?? 1;
+
+    ctx.save();
+    ctx.translate(-offset, 0);
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.translate(-cx, -cy);
+    if (bg.blur) ctx.filter = `blur(${bg.blur * scale}px)`;
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        // Alternate columns sit half a tile lower, like a poster wall.
+        const x = cx + (c - cols / 2) * (w + gap);
+        const y = cy + (r - rows / 2) * (h + gap) + (c % 2) * ((h + gap) / 2);
+        // Skip tiles that land outside this slide once rotated.
+        const dx = x + w / 2 - cx;
+        const dy = y + h / 2 - cy;
+        const wx = cx + dx * cos - dy * sin;
+        const wy = cy + dx * sin + dy * cos;
+        if (wx < offset - h || wx > offset + width + h || wy < -h || wy > height + h) continue;
+        const img = tiles[(c * 3 + r + seed) % tiles.length];
+        const { w: iw, h: ih } = sizeOf(img);
+        if (!iw || !ih) continue;
+        const f = fitImageToSlot(iw, ih, w, h, "cover", "top");
+        ctx.save();
+        roundRectPath(ctx, x, y, w, h, radius);
+        ctx.clip();
+        ctx.drawImage(img, f.sx, f.sy, f.sw, f.sh, x + f.dx, y + f.dy, f.dw, f.dh);
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.globalAlpha = bg.dim ?? 0.75;
+  ctx.fillStyle = bg.color;
+  ctx.fillRect(0, 0, width, height);
   ctx.restore();
 }
 

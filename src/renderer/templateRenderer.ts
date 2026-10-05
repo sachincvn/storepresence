@@ -48,6 +48,7 @@ export async function renderSlide(
   const allElements = [...spec.panorama, ...spec.elements];
   const urls = [
     ...spec.screenshots.flatMap((s) => (s ? [s.url] : [])),
+    ...spec.collage.map((s) => s.url),
     ...allElements.flatMap((el) => (el.type === "image" ? [el.src] : [])),
     ...allElements.flatMap((el) => (el.type === "imageSlot" && spec.images[el.key] ? [spec.images[el.key]!.url] : [])),
   ];

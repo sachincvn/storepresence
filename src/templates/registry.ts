@@ -5,6 +5,7 @@ import { validateLayout, validateTemplate } from "./validate";
 import badgeHero from "./layouts/badge-hero.json";
 import brandHero from "./layouts/brand-hero.json";
 import duo from "./layouts/duo.json";
+import fullBleed from "./layouts/full-bleed.json";
 import intro from "./layouts/intro.json";
 import outro from "./layouts/outro.json";
 import phoneCenter from "./layouts/phone-center.json";
@@ -37,7 +38,7 @@ import sunnyPop from "./sunny-pop/template.json";
  * To add a template: create `src/templates/<id>/template.json`,
  * import it above and add it to `templateSources`. Order = gallery order.
  */
-const layoutSources: unknown[] = [phoneCenter, phoneTilt, textBottom, duo, zoom, badgeHero, proofHero, reviewPhone, statHero, brandHero, popOut, popDuo, intro, statement, outro];
+const layoutSources: unknown[] = [phoneCenter, phoneTilt, textBottom, duo, zoom, badgeHero, proofHero, reviewPhone, statHero, brandHero, popOut, popDuo, intro, statement, outro, fullBleed];
 const templateSources: unknown[] = [
   aurora,
   studioBlue,

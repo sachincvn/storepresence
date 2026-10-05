@@ -54,7 +54,12 @@ export type Background =
   /** Soft color blobs over `colors[0]`, laid out across the whole set (seeded, deterministic). */
   | { type: "mesh"; colors: Color[]; seed?: number }
   /** Solid `color` with a fine `ink` pattern, continuous across slides. */
-  | { type: "pattern"; color: Color; ink: Color; pattern: PatternKind; size?: number; opacity?: number };
+  | { type: "pattern"; color: Color; ink: Color; pattern: PatternKind; size?: number; opacity?: number }
+  /**
+   * A tilted wall of the project's own screenshots, continuous across slides,
+   * softly blurred and covered with `color` at `dim` (0–1) so text stays readable.
+   */
+  | { type: "collage"; color: Color; dim?: number; blur?: number; tilt?: number; seed?: number };
 
 /** Position and size in template canvas pixels. */
 type Box = {
@@ -371,4 +376,6 @@ export type SlideSpec = {
   screenshots: (Screenshot | null)[];
   /** User images for image slots. */
   images: Partial<Record<ImageSlotKey, Screenshot>>;
+  /** Screenshots for a collage background (empty otherwise). */
+  collage: Screenshot[];
 };

@@ -43,7 +43,7 @@ export type Project = {
   /** Overrides the device body color. */
   deviceColor?: string;
   /** Replaces template backgrounds with a generated one; `seed` changes with "Shuffle". */
-  backdrop?: { kind: "mesh" | "grid" | "dots"; seed: number };
+  backdrop?: { kind: "mesh" | "grid" | "dots" | "collage"; seed: number };
   /** User images for template image slots (app icon, logo, mascot). */
   images?: Partial<Record<ImageSlotKey, Screenshot>>;
   /** Per-slide layout picks, keyed like `slideVariables`. */

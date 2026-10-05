@@ -1,0 +1,97 @@
+{
+  "id": "full-bleed",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "variables": [
+    {
+      "key": "headline",
+      "label": "Headline",
+      "default": "Your app, beautifully presented",
+      "perSlide": true,
+      "maxLength": 48
+    },
+    {
+      "key": "description",
+      "label": "Description",
+      "default": "",
+      "perSlide": true,
+      "multiline": true,
+      "maxLength": 90
+    }
+  ],
+  "elements": [
+    {
+      "type": "screenshot",
+      "id": "shot",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "placeholderColor": "$surface",
+      "x": 0,
+      "y": 0,
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "type": "shape",
+      "id": "scrim",
+      "shape": "rect",
+      "fill": "$background",
+      "blur": 120,
+      "x": -300,
+      "y": 1080,
+      "width": 1680,
+      "height": 1200
+    },
+    {
+      "type": "shape",
+      "id": "scrim-base",
+      "shape": "rect",
+      "fill": "$background",
+      "x": 0,
+      "y": 1450,
+      "width": 1080,
+      "height": 470
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "text": "{{headline}}",
+      "font": "display",
+      "size": 104,
+      "minSize": 68,
+      "weight": 800,
+      "lineHeight": 1,
+      "letterSpacing": -0.035,
+      "align": "center",
+      "verticalAlign": "bottom",
+      "color": "$foreground",
+      "maxLines": 3,
+      "x": 80,
+      "y": 1360,
+      "width": 920,
+      "height": 300
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "text": "{{description}}",
+      "font": "sans",
+      "size": 38,
+      "minSize": 30,
+      "weight": 500,
+      "lineHeight": 1.32,
+      "align": "center",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "opacity": 0.78,
+      "maxLines": 2,
+      "x": 140,
+      "y": 1684,
+      "width": 800,
+      "height": 104
+    }
+  ]
+}

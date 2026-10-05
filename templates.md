@@ -111,6 +111,7 @@ Extra elements are drawn behind the layout unless they have `"layer": "front"`.
 | `pop-duo` | Smaller phone with two tilted pop-out cards (left and right) | headline, description | 1 |
 | `intro` | Big app icon, app name, headline, rating, award wreath | appName, headline, ratingScore, ratingLabel, laurelTitle, laurelSubtitle | 0 |
 | `statement` | Small app icon and a huge headline; the default for new text slides | appName, headline, description | 0 |
+| `full-bleed` | Screenshot fills the slide (no device), headline on a soft fade at the bottom | headline, description | 1 |
 | `outro` | Headline, app icon, app name, download button, rating | headline, appName, ctaLabel, ratingScore, ratingLabel | 0 |
 
 Element ids you can target with `overrides`: `headline`, `description`, `badge`, `shot`, `shot-back`, `laurels`, `rating`, `review`, `stat`, `callout`, `callout-2`, `app-icon`, `app-name`, `cta`.
@@ -182,7 +183,8 @@ All elements need `type`, `id`, `x`, `y`, `width`, `height`. Optional on all of 
 - `solid`, `linear` (CSS angle), `radial` (`cx`, `cy` 0–1).
 - `mesh`: `{ colors: [base, ...blobs], seed }`, soft blobs laid out across the whole set (continuous over slide edges, deterministic per seed).
 - `pattern`: `{ color, ink, pattern: "grid" | "dots" | "lines", size, opacity }`, continuous across slides.
-- Users can replace template backgrounds with a generated Mesh, Grid or Dots and press Shuffle; mesh colors are mixed from the template's own background and accent.
+- `collage`: `{ color, dim, blur, tilt, seed }`, a tilted wall of the user's own screenshots across the whole set, covered with `color` at `dim` (0–1; 0.75–0.85 keeps text readable). Used by Cinematic.
+- Users can replace template backgrounds with a generated Mesh, Grid, Dots or Collage and press Shuffle; mesh colors are mixed from the template's own background and accent.
 
 **Brand match**: users can upload their app icon and get up to three color suggestions. Suggestions only change `editableColors`; backgrounds keep 4.5:1 contrast with fixed text colors and accents 3:1 with their background. Make `foreground` editable only if every layout reads well in both light and dark text.
 

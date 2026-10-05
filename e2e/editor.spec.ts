@@ -277,3 +277,19 @@ test("brand colors come from the app icon and apply as one undo step", async ({ 
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(bold).toHaveAttribute("aria-pressed", "false");
 });
+
+test("collage background and full screen layout render and export", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  await page.getByText("Collage", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Collage" })).toBeChecked();
+  const collage = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(collage.equals(before)).toBe(false);
+  await page.getByRole("button", { name: "Shuffle" }).click();
+  const shuffled = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(shuffled.equals(collage)).toBe(false);
+
+  await page.getByText("Full screen", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Full screen" })).toBeChecked();
+  const full = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(pngSize(full)).toEqual({ width: 1080, height: 1920 });
+});

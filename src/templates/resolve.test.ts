@@ -305,6 +305,20 @@ describe("generated backdrops", () => {
       ink: "#FFFFFF",
     });
   });
+  it("collage uses every screenshot as tiles, dimmed with the background", () => {
+    const p = project({ backdrop: { kind: "collage", seed: 2 }, screenshots: [shot("a"), shot("b"), shot("c")] });
+    expect(p.screenshots).toHaveLength(3);
+    const spec = resolveSlide(resolved, p, 0);
+    expect(spec.background).toMatchObject({ type: "collage", color: "#000000", seed: 2 });
+    expect(spec.collage).toEqual(p.screenshots);
+    // Shuffle changes the tilt.
+    const tilt = (seed: number) => {
+      const bg = resolveSlide(resolved, project({ backdrop: { kind: "collage", seed } }), 0).background;
+      return bg.type === "collage" ? bg.tilt : undefined;
+    };
+    expect(tilt(1)).not.toBe(tilt(2));
+    expect(resolveSlide(resolved, project(), 0).collage).toEqual([]);
+  });
 });
 
 describe("device overrides", () => {

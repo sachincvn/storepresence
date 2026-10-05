@@ -127,6 +127,35 @@
             "pattern"
           ],
           "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "blur": {
+              "type": "number"
+            },
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "dim": {
+              "type": "number"
+            },
+            "seed": {
+              "type": "number"
+            },
+            "tilt": {
+              "type": "number"
+            },
+            "type": {
+              "const": "collage",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "color"
+          ],
+          "type": "object"
         }
       ]
     },

@@ -258,7 +258,15 @@ function checkBackground(value: unknown, where: string, add: Add, tokens: readon
     if (value.opacity !== undefined && (!isNum(value.opacity) || value.opacity < 0 || value.opacity > 1)) add(`${where}.opacity`, "must be 0–1");
     return;
   }
-  if (value.type !== "linear" && value.type !== "radial") return add(`${where}.type`, "must be solid, linear, radial, mesh or pattern");
+  if (value.type === "collage") {
+    checkColor(value.color, `${where}.color`, add, tokens);
+    if (value.dim !== undefined && (!isNum(value.dim) || value.dim < 0 || value.dim > 1)) add(`${where}.dim`, "must be 0–1");
+    if (value.blur !== undefined && (!isNum(value.blur) || value.blur < 0)) add(`${where}.blur`, "must be ≥ 0");
+    if (value.tilt !== undefined && !isNum(value.tilt)) add(`${where}.tilt`, "must be a number (degrees)");
+    if (value.seed !== undefined && !Number.isInteger(value.seed)) add(`${where}.seed`, "must be a whole number");
+    return;
+  }
+  if (value.type !== "linear" && value.type !== "radial") return add(`${where}.type`, "must be solid, linear, radial, mesh, pattern or collage");
   if (value.type === "linear" && !isNum(value.angle)) add(`${where}.angle`, "must be a number (degrees)");
   if (value.type === "radial" && (!isNum(value.cx) || !isNum(value.cy))) add(where, "radial needs cx and cy (0–1)");
   checkStops(value.stops, where, add, tokens);
