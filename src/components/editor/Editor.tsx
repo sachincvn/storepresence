@@ -212,11 +212,11 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
 
       {mode === "desktop" && (
         <div className="grid min-h-0 flex-1 grid-cols-[288px_minmax(0,1fr)_320px]">
-          <div className="overflow-y-auto border-r border-line p-5">{picker}</div>
+          <div className="relative overflow-y-auto border-r border-line p-5">{picker}</div>
           <main id="preview" tabIndex={-1} className="flex min-h-0 min-w-0 flex-col items-center gap-4 p-6 outline-none">
             {preview}
           </main>
-          <aside aria-label="Customize" className="overflow-y-auto border-l border-line bg-white/60 p-6">
+          <aside aria-label="Customize" className="relative overflow-y-auto border-l border-line bg-white/60 p-6">
             {inspector()}
           </aside>
         </div>

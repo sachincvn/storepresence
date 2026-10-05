@@ -18,6 +18,12 @@ for (const size of SIZES) {
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBe(0);
+
+    // Desktop is an app shell: only the columns scroll, never the page.
+    if (size.name === "desktop") {
+      const extra = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+      expect(extra).toBe(0);
+    }
   });
 }
 
