@@ -3,11 +3,12 @@
 import type { Dispatch, ReactNode } from "react";
 import type { ResolvedTemplate, ThemeKey } from "@/types/template";
 import { HEADLINE_FONT_KEYS, HEADLINE_FONTS } from "@/templates/headlineFonts";
-import { getSlideValues, themeFor, variablesForSlide } from "@/templates/resolve";
+import { getSlideKey, getSlideValues, slideCallouts, themeFor, variablesForSlide } from "@/templates/resolve";
 import type { EditorAction, EditorState } from "./editorState";
 import { BackgroundControls } from "./BackgroundControls";
 import { DeviceControls } from "./DeviceControls";
 import { LayoutPicker } from "./LayoutPicker";
+import { RegionPicker } from "./RegionPicker";
 
 const COLOR_LABELS: Record<ThemeKey, string> = {
   background: "Background",
@@ -47,6 +48,9 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
   const variables = variablesForSlide(template, slide, project);
   const hasDevice = template.designs.some((d) => d.elements.some((el) => el.type === "screenshot" && el.device));
   const theme = themeFor(template, project);
+  const callouts = slideCallouts(template, slide, project);
+  const regions = project.calloutRegions?.[getSlideKey(template, project, slide)] ?? {};
+  const shots = project.screenshots;
   const hasColorChanges = template.editableColors.some((key) => project.theme[key]);
   // The template's own headline font, so "Template" previews what it really uses.
   const templateFont =
@@ -72,6 +76,52 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
       {sections.includes("layout") && (
         <Section title={bare ? null : `Layout, slide ${slide + 1}`}>
           <LayoutPicker template={template} project={project} slide={slide} onPick={(layout) => dispatch({ type: "slideLayout", layout })} />
+        </Section>
+      )}
+
+      {sections.includes("layout") && callouts.length > 0 && shots.length > 0 && (
+        <Section
+          title={`Pop-out, slide ${slide + 1}`}
+          action={
+            callouts.some((el) => el.id in regions) && (
+              <button
+                type="button"
+                onClick={() => callouts.forEach((el) => dispatch({ type: "calloutRegion", id: el.id, region: undefined }))}
+                className="rounded-md text-xs font-bold text-blue hover:underline"
+              >
+                Reset
+              </button>
+            )
+          }
+        >
+          <div className="flex flex-col gap-5">
+            {callouts.map((el, i) => {
+              const name = callouts.length > 1 ? `Pop-out ${i + 1}` : "Pop-out";
+              const visible = regions[el.id] !== null;
+              const shot = shots[(slide + el.slot) % shots.length];
+              return (
+                <div key={el.id} className="flex flex-col gap-3">
+                  <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold">
+                    {`Show ${name.toLowerCase()}`}
+                    <input
+                      type="checkbox"
+                      checked={visible}
+                      onChange={(e) => dispatch({ type: "calloutRegion", id: el.id, region: e.target.checked ? undefined : null })}
+                      className="size-5 accent-blue"
+                    />
+                  </label>
+                  {visible && (
+                    <RegionPicker
+                      src={shot.url}
+                      label={`${name} area`}
+                      value={regions[el.id] ?? el.region}
+                      onChange={(region) => dispatch({ type: "calloutRegion", id: el.id, region })}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </Section>
       )}
 

@@ -1,4 +1,4 @@
-import type { ImageSlotKey, ThemeTokens } from "./template";
+import type { ImageSlotKey, NormRect, ThemeTokens } from "./template";
 
 /** Headline font picked in the editor; undefined = the template's own. */
 export type HeadlineFontId = "grotesk" | "serif" | "sans";
@@ -35,4 +35,6 @@ export type Project = {
   images?: Partial<Record<ImageSlotKey, Screenshot>>;
   /** Per-slide layout picks, keyed like `slideVariables`. */
   slideLayouts?: Record<string, string>;
+  /** Per-slide callout areas by element id, keyed like `slideVariables`. `null` hides that callout. */
+  calloutRegions?: Record<string, Record<string, NormRect | null>>;
 };

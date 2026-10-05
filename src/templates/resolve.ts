@@ -1,14 +1,18 @@
 import { mixHex } from "@/lib/color";
 import type { Project } from "@/types/project";
+import { regionCenterY } from "@/renderer/calloutRenderer";
 import { getHeadlineFont, HEADLINE_FONT_KEYS, type HeadlineFont } from "./headlineFonts";
 import type {
   Background,
+  CalloutElement,
   Color,
   ElementOverride,
   ImageSlotKey,
   Layout,
+  NormRect,
   ResolvedSlideDesign,
   ResolvedTemplate,
+  ScreenshotElement,
   Shadow,
   SlideDesign,
   SlideSpec,
@@ -90,7 +94,7 @@ function buildDesign(template: Template, design: SlideDesign, layout: Layout | u
     layout: layout?.id,
     background: design.background ?? template.background,
     elements,
-    slots: elements.reduce((n, el) => (el.type === "screenshot" ? Math.max(n, el.slot + 1) : n), 0),
+    slots: elements.reduce((n, el) => (el.type === "screenshot" || el.type === "callout" ? Math.max(n, el.slot + 1) : n), 0),
     defaults: design.defaults ?? {},
   };
 }
@@ -143,6 +147,11 @@ export function designFor(
   const index = slideIndex % template.designs.length;
   const picked = project?.slideLayouts?.[getSlideKey(template, project, slideIndex)];
   return (picked && template.alternates[index]?.[picked]) || template.designs[index];
+}
+
+/** Callout elements on a slide (respecting the user's layout pick). */
+export function slideCallouts(template: ResolvedTemplate, slideIndex: number, project?: Pick<Project, "screenshots" | "slideLayouts">) {
+  return designFor(template, slideIndex, project).elements.filter((el): el is CalloutElement => el.type === "callout");
 }
 
 /** Image slot keys used anywhere in the template, including layouts users can switch to. */
@@ -214,7 +223,9 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
   const color = (c: Color) => resolveColor(c, theme);
   const design = designFor(template, slideIndex, project);
   const shots = project.screenshots;
+  const regions = project.calloutRegions?.[getSlideKey(template, project, slideIndex)] ?? {};
   const ctx: ResolveContext = {
+    regions,
     color,
     values,
     deviceFrame: project.deviceFrame,
@@ -224,6 +235,10 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     accent: theme.accent ?? theme.foreground ?? "#000000",
   };
   const resolve = (el: TemplateElement) => resolveElement(el, ctx);
+  // Extra phones show the following screenshots, wrapping around.
+  const screenshots = Array.from({ length: design.slots }, (_, slot) => (shots.length > 0 ? shots[(slideIndex + slot) % shots.length] : null));
+  // A callout set to null is hidden on this slide.
+  const elements = design.elements.filter((el) => !(el.type === "callout" && regions[el.id] === null)).map(resolve);
 
   return {
     canvas: template.canvas,
@@ -232,13 +247,20 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     panorama: template.panorama.map(resolve),
     panoramaOffset: (slideIndex % template.designs.length) * template.canvas.width,
     setWidth: template.canvas.width * template.designs.length,
-    elements: design.elements.map(resolve),
+    elements: elements.map((el) => (el.type === "callout" && el.follow === "y" ? followSource(el, elements, screenshots, template.canvas.height) : el)),
     images: project.images ?? {},
-    // Extra phones show the following screenshots, wrapping around.
-    screenshots: Array.from({ length: design.slots }, (_, slot) =>
-      shots.length > 0 ? shots[(slideIndex + slot) % shots.length] : null,
-    ),
+    screenshots,
   };
+}
+
+/** Moves a callout so its box is centered on its area as drawn on the phone. */
+function followSource(el: CalloutElement, elements: TemplateElement[], screenshots: SlideSpec["screenshots"], canvasHeight: number): CalloutElement {
+  const shot = elements.find((e): e is ScreenshotElement => e.type === "screenshot" && e.slot === el.slot);
+  const image = screenshots[el.slot];
+  if (!shot || !image) return el;
+  const center = regionCenterY(shot, { w: image.width, h: image.height }, el.region);
+  if (center === null) return el;
+  return { ...el, y: Math.min(canvasHeight - el.height, Math.max(0, center - el.height / 2)) };
 }
 
 type ColorFn = (c: Color) => string;
@@ -286,6 +308,8 @@ function resolveShadow(shadow: Shadow | undefined, color: ColorFn): Shadow | und
 
 type ResolveContext = {
   color: ColorFn;
+  /** User callout areas for this slide, by element id. */
+  regions: Record<string, NormRect | null>;
   values: Record<string, string>;
   deviceFrame: boolean;
   deviceModel: Project["deviceModel"];
@@ -295,7 +319,7 @@ type ResolveContext = {
   accent: string;
 };
 
-function resolveElement(el: TemplateElement, { color, values, deviceFrame, deviceModel, deviceColor, headlineFont, accent }: ResolveContext): TemplateElement {
+function resolveElement(el: TemplateElement, { color, values, regions, deviceFrame, deviceModel, deviceColor, headlineFont, accent }: ResolveContext): TemplateElement {
   const fill = (text: string) => fillPlaceholders(text, values);
   switch (el.type) {
     case "text":
@@ -334,6 +358,14 @@ function resolveElement(el: TemplateElement, { color, values, deviceFrame, devic
       };
     case "image":
       return el;
+    case "callout":
+      return {
+        ...el,
+        region: regions[el.id] ?? el.region,
+        fill: el.fill && color(el.fill),
+        stroke: el.stroke && { ...el.stroke, color: color(el.stroke.color) },
+        shadow: resolveShadow(el.shadow, color),
+      };
     case "rating":
       return { ...el, score: fill(el.score), label: fill(el.label), color: color(el.color), starColor: color(el.starColor) };
     case "laurels":

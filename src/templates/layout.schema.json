@@ -18,6 +18,127 @@
         }
       ]
     },
+    "CalloutElement": {
+      "additionalProperties": false,
+      "description": "Pop-out: an area of a screenshot shown enlarged on its own panel, usually overlapping the phone. The enlarged area keeps its aspect ratio and is centered in the box; the panel hugs it.",
+      "properties": {
+        "fill": {
+          "$ref": "#/definitions/Color",
+          "description": "Panel color (card, bubble) or tint (glass). Defaults to white / translucent white."
+        },
+        "follow": {
+          "const": "y",
+          "description": "\"y\": the box moves up or down to sit over its area on the phone, so the area lifts out in place.",
+          "type": "string"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "padding": {
+          "description": "Space between the panel edge and the enlarged area. Defaults to 16; 0 shows the area alone.",
+          "type": "number"
+        },
+        "radius": {
+          "description": "Panel corner radius. Defaults to 40.",
+          "type": "number"
+        },
+        "region": {
+          "$ref": "#/definitions/NormRect",
+          "description": "Default area, in fractions of the screenshot. Users re-pick it per slide."
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "slot": {
+          "description": "Screenshot it enlarges, like `screenshot.slot`. Must match a screenshot element on the slide.",
+          "type": "number"
+        },
+        "stroke": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "width": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "color",
+            "width"
+          ],
+          "type": "object"
+        },
+        "style": {
+          "$ref": "#/definitions/CalloutStyle",
+          "description": "card = solid panel with shadow, glass = frosted panel, bubble = card with a chat tail. Defaults to card."
+        },
+        "tail": {
+          "description": "Bubble only: which side the tail is on, and where along it (0–1). Defaults to bottom, 0.25.",
+          "enum": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "type": "string"
+        },
+        "tailAt": {
+          "type": "number"
+        },
+        "type": {
+          "const": "callout",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "height",
+        "id",
+        "region",
+        "slot",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "CalloutStyle": {
+      "enum": [
+        "card",
+        "glass",
+        "bubble"
+      ],
+      "type": "string"
+    },
     "Canvas": {
       "additionalProperties": false,
       "properties": {
@@ -359,6 +480,31 @@
       "required": [
         "angle",
         "stops"
+      ],
+      "type": "object"
+    },
+    "NormRect": {
+      "additionalProperties": false,
+      "description": "Rectangle in fractions (0–1) of a source image.",
+      "properties": {
+        "h": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "w",
+        "h"
       ],
       "type": "object"
     },
@@ -811,6 +957,9 @@
         },
         {
           "$ref": "#/definitions/ImageSlotElement"
+        },
+        {
+          "$ref": "#/definitions/CalloutElement"
         }
       ]
     },

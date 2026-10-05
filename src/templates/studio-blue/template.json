@@ -107,7 +107,7 @@
       }
     },
     {
-      "layout": "text-bottom",
+      "layout": "pop-out",
       "defaults": {
         "headline": "Never miss a ==deadline==",
         "description": "Smart reminders, right on time."
@@ -125,6 +125,16 @@
             "at": 1
           }
         ]
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.622,
+            "w": 0.94,
+            "h": 0.087
+          }
+        }
       }
     }
   ],

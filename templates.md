@@ -105,8 +105,10 @@ Extra elements are drawn behind the layout unless they have `"layer": "front"`.
 | `review-phone` | Headline, tilted phone, floating review card | headline, description, reviewQuote, reviewAuthor | 1 |
 | `stat-hero` | Big number with label, headline, phone | statValue, statLabel, headline | 1 |
 | `brand-hero` | App icon (monogram fallback), app name, headline, rating, phone, optional mascot | appName, headline, ratingScore, ratingLabel | 1 |
+| `pop-out` | Headline top, phone, one area of the screen lifted out on a card over its own spot | headline, description | 1 |
+| `pop-duo` | Smaller phone with two tilted pop-out cards (left and right) | headline, description | 1 |
 
-Element ids you can target with `overrides`: `headline`, `description`, `badge`, `shot`, `shot-back`, `laurels`, `rating`, `review`, `stat`.
+Element ids you can target with `overrides`: `headline`, `description`, `badge`, `shot`, `shot-back`, `laurels`, `rating`, `review`, `stat`, `callout`, `callout-2`.
 
 **Users can switch any slide to another layout** in the editor (Layout section). The slide keeps its background, extra elements and default text; slide-level `overrides` only apply on the slide's own layout, template-level `overrides` apply everywhere. The validator checks every slide on every layout choice, so a template override that breaks on another layout is reported as `slides[2] › as review-phone › …`.
 
@@ -159,6 +161,14 @@ All elements need `type`, `id`, `x`, `y`, `width`, `height`. Optional on all of 
 - `key`: `appIcon`, `logo` or `mascot`; `fit`, `radius`, `shadow`. Empty slots draw nothing.
 - `monogram: { text, fill, color }` draws a glossy tile with the first letter when no image is uploaded (use `"{{appName}}"`).
 - The editor shows a Brand upload only for slot keys the template (or its layout choices) uses. Contained images (mascots) cast shadows from their own shape.
+
+**callout** (pop-out)
+- Enlarges an area of a screenshot on its own panel. `slot` must match a screenshot element on the slide.
+- `region: { x, y, w, h }` in fractions (0–1) of the screenshot is the default area; set it per slide in `overrides` to hit the right row of each sample. Users re-pick it per slide by dragging a box (or with arrow keys) and can hide it.
+- The area keeps its aspect ratio, fits inside the box minus `padding` (default 16) and is centered; the panel hugs it.
+- `style`: `card` (solid panel, default), `glass` (frosted blur of what is behind, best on dark or busy backgrounds) or `bubble` (card with a chat tail: `tail` side, `tailAt` 0–1).
+- `follow: "y"` moves the box up or down to sit over its area on the phone, so the area lifts out in place.
+- Also `fill`, `radius` (default 40), `shadow`, `stroke`, `rotation` (a small tilt, ±2–3°, looks best).
 
 **image**
 - `src` (a URL in `public/`, e.g. `/templates/<id>/logo.png`), `fit`, `radius`.

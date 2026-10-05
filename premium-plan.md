@@ -202,7 +202,7 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 
 ### Phase E — Signature looks (≈ 3 weeks)
 
-1. Pop-out callouts with region picker (3.1).
+1. ◐ Pop-out callouts with region picker (3.1): ☑ `callout` element (card, glass, bubble; `follow` lifts it over its own spot), per-slide area picker with keyboard support and hide toggle, layouts `pop-out` and `pop-duo` (adopted in Studio Blue, Mono Minimal, Midnight, Pro Productivity); ☐ connector line from the phone.
 2. Screenshot collage backdrop and full-bleed mode (3.6).
 3. Intro/outro/text-only slides and slide list (3.7, 4.4).
 4. Brand match from app icon (4.5).
@@ -256,4 +256,4 @@ The renderer stays pure: template + project (+ size + language) → canvas.
 
 ## 9. Recommended next step
 
-Phase D is done except the kicker label and emoji font. Next: **Phase E, item 1, pop-out callouts**, the single biggest premium signal left.
+Phase D is done except the kicker label and emoji font. Phase E: undo/redo, autosave and pop-out callouts are in. Next: **4 new templates** (Playful Learning, Cinematic, Fintech Glass, Social Pop) using pop-outs, then intro/outro slides.

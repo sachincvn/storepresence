@@ -7,6 +7,8 @@ import brandHero from "./layouts/brand-hero.json";
 import duo from "./layouts/duo.json";
 import phoneCenter from "./layouts/phone-center.json";
 import phoneTilt from "./layouts/phone-tilt.json";
+import popDuo from "./layouts/pop-duo.json";
+import popOut from "./layouts/pop-out.json";
 import proofHero from "./layouts/proof-hero.json";
 import reviewPhone from "./layouts/review-phone.json";
 import statHero from "./layouts/stat-hero.json";
@@ -28,7 +30,7 @@ import sunnyPop from "./sunny-pop/template.json";
  * To add a template: create `src/templates/<id>/template.json`,
  * import it above and add it to `templateSources`. Order = gallery order.
  */
-const layoutSources: unknown[] = [phoneCenter, phoneTilt, textBottom, duo, zoom, badgeHero, proofHero, reviewPhone, statHero, brandHero];
+const layoutSources: unknown[] = [phoneCenter, phoneTilt, textBottom, duo, zoom, badgeHero, proofHero, reviewPhone, statHero, brandHero, popOut, popDuo];
 const templateSources: unknown[] = [
   aurora,
   studioBlue,

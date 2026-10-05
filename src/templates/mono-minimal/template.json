@@ -74,7 +74,7 @@
       }
     },
     {
-      "layout": "phone-center",
+      "layout": "pop-out",
       "defaults": {
         "headline": "Never miss a ==deadline==",
         "description": "Smart reminders, right on time."
@@ -100,6 +100,20 @@
             "y": 40,
             "blur": 90,
             "color": "rgba(0, 0, 0, 0.6)"
+          }
+        },
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.622,
+            "w": 0.94,
+            "h": 0.087
+          },
+          "radius": 36,
+          "shadow": {
+            "y": 30,
+            "blur": 80,
+            "color": "rgba(0, 0, 0, 0.7)"
           }
         }
       }

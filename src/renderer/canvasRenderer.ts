@@ -1,13 +1,15 @@
 import type { Background, Canvas, ImageElement, ImageSlotElement, ScreenshotElement, SlideSpec, TemplateElement } from "@/types/template";
 import { drawBlock } from "./blockRenderer";
+import { drawCallout } from "./calloutRenderer";
 import { deviceScreen, drawDeviceBody, drawDeviceDetails, drawDeviceRim, type ScreenRect } from "./deviceRenderer";
 import { fitImageToSlot, safeFitMode } from "./imageFit";
 import { grainPattern, linearGradient, seededRandom, withAlpha } from "./paint";
 import { applyShadow, clearShadow, drawShape, roundRectPath } from "./shapeRenderer";
 import { fontString } from "./fonts";
+import { sizeOf, type ImageSource } from "./imageSource";
 import { drawText } from "./textRenderer";
 
-export type ImageSource = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
+export type { ImageSource };
 
 /** Decoded images keyed by URL. Missing entries render as placeholders. */
 export type LoadedImages = ReadonlyMap<string, ImageSource>;
@@ -89,6 +91,11 @@ function drawElement(ctx: CanvasRenderingContext2D, el: TemplateElement, spec: S
       case "imageSlot": {
         const image = spec.images[el.key];
         drawImageSlot(ctx, el, image ? images.get(image.url) : undefined, scale);
+        break;
+      }
+      case "callout": {
+        const shot = spec.screenshots[el.slot];
+        drawCallout(ctx, el, shot ? images.get(shot.url) : undefined, scale);
         break;
       }
       case "rating":
@@ -200,10 +207,6 @@ function drawPattern(ctx: CanvasRenderingContext2D, bg: Extract<Background, { ty
     ctx.stroke();
   }
   ctx.restore();
-}
-
-function sizeOf(img: ImageSource): { w: number; h: number } {
-  return img instanceof HTMLImageElement ? { w: img.naturalWidth, h: img.naturalHeight } : { w: img.width, h: img.height };
 }
 
 function drawScreenshot(ctx: CanvasRenderingContext2D, el: ScreenshotElement, img: ImageSource | undefined, scale: number): void {

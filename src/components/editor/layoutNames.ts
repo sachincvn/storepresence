@@ -10,6 +10,8 @@ const NAMES: Record<string, string> = {
   "review-phone": "Review",
   "stat-hero": "Big number",
   "brand-hero": "App intro",
+  "pop-out": "Pop-out",
+  "pop-duo": "Two pop-outs",
 };
 
 export function layoutName(id: string): string {

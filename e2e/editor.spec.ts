@@ -191,3 +191,36 @@ test("work is saved in the browser and restored after reload; start over clears 
   await expect(page.getByText("Showing 4 sample screenshots")).toBeVisible();
   await expect(page.getByLabel("Headline")).not.toHaveValue("Saved headline");
 });
+
+test("pop-out area can be re-picked from the keyboard and hidden per slide", async ({ page }) => {
+  await page.goto("/editor?template=studio-blue");
+  await page.getByRole("button", { name: "Slide 4", exact: true }).click();
+  const area = page.getByRole("group", { name: /^Pop-out area/ });
+  await expect(area).toBeVisible();
+  const before = (await exportFrom(page, /Export slide 4 as PNG/)).buffer;
+
+  const label = await area.getAttribute("aria-label");
+  await area.focus();
+  for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("Shift+ArrowDown");
+  await expect(area).not.toHaveAttribute("aria-label", label!);
+  const moved = (await exportFrom(page, /Export slide 4 as PNG/)).buffer;
+  expect(moved.equals(before)).toBe(false);
+  expect(pngSize(moved)).toEqual({ width: 1080, height: 1920 });
+
+  // Other slides keep their own (no pop-out on slide 1 of this template).
+  await page.getByRole("button", { name: "Slide 1", exact: true }).click();
+  await expect(area).toBeHidden();
+  await page.getByRole("button", { name: "Slide 4", exact: true }).click();
+  await expect(area).not.toHaveAttribute("aria-label", label!);
+
+  await page.getByRole("checkbox", { name: "Show pop-out" }).uncheck();
+  await expect(area).toBeHidden();
+  const hidden = (await exportFrom(page, /Export slide 4 as PNG/)).buffer;
+  expect(hidden.equals(moved)).toBe(false);
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(area).toBeVisible();
+  await page.getByRole("button", { name: "Reset" }).first().click();
+  await expect(area).toHaveAttribute("aria-label", label!);
+});

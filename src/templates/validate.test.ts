@@ -125,8 +125,8 @@ describe("validateTemplate", () => {
 
   it("rejects malformed elements before merging", () => {
     expect(validateTemplate(withSlide(0, { elements: [null, { id: "x" }] }), [layout])).toEqual([
-      "my-template › slides[0] › elements[0]: needs a string id and a type (text, screenshot, shape, image, rating, laurels, stat, review, imageSlot)",
-      "my-template › slides[0] › elements[1]: needs a string id and a type (text, screenshot, shape, image, rating, laurels, stat, review, imageSlot)",
+      "my-template › slides[0] › elements[0]: needs a string id and a type (text, screenshot, shape, image, rating, laurels, stat, review, imageSlot, callout)",
+      "my-template › slides[0] › elements[1]: needs a string id and a type (text, screenshot, shape, image, rating, laurels, stat, review, imageSlot, callout)",
     ]);
   });
 });

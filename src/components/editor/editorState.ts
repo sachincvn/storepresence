@@ -1,5 +1,5 @@
 import type { HeadlineFontId, Project, Screenshot } from "@/types/project";
-import type { ImageSlotKey, ThemeKey } from "@/types/template";
+import type { ImageSlotKey, NormRect, ThemeKey } from "@/types/template";
 import { getTemplate } from "@/templates/registry";
 import { designFor, getSlideCount, getSlideKey } from "@/templates/resolve";
 
@@ -21,6 +21,8 @@ export type EditorAction =
   | { type: "deviceFrame"; on: boolean }
   | { type: "headlineFont"; font: HeadlineFontId | undefined }
   | { type: "slideLayout"; layout: string }
+  /** Current slide's callout area: a rect, `null` hides the callout, `undefined` restores the template's. */
+  | { type: "calloutRegion"; id: string; region: NormRect | null | undefined }
   | { type: "image"; key: ImageSlotKey; image: Screenshot | null }
   | { type: "device"; model?: Project["deviceModel"]; color?: string | null }
   /** `kind: null` restores the template background; `shuffle` moves to the next seed. */
@@ -136,6 +138,16 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (designFor(template, state.slide).layout === action.layout) delete slideLayouts[key];
       else slideLayouts[key] = action.layout;
       return { ...state, project: { ...project, slideLayouts } };
+    }
+
+    case "calloutRegion": {
+      const template = getTemplate(project.templateId);
+      if (!template) return state;
+      const key = getSlideKey(template, project, state.slide);
+      const slide = { ...project.calloutRegions?.[key] };
+      if (action.region === undefined) delete slide[action.id];
+      else slide[action.id] = action.region;
+      return { ...state, project: { ...project, calloutRegions: { ...project.calloutRegions, [key]: slide } } };
     }
 
     case "samplesReady":

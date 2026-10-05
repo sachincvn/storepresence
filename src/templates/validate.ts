@@ -11,7 +11,7 @@ import { elementTexts, listPlaceholders, resolveTemplate } from "./resolve";
 export const MIN_SLIDES = 4;
 
 const THEME_KEYS: readonly ThemeKey[] = ["background", "foreground", "primary", "accent", "surface"];
-const ELEMENT_TYPES = ["text", "screenshot", "shape", "image", "rating", "laurels", "stat", "review", "imageSlot"] as const;
+const ELEMENT_TYPES = ["text", "screenshot", "shape", "image", "rating", "laurels", "stat", "review", "imageSlot", "callout"] as const;
 const IMAGE_SLOT_KEYS = ["appIcon", "logo", "mascot"];
 const ALIGNS = ["left", "center", "right"];
 const FONT_KEYS = ["display", "sans", "serif"];
@@ -276,6 +276,8 @@ type ElementContext = {
 function checkElements(elements: readonly unknown[], add: Add, ctx: ElementContext) {
   const ids = new Set<string>();
   const slots = new Set<number>();
+  /** Callouts by slot; each must enlarge a screenshot the slide shows. */
+  const calloutSlots: [string, number][] = [];
 
   elements.forEach((el, i) => {
     if (!isObj(el)) return add(`elements[${i}]`, "must be an object");
@@ -411,6 +413,25 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
         }
         break;
       }
+      case "callout": {
+        if (!ctx.screenshots) bad("callouts are not allowed here");
+        if (!Number.isInteger(el.slot) || (el.slot as number) < 0) bad("slot must be a whole number ≥ 0");
+        else calloutSlots.push([where, el.slot as number]);
+        const r = el.region;
+        if (!isObj(r) || ![r.x, r.y, r.w, r.h].every(isNum)) bad("region must be { x, y, w, h } in fractions of the screenshot");
+        else {
+          const [x, y, w, h] = [r.x, r.y, r.w, r.h] as number[];
+          if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > 1.0001 || y + h > 1.0001) bad("region must lie inside 0–1 with positive w and h");
+        }
+        if (el.style !== undefined && !oneOf(el.style, ["card", "glass", "bubble"])) bad("style must be card, glass or bubble");
+        if (el.fill !== undefined) checkColor(el.fill, `${where}.fill`, add, ctx.tokens);
+        for (const key of ["padding", "radius"]) if (el[key] !== undefined && (!isNum(el[key]) || (el[key] as number) < 0)) bad(`${key} must be ≥ 0`);
+        if (el.follow !== undefined && el.follow !== "y") bad('follow must be "y"');
+        if (el.tail !== undefined && !oneOf(el.tail, ["top", "bottom", "left", "right"])) bad("tail must be top, bottom, left or right");
+        if (el.tailAt !== undefined && (!isNum(el.tailAt) || el.tailAt < 0 || el.tailAt > 1)) bad("tailAt must be 0–1");
+        checkStroke(el.stroke, where, add, ctx.tokens);
+        break;
+      }
       case "image": {
         if (!isText(el.src)) bad("src is required");
         if (!oneOf(el.fit, FIT_MODES)) bad("fit must be contain or cover");
@@ -419,6 +440,10 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
       }
     }
   });
+
+  for (const [where, slot] of calloutSlots) {
+    if (!slots.has(slot)) add(where, `slot ${slot} has no screenshot on this slide to enlarge`);
+  }
 
   // Slots must be 0..n-1 so screenshots map to slides predictably.
   const sorted = [...slots].sort((a, b) => a - b);

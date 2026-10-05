@@ -81,10 +81,28 @@
       }
     },
     {
-      "layout": "phone-center",
+      "layout": "pop-duo",
       "defaults": {
         "headline": "Stay in sync with your **team**",
         "description": "Chat and share without switching apps."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.186,
+            "w": 0.74,
+            "h": 0.095
+          }
+        },
+        "callout-2": {
+          "region": {
+            "x": 0.23,
+            "y": 0.286,
+            "w": 0.74,
+            "h": 0.095
+          }
+        }
       }
     },
     {

@@ -217,7 +217,40 @@ export type ImageSlotElement = Box & {
   monogram?: { text: string; fill: Color; color: Color };
 };
 
-export type TemplateElement = TextElement | ScreenshotElement | ShapeElement | ImageElement | BlockElement | ImageSlotElement;
+/** Rectangle in fractions (0–1) of a source image. */
+export type NormRect = { x: number; y: number; w: number; h: number };
+
+export type CalloutStyle = "card" | "glass" | "bubble";
+
+/**
+ * Pop-out: an area of a screenshot shown enlarged on its own panel, usually
+ * overlapping the phone. The enlarged area keeps its aspect ratio and is
+ * centered in the box; the panel hugs it.
+ */
+export type CalloutElement = Box & {
+  type: "callout";
+  /** Screenshot it enlarges, like `screenshot.slot`. Must match a screenshot element on the slide. */
+  slot: number;
+  /** Default area, in fractions of the screenshot. Users re-pick it per slide. */
+  region: NormRect;
+  /** card = solid panel with shadow, glass = frosted panel, bubble = card with a chat tail. Defaults to card. */
+  style?: CalloutStyle;
+  /** Panel color (card, bubble) or tint (glass). Defaults to white / translucent white. */
+  fill?: Color;
+  /** Space between the panel edge and the enlarged area. Defaults to 16; 0 shows the area alone. */
+  padding?: number;
+  /** Panel corner radius. Defaults to 40. */
+  radius?: number;
+  shadow?: Shadow;
+  stroke?: { color: Color; width: number };
+  /** "y": the box moves up or down to sit over its area on the phone, so the area lifts out in place. */
+  follow?: "y";
+  /** Bubble only: which side the tail is on, and where along it (0–1). Defaults to bottom, 0.25. */
+  tail?: "top" | "bottom" | "left" | "right";
+  tailAt?: number;
+};
+
+export type TemplateElement = TextElement | ScreenshotElement | ShapeElement | ImageElement | BlockElement | ImageSlotElement | CalloutElement;
 
 export type TemplateVariable = {
   key: string;
