@@ -1,0 +1,1806 @@
+{
+  "$ref": "#/definitions/Template",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Background": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "type": {
+              "const": "solid",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "color"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "angle": {
+              "description": "CSS convention: 0 = to top, 90 = to right, 180 = to bottom.",
+              "type": "number"
+            },
+            "stops": {
+              "items": {
+                "$ref": "#/definitions/GradientStop"
+              },
+              "type": "array"
+            },
+            "type": {
+              "const": "linear",
+              "type": "string"
+            }
+          },
+          "required": [
+            "angle",
+            "stops",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "cx": {
+              "type": "number"
+            },
+            "cy": {
+              "type": "number"
+            },
+            "stops": {
+              "items": {
+                "$ref": "#/definitions/GradientStop"
+              },
+              "type": "array"
+            },
+            "type": {
+              "const": "radial",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "cx",
+            "cy",
+            "stops"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "colors": {
+              "items": {
+                "$ref": "#/definitions/Color"
+              },
+              "type": "array"
+            },
+            "seed": {
+              "type": "number"
+            },
+            "type": {
+              "const": "mesh",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "colors"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "ink": {
+              "$ref": "#/definitions/Color"
+            },
+            "opacity": {
+              "type": "number"
+            },
+            "pattern": {
+              "$ref": "#/definitions/PatternKind"
+            },
+            "size": {
+              "type": "number"
+            },
+            "type": {
+              "const": "pattern",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "color",
+            "ink",
+            "pattern"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "blur": {
+              "type": "number"
+            },
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "dim": {
+              "type": "number"
+            },
+            "seed": {
+              "type": "number"
+            },
+            "tilt": {
+              "type": "number"
+            },
+            "type": {
+              "const": "collage",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "color"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "BlockElement": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RatingElement"
+        },
+        {
+          "$ref": "#/definitions/LaurelsElement"
+        },
+        {
+          "$ref": "#/definitions/StatElement"
+        },
+        {
+          "$ref": "#/definitions/ReviewElement"
+        }
+      ]
+    },
+    "CalloutElement": {
+      "additionalProperties": false,
+      "description": "Pop-out: an area of a screenshot shown enlarged on its own panel, usually overlapping the phone. The enlarged area keeps its aspect ratio and is centered in the box; the panel hugs it.",
+      "properties": {
+        "fill": {
+          "$ref": "#/definitions/Color",
+          "description": "Panel color (card, bubble) or tint (glass). Defaults to white / translucent white."
+        },
+        "follow": {
+          "const": "y",
+          "description": "\"y\": the box moves up or down to sit over its area on the phone, so the area lifts out in place.",
+          "type": "string"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "padding": {
+          "description": "Space between the panel edge and the enlarged area. Defaults to 16; 0 shows the area alone.",
+          "type": "number"
+        },
+        "radius": {
+          "description": "Panel corner radius. Defaults to 40.",
+          "type": "number"
+        },
+        "region": {
+          "$ref": "#/definitions/NormRect",
+          "description": "Default area, in fractions of the screenshot. Users re-pick it per slide."
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "slot": {
+          "description": "Screenshot it enlarges, like `screenshot.slot`. Must match a screenshot element on the slide.",
+          "type": "number"
+        },
+        "stroke": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "width": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "color",
+            "width"
+          ],
+          "type": "object"
+        },
+        "style": {
+          "$ref": "#/definitions/CalloutStyle",
+          "description": "card = solid panel with shadow, glass = frosted panel, bubble = card with a chat tail. Defaults to card."
+        },
+        "tail": {
+          "description": "Bubble only: which side the tail is on, and where along it (0–1). Defaults to bottom, 0.25.",
+          "enum": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "type": "string"
+        },
+        "tailAt": {
+          "type": "number"
+        },
+        "type": {
+          "const": "callout",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "height",
+        "id",
+        "region",
+        "slot",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "CalloutStyle": {
+      "enum": [
+        "card",
+        "glass",
+        "bubble"
+      ],
+      "type": "string"
+    },
+    "Canvas": {
+      "additionalProperties": false,
+      "properties": {
+        "height": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "type": "object"
+    },
+    "Color": {
+      "description": "A literal CSS color (`#3D5AFE`, `rgba(...)`) or a theme token (`$primary`).",
+      "type": "string"
+    },
+    "DeviceKey": {
+      "description": "phone = punch-hole camera, phone-island = pill-shaped camera, flat = screen only.",
+      "enum": [
+        "phone",
+        "phone-island",
+        "flat"
+      ],
+      "type": "string"
+    },
+    "ElementOverride": {
+      "description": "Partial edits to a layout element, matched by id. `type` cannot change.",
+      "properties": {
+        "align": {
+          "anyOf": [
+            {
+              "const": "left",
+              "type": "string"
+            },
+            {
+              "const": "center",
+              "type": "string"
+            },
+            {
+              "const": "right",
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/FitAlign"
+            }
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "blur": {
+          "description": "Gaussian blur in px. Large values turn shapes into soft glows (mesh-gradient look).",
+          "type": "number"
+        },
+        "cardColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "device": {
+          "$ref": "#/definitions/DeviceKey",
+          "description": "Code-drawn device frame. The editor can switch it off."
+        },
+        "emphasis": {
+          "$ref": "#/definitions/TextEmphasis",
+          "description": "Style for `**word**`. Defaults to the accent color."
+        },
+        "fill": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Color"
+            },
+            {
+              "$ref": "#/definitions/Color",
+              "description": "Panel color (card, bubble) or tint (glass). Defaults to white / translucent white."
+            }
+          ]
+        },
+        "fit": {
+          "$ref": "#/definitions/FitMode"
+        },
+        "follow": {
+          "const": "y",
+          "description": "\"y\": the box moves up or down to sit over its area on the phone, so the area lifts out in place.",
+          "type": "string"
+        },
+        "font": {
+          "$ref": "#/definitions/FontKey"
+        },
+        "frameColor": {
+          "$ref": "#/definitions/Color",
+          "description": "Device body color. Defaults to near-black."
+        },
+        "gradient": {
+          "$ref": "#/definitions/LinearGradient",
+          "description": "Replaces `fill` with a gradient across the shape's box."
+        },
+        "height": {
+          "type": "number"
+        },
+        "key": {
+          "$ref": "#/definitions/ImageSlotKey"
+        },
+        "label": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "leafColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "letterSpacing": {
+          "description": "In em, like CSS (e.g. -0.03).",
+          "type": "number"
+        },
+        "lineHeight": {
+          "type": "number"
+        },
+        "marker": {
+          "$ref": "#/definitions/Color",
+          "description": "Highlighter color for `==word==`. Defaults to the accent color."
+        },
+        "maxLines": {
+          "type": "number"
+        },
+        "minSize": {
+          "description": "Auto-shrink floor when text does not fit `maxLines`. Defaults to `size`.",
+          "type": "number"
+        },
+        "monogram": {
+          "additionalProperties": false,
+          "description": "Fallback tile: first letter of `text` on `fill`.",
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "fill": {
+              "$ref": "#/definitions/Color"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text",
+            "fill",
+            "color"
+          ],
+          "type": "object"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "padding": {
+          "description": "Space between the panel edge and the enlarged area. Defaults to 16; 0 shows the area alone.",
+          "type": "number"
+        },
+        "pill": {
+          "additionalProperties": false,
+          "description": "Draws the text inside a rounded badge sized to the text.",
+          "properties": {
+            "fill": {
+              "$ref": "#/definitions/Color"
+            },
+            "paddingX": {
+              "type": "number"
+            },
+            "paddingY": {
+              "type": "number"
+            },
+            "radius": {
+              "type": "number"
+            },
+            "stroke": {
+              "additionalProperties": false,
+              "properties": {
+                "color": {
+                  "$ref": "#/definitions/Color"
+                },
+                "width": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "color",
+                "width"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "fill"
+          ],
+          "type": "object"
+        },
+        "placeholderColor": {
+          "$ref": "#/definitions/Color",
+          "description": "Shown when no screenshot is assigned."
+        },
+        "quote": {
+          "type": "string"
+        },
+        "radius": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "description": "Panel corner radius. Defaults to 40.",
+              "type": "number"
+            }
+          ]
+        },
+        "region": {
+          "$ref": "#/definitions/NormRect",
+          "description": "Default area, in fractions of the screenshot. Users re-pick it per slide."
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "score": {
+          "type": "string"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "shape": {
+          "enum": [
+            "rect",
+            "circle",
+            "pill"
+          ],
+          "type": "string"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "description": "Quote font size; shrinks to fit.",
+              "type": "number"
+            }
+          ]
+        },
+        "slot": {
+          "anyOf": [
+            {
+              "description": "0 = the slide's own screenshot, 1 = the next one, and so on.",
+              "type": "number"
+            },
+            {
+              "description": "Screenshot it enlarges, like `screenshot.slot`. Must match a screenshot element on the slide.",
+              "type": "number"
+            }
+          ],
+          "description": "0 = the slide's own screenshot, 1 = the next one, and so on."
+        },
+        "src": {
+          "description": "URL of a static asset, e.g. `/templates/<id>/logo.png` (file in `public/`).",
+          "type": "string"
+        },
+        "starColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "stars": {
+          "type": "boolean"
+        },
+        "stroke": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "color": {
+                  "$ref": "#/definitions/Color"
+                },
+                "width": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "color",
+                "width"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "color": {
+                  "$ref": "#/definitions/Color"
+                },
+                "width": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "color",
+                "width"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "style": {
+          "anyOf": [
+            {
+              "description": "flat = plain fill, clay = soft 3D shading, halftone = dot pattern.",
+              "enum": [
+                "flat",
+                "clay",
+                "halftone"
+              ],
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/CalloutStyle",
+              "description": "card = solid panel with shadow, glass = frosted panel, bubble = card with a chat tail. Defaults to card."
+            }
+          ],
+          "description": "flat = plain fill, clay = soft 3D shading, halftone = dot pattern."
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "tail": {
+          "description": "Bubble only: which side the tail is on, and where along it (0–1). Defaults to bottom, 0.25.",
+          "enum": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "type": "string"
+        },
+        "tailAt": {
+          "type": "number"
+        },
+        "text": {
+          "description": "May contain `{{variable}}` placeholders. Inline markup in the text or in user values: `**word**` = emphasis, `==word==` = highlighter mark.",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "verticalAlign": {
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ],
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "FitAlign": {
+      "description": "Where the image sits in the slot when it does not fill it exactly.",
+      "enum": [
+        "center",
+        "top"
+      ],
+      "type": "string"
+    },
+    "FitMode": {
+      "enum": [
+        "contain",
+        "cover"
+      ],
+      "type": "string"
+    },
+    "FontKey": {
+      "enum": [
+        "display",
+        "sans",
+        "serif"
+      ],
+      "type": "string"
+    },
+    "GradientStop": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        }
+      },
+      "required": [
+        "color",
+        "at"
+      ],
+      "type": "object"
+    },
+    "ImageElement": {
+      "additionalProperties": false,
+      "properties": {
+        "fit": {
+          "$ref": "#/definitions/FitMode"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "src": {
+          "description": "URL of a static asset, e.g. `/templates/<id>/logo.png` (file in `public/`).",
+          "type": "string"
+        },
+        "type": {
+          "const": "image",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "fit",
+        "height",
+        "id",
+        "src",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "ImageSlotElement": {
+      "additionalProperties": false,
+      "description": "A spot for the user's own image (app icon, logo, mascot). Empty slots draw nothing, or a monogram tile when `monogram` is set (good for app icons).",
+      "properties": {
+        "fit": {
+          "$ref": "#/definitions/FitMode"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "$ref": "#/definitions/ImageSlotKey"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "monogram": {
+          "additionalProperties": false,
+          "description": "Fallback tile: first letter of `text` on `fill`.",
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "fill": {
+              "$ref": "#/definitions/Color"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text",
+            "fill",
+            "color"
+          ],
+          "type": "object"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "type": {
+          "const": "imageSlot",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "fit",
+        "height",
+        "id",
+        "key",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "ImageSlotKey": {
+      "enum": [
+        "appIcon",
+        "logo",
+        "mascot"
+      ],
+      "type": "string"
+    },
+    "LaurelsElement": {
+      "additionalProperties": false,
+      "description": "Award wreath with a title and optional subtitle and stars. Generic, never a store-branded award.",
+      "properties": {
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "leafColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "starColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "stars": {
+          "type": "boolean"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "const": "laurels",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "color",
+        "height",
+        "id",
+        "title",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "LinearGradient": {
+      "additionalProperties": false,
+      "properties": {
+        "angle": {
+          "description": "CSS convention: 0 = to top, 90 = to right, 180 = to bottom.",
+          "type": "number"
+        },
+        "stops": {
+          "items": {
+            "$ref": "#/definitions/GradientStop"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "angle",
+        "stops"
+      ],
+      "type": "object"
+    },
+    "NormRect": {
+      "additionalProperties": false,
+      "description": "Rectangle in fractions (0–1) of a source image.",
+      "properties": {
+        "h": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "w",
+        "h"
+      ],
+      "type": "object"
+    },
+    "PatternKind": {
+      "enum": [
+        "grid",
+        "dots",
+        "lines"
+      ],
+      "type": "string"
+    },
+    "RatingElement": {
+      "additionalProperties": false,
+      "description": "Stars + score + label, e.g. ★★★★★ 4.9 · 120K ratings. Partial stars follow the score.",
+      "properties": {
+        "align": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "score": {
+          "type": "string"
+        },
+        "starColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "type": {
+          "const": "rating",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "color",
+        "height",
+        "id",
+        "label",
+        "score",
+        "starColor",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "ReviewElement": {
+      "additionalProperties": false,
+      "description": "Review card: stars, quote and author. The card hugs its content.",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "cardColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "size": {
+          "description": "Quote font size; shrinks to fit.",
+          "type": "number"
+        },
+        "starColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "type": {
+          "const": "review",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "author",
+        "cardColor",
+        "color",
+        "height",
+        "id",
+        "quote",
+        "starColor",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "ScreenshotElement": {
+      "additionalProperties": false,
+      "properties": {
+        "align": {
+          "$ref": "#/definitions/FitAlign"
+        },
+        "device": {
+          "$ref": "#/definitions/DeviceKey",
+          "description": "Code-drawn device frame. The editor can switch it off."
+        },
+        "fit": {
+          "$ref": "#/definitions/FitMode"
+        },
+        "frameColor": {
+          "$ref": "#/definitions/Color",
+          "description": "Device body color. Defaults to near-black."
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "placeholderColor": {
+          "$ref": "#/definitions/Color",
+          "description": "Shown when no screenshot is assigned."
+        },
+        "radius": {
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "slot": {
+          "description": "0 = the slide's own screenshot, 1 = the next one, and so on.",
+          "type": "number"
+        },
+        "type": {
+          "const": "screenshot",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "fit",
+        "height",
+        "id",
+        "slot",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "Shadow": {
+      "additionalProperties": false,
+      "properties": {
+        "blur": {
+          "description": "0 = hard offset shadow (neo-brutalist).",
+          "type": "number"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "blur",
+        "color"
+      ],
+      "type": "object"
+    },
+    "ShapeElement": {
+      "additionalProperties": false,
+      "properties": {
+        "blur": {
+          "description": "Gaussian blur in px. Large values turn shapes into soft glows (mesh-gradient look).",
+          "type": "number"
+        },
+        "fill": {
+          "$ref": "#/definitions/Color"
+        },
+        "gradient": {
+          "$ref": "#/definitions/LinearGradient",
+          "description": "Replaces `fill` with a gradient across the shape's box."
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "shadow": {
+          "$ref": "#/definitions/Shadow"
+        },
+        "shape": {
+          "enum": [
+            "rect",
+            "circle",
+            "pill"
+          ],
+          "type": "string"
+        },
+        "stroke": {
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/Color"
+            },
+            "width": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "color",
+            "width"
+          ],
+          "type": "object"
+        },
+        "style": {
+          "description": "flat = plain fill, clay = soft 3D shading, halftone = dot pattern.",
+          "enum": [
+            "flat",
+            "clay",
+            "halftone"
+          ],
+          "type": "string"
+        },
+        "type": {
+          "const": "shape",
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "fill",
+        "height",
+        "id",
+        "shape",
+        "type",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "SlideDesign": {
+      "additionalProperties": false,
+      "description": "One slide of the set. Slides repeat in order when there are more screenshots than designs.",
+      "properties": {
+        "background": {
+          "$ref": "#/definitions/Background",
+          "description": "Replaces the template background for this slide."
+        },
+        "defaults": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Default text for this slide, by variable key.",
+          "type": "object"
+        },
+        "elements": {
+          "description": "Extra elements on this slide only.",
+          "items": {
+            "$ref": "#/definitions/TemplateElement"
+          },
+          "type": "array"
+        },
+        "layout": {
+          "description": "Id of a shared layout.",
+          "type": "string"
+        },
+        "overrides": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ElementOverride"
+          },
+          "description": "Edits to this slide's layout elements; win over template-level overrides.",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "StatElement": {
+      "additionalProperties": false,
+      "description": "Big number with a label, e.g. \"10M+\" / \"people learning\".",
+      "properties": {
+        "align": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "font": {
+          "$ref": "#/definitions/FontKey"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "type": {
+          "const": "stat",
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "color",
+        "height",
+        "id",
+        "label",
+        "type",
+        "value",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "Template": {
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "$ref": "#/definitions/Background",
+          "description": "Default slide background."
+        },
+        "canvas": {
+          "$ref": "#/definitions/Canvas"
+        },
+        "category": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "editableColors": {
+          "description": "Theme keys the user may recolor in the editor. Must be #RRGGBB in `theme`.",
+          "items": {
+            "$ref": "#/definitions/ThemeKey"
+          },
+          "type": "array"
+        },
+        "elements": {
+          "description": "Elements repeated on every slide.",
+          "items": {
+            "$ref": "#/definitions/TemplateElement"
+          },
+          "type": "array"
+        },
+        "grain": {
+          "description": "Film grain over the background, 0–0.3.",
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layoutChoices": {
+          "description": "Layouts users may switch a slide to. Defaults to every registered layout with the same canvas size.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "overrides": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ElementOverride"
+          },
+          "description": "Edits applied to layout elements on every slide, by element id.",
+          "type": "object"
+        },
+        "panorama": {
+          "description": "Elements drawn across the whole set. x runs from 0 to `canvas.width × slides.length`; each slide shows its own segment.",
+          "items": {
+            "$ref": "#/definitions/TemplateElement"
+          },
+          "type": "array"
+        },
+        "slides": {
+          "items": {
+            "$ref": "#/definitions/SlideDesign"
+          },
+          "type": "array"
+        },
+        "theme": {
+          "$ref": "#/definitions/ThemeTokens"
+        },
+        "variables": {
+          "description": "Added to the layouts' variables; same key replaces.",
+          "items": {
+            "$ref": "#/definitions/TemplateVariable"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category",
+        "canvas",
+        "theme",
+        "background",
+        "slides"
+      ],
+      "type": "object"
+    },
+    "TemplateElement": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TextElement"
+        },
+        {
+          "$ref": "#/definitions/ScreenshotElement"
+        },
+        {
+          "$ref": "#/definitions/ShapeElement"
+        },
+        {
+          "$ref": "#/definitions/ImageElement"
+        },
+        {
+          "$ref": "#/definitions/BlockElement"
+        },
+        {
+          "$ref": "#/definitions/ImageSlotElement"
+        },
+        {
+          "$ref": "#/definitions/CalloutElement"
+        }
+      ]
+    },
+    "TemplateVariable": {
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "maxLength": {
+          "type": "number"
+        },
+        "multiline": {
+          "type": "boolean"
+        },
+        "perSlide": {
+          "description": "Each slide gets its own value (e.g. headline). Otherwise one value for the set.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "default"
+      ],
+      "type": "object"
+    },
+    "TextElement": {
+      "additionalProperties": false,
+      "properties": {
+        "align": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "emphasis": {
+          "$ref": "#/definitions/TextEmphasis",
+          "description": "Style for `**word**`. Defaults to the accent color."
+        },
+        "font": {
+          "$ref": "#/definitions/FontKey"
+        },
+        "height": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "layer": {
+          "description": "Extra elements default to \"back\" (behind layout elements).",
+          "enum": [
+            "back",
+            "front"
+          ],
+          "type": "string"
+        },
+        "letterSpacing": {
+          "description": "In em, like CSS (e.g. -0.03).",
+          "type": "number"
+        },
+        "lineHeight": {
+          "type": "number"
+        },
+        "marker": {
+          "$ref": "#/definitions/Color",
+          "description": "Highlighter color for `==word==`. Defaults to the accent color."
+        },
+        "maxLines": {
+          "type": "number"
+        },
+        "minSize": {
+          "description": "Auto-shrink floor when text does not fit `maxLines`. Defaults to `size`.",
+          "type": "number"
+        },
+        "opacity": {
+          "description": "0–1",
+          "type": "number"
+        },
+        "pill": {
+          "additionalProperties": false,
+          "description": "Draws the text inside a rounded badge sized to the text.",
+          "properties": {
+            "fill": {
+              "$ref": "#/definitions/Color"
+            },
+            "paddingX": {
+              "type": "number"
+            },
+            "paddingY": {
+              "type": "number"
+            },
+            "radius": {
+              "type": "number"
+            },
+            "stroke": {
+              "additionalProperties": false,
+              "properties": {
+                "color": {
+                  "$ref": "#/definitions/Color"
+                },
+                "width": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "color",
+                "width"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "fill"
+          ],
+          "type": "object"
+        },
+        "rotation": {
+          "description": "Degrees, clockwise, around the box center.",
+          "type": "number"
+        },
+        "size": {
+          "type": "number"
+        },
+        "text": {
+          "description": "May contain `{{variable}}` placeholders. Inline markup in the text or in user values: `**word**` = emphasis, `==word==` = highlighter mark.",
+          "type": "string"
+        },
+        "type": {
+          "const": "text",
+          "type": "string"
+        },
+        "verticalAlign": {
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ],
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "align",
+        "color",
+        "font",
+        "height",
+        "id",
+        "size",
+        "text",
+        "type",
+        "weight",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "TextEmphasis": {
+      "additionalProperties": false,
+      "description": "Look of `**emphasized**` words in text. Unset fields keep the base style.",
+      "properties": {
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "font": {
+          "$ref": "#/definitions/FontKey"
+        },
+        "weight": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "ThemeKey": {
+      "description": "Theme keys every template provides. Elements reference them as `$key`.",
+      "enum": [
+        "background",
+        "foreground",
+        "primary",
+        "accent",
+        "surface"
+      ],
+      "type": "string"
+    },
+    "ThemeTokens": {
+      "additionalProperties": false,
+      "properties": {
+        "accent": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        },
+        "foreground": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "string"
+        },
+        "surface": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

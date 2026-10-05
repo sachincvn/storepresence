@@ -1,0 +1,224 @@
+{
+  "id": "playful-learning",
+  "name": "Playful Learning",
+  "category": "Playful",
+  "description": "Grass green, sunny yellow, bouncy clay blobs and chat-bubble pop-outs.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#2BA84A",
+    "foreground": "#FFFFFF",
+    "primary": "#1C7A35",
+    "accent": "#FFC93C",
+    "surface": "#FFFFFF"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "$background",
+        "at": 0
+      },
+      {
+        "color": "$primary",
+        "at": 1
+      }
+    ]
+  },
+  "overrides": {
+    "headline": {
+      "weight": 800,
+      "letterSpacing": -0.035,
+      "emphasis": {
+        "color": "$accent"
+      },
+      "marker": "$primary"
+    },
+    "shot": {
+      "device": "phone-island",
+      "frameColor": "#15402A",
+      "shadow": {
+        "y": 26,
+        "blur": 0,
+        "color": "rgba(14, 64, 32, 0.55)"
+      }
+    },
+    "shot-back": {
+      "device": "phone-island",
+      "frameColor": "#15402A",
+      "shadow": {
+        "y": 26,
+        "blur": 0,
+        "color": "rgba(14, 64, 32, 0.55)"
+      }
+    },
+    "callout": {
+      "style": "bubble",
+      "radius": 52,
+      "padding": 18,
+      "shadow": {
+        "y": 16,
+        "blur": 0,
+        "color": "rgba(14, 64, 32, 0.5)"
+      }
+    },
+    "callout-2": {
+      "style": "bubble",
+      "radius": 52,
+      "padding": 18,
+      "shadow": {
+        "y": 16,
+        "blur": 0,
+        "color": "rgba(14, 64, 32, 0.5)"
+      }
+    },
+    "app-icon": {
+      "monogram": {
+        "text": "{{appName}}",
+        "fill": "#FFFFFF",
+        "color": "$primary"
+      },
+      "shadow": {
+        "y": 18,
+        "blur": 0,
+        "color": "rgba(14, 64, 32, 0.5)"
+      }
+    },
+    "rating": {
+      "starColor": "$accent"
+    },
+    "stat": {
+      "color": "$accent"
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "blob-1",
+      "shape": "circle",
+      "x": 880,
+      "y": 1460,
+      "width": 380,
+      "height": 380,
+      "fill": "$accent",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "blob-2",
+      "shape": "circle",
+      "x": 2010,
+      "y": 210,
+      "width": 230,
+      "height": 230,
+      "fill": "#FF8FB1",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "blob-3",
+      "shape": "circle",
+      "x": 3080,
+      "y": 1560,
+      "width": 330,
+      "height": 330,
+      "fill": "#FFFFFF",
+      "style": "clay",
+      "opacity": 0.95
+    },
+    {
+      "type": "shape",
+      "id": "blob-4",
+      "shape": "circle",
+      "x": 4130,
+      "y": 1640,
+      "width": 240,
+      "height": 240,
+      "fill": "$accent",
+      "style": "clay"
+    },
+    {
+      "type": "shape",
+      "id": "dots",
+      "shape": "circle",
+      "x": 1700,
+      "y": 1250,
+      "width": 620,
+      "height": 620,
+      "fill": "#FFFFFF",
+      "style": "halftone",
+      "opacity": 0.18
+    }
+  ],
+  "slides": [
+    {
+      "layout": "brand-hero",
+      "defaults": {
+        "headline": "Plan your day in **5 minutes**"
+      }
+    },
+    {
+      "layout": "pop-out",
+      "defaults": {
+        "headline": "Build streaks that **stick**",
+        "description": "Tiny daily wins add up fast."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.035,
+            "y": 0.44,
+            "w": 0.93,
+            "h": 0.16
+          },
+          "tail": "bottom",
+          "tailAt": 0.7
+        }
+      }
+    },
+    {
+      "layout": "pop-duo",
+      "defaults": {
+        "headline": "Cheer each other **on**",
+        "description": "Your crew, right inside the app."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.186,
+            "w": 0.74,
+            "h": 0.095
+          },
+          "tail": "bottom",
+          "tailAt": 0.18
+        },
+        "callout-2": {
+          "region": {
+            "x": 0.23,
+            "y": 0.286,
+            "w": 0.74,
+            "h": 0.095
+          },
+          "tail": "bottom",
+          "tailAt": 0.82
+        }
+      }
+    },
+    {
+      "layout": "stat-hero",
+      "defaults": {
+        "statValue": "9 days",
+        "statLabel": "average streak",
+        "headline": "Small steps, **big** wins"
+      }
+    }
+  ]
+}

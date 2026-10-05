@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState, type DragEvent } from "react";
 import { Logo } from "@/components/landing/Logo";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { Button } from "@/components/ui/Button";
@@ -12,42 +12,91 @@ import { createSampleScreenshots } from "@/lib/sampleShots";
 import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
-import { getSlideCount } from "@/templates/resolve";
-import { editorReducer, initialEditorState } from "./editorState";
+import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
+import type { Screenshot } from "@/types/project";
+import { BrandImages } from "@/components/upload/BrandImages";
+import { BrandColors } from "./BrandColors";
+import { ExportDialog } from "@/components/export/ExportDialog";
+import { chosenSizes, getSize, type SizeId } from "@/templates/sizes";
+import { canAddTextSlide, type EditorAction } from "./editorState";
+import { canRedo, canUndo, historyReducer, initialHistory, referencedImages } from "./history";
+import { useAutosave } from "./useAutosave";
 import { Inspector, type InspectorSection } from "./Inspector";
 import { PreviewArea, type View } from "./PreviewArea";
 import { useLayoutMode } from "./useLayoutMode";
 
 const SHEET_TITLES: Record<InspectorSection, string> = {
   screenshots: "Screenshots",
+  layout: "Layout",
   text: "Text",
   style: "Style",
 };
 
-export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
-  const [state, dispatch] = useReducer(editorReducer, initialTemplateId, initialEditorState);
+/** New slides need ids; made outside the reducer so it stays pure. */
+function newSlideKey(): string {
+  return `slide-${typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now().toString(36)}`;
+}
+
+type EditorProps = {
+  initialTemplateId: string;
+  /** True when the URL picked the template; it then wins over the autosaved one. */
+  templateFromUrl?: boolean;
+};
+
+export function Editor({ initialTemplateId, templateFromUrl = false }: EditorProps) {
+  const [history, dispatchHistory] = useReducer(historyReducer, initialTemplateId, initialHistory);
+  const state = history.present;
+  // Edits carry a timestamp so a burst of typing becomes one undo step.
+  const dispatch = useCallback((action: EditorAction) => dispatchHistory({ ...action, at: Date.now() }), []);
+  const undo = useCallback(() => dispatchHistory({ type: "undo" }), []);
+  const redo = useCallback(() => dispatchHistory({ type: "redo" }), []);
+  const saveStatus = useAutosave(state, dispatchHistory, templateFromUrl ? initialTemplateId : undefined);
   const mode = useLayoutMode();
   const [view, setView] = useState<View>("slide");
   const [sheet, setSheet] = useState<InspectorSection | null>(null);
   /** Button that opened the sheet; focus returns to it on close (mobile taps don't always focus). */
   const sheetTrigger = useRef<HTMLButtonElement | null>(null);
-  const [appName, setAppName] = useState("Taskly");
   /** null = idle; otherwise a short status for the export buttons. */
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  /** Store size shown in the preview (and used by "Export slide"). */
+  const [previewSize, setPreviewSize] = useState<SizeId>("play-phone");
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { project, slide } = state;
   const template = getTemplate(project.templateId) ?? templates[0];
   const slideCount = getSlideCount(template, project);
   const upload = useScreenshotUpload({ dispatch, uploadedCount: state.usingSamples ? 0 : project.screenshots.length });
+  // One app name for templates, the store preview and the ZIP file name.
+  const appName = project.variables.appName ?? "Taskly";
+  const setAppName = (value: string) => dispatch({ type: "variable", key: "appName", value, perSlide: false });
+  const imageSlots = usedImageSlots(template);
 
-  // Free every uploaded image when the editor closes.
-  const screenshotsRef = useRef(project.screenshots);
+  // Uploaded images stay in memory while any undo step can show them, and are freed after.
+  const liveImages = useRef(new Map<string, Screenshot>());
   useEffect(() => {
-    screenshotsRef.current = project.screenshots;
-  }, [project.screenshots]);
-  useEffect(() => () => screenshotsRef.current.forEach(releaseScreenshot), []);
+    const referenced = referencedImages(history);
+    liveImages.current.forEach((image, url) => referenced.has(url) || releaseScreenshot(image));
+    liveImages.current = referenced;
+  }, [history]);
+  useEffect(() => () => liveImages.current.forEach(releaseScreenshot), []);
+
+  // Undo/redo shortcuts. Text fields keep their own undo for typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const target = e.target as HTMLElement;
+      if (target.isContentEditable || target.matches("textarea, input:not([type=checkbox], [type=radio], [type=color], [type=file], [type=button])")) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) undo();
+      else if ((key === "z" && e.shiftKey) || key === "y") redo();
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
 
   // Sample screenshots need canvas, so they are created after mount.
   useEffect(() => {
@@ -58,7 +107,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [dispatch]);
 
   // Keep the URL shareable as the template changes.
   useEffect(() => {
@@ -80,16 +129,17 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
   const exportCurrent = () =>
     runExport(async () => {
       setExportStatus("Exporting…");
-      const file = await exportSlide(template, project, slide);
+      const file = await exportSlide(template, project, slide, getSize(previewSize));
       downloadBlob(file.blob, file.name);
     });
 
   const exportZip = () =>
     runExport(async () => {
       setExportStatus(`Rendering 0 of ${slideCount}…`);
-      const files = await exportSet(template, project, (done, total) => setExportStatus(`Rendering ${done} of ${total}…`));
+      const files = await exportSet(template, project, chosenSizes(project.exportSizes), (done, total) => setExportStatus(`Rendering ${done} of ${total}…`));
       setExportStatus("Zipping…");
       downloadBlob(await buildZip(files), zipName(appName));
+      setExportOpen(false);
     });
 
   // Page-wide drop target: files can land anywhere in the editor.
@@ -111,6 +161,14 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
     },
   };
 
+  const slideActions = {
+    canAddText: canAddTextSlide(template, project, slide),
+    onDuplicate: () => dispatch({ type: "duplicateSlide", key: newSlideKey() }),
+    onAddText: () => dispatch({ type: "addTextSlide", key: newSlideKey() }),
+    onMove: (offset: -1 | 1) => dispatch({ type: "moveSlide", offset }),
+    onRemove: () => dispatch({ type: "removeSlide" }),
+  };
+
   const selectTemplate = (id: string) => dispatch({ type: "template", id });
   const selectSlide = (index: number) => dispatch({ type: "slide", index });
 
@@ -121,21 +179,48 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
       dispatch={dispatch}
       sections={sections}
       bare={bare}
+      brandColors={
+        <BrandColors
+          template={template}
+          theme={project.theme}
+          icon={project.images?.appIcon}
+          onUpload={(file) => upload.setImage("appIcon", file)}
+          onApply={(theme) => dispatch({ type: "theme", theme })}
+        />
+      }
+      brandPanel={imageSlots.length > 0 ? <BrandImages keys={imageSlots} images={project.images ?? {}} onChange={upload.setImage} /> : undefined}
       screenshotPanel={
         <ScreenshotPanel
           screenshots={project.screenshots}
           usingSamples={state.usingSamples}
-          selected={slide}
+          // Screenshots and slides are separate lists; highlight the screenshot this slide shows.
+          selected={project.screenshots.findIndex((s) => s.id === getSlides(template, project)[slide]?.shot?.id)}
           pending={upload.pending}
           errors={upload.errors}
           notice={upload.notice}
-          onSelect={selectSlide}
+          onSelect={(i) => {
+            const index = slideIndexForShot(template, project, project.screenshots[i]?.id ?? "");
+            if (index >= 0) selectSlide(index);
+          }}
           onAdd={upload.addFiles}
           onReplace={upload.replaceFile}
           onRemove={upload.remove}
           onMove={(s, offset) => dispatch({ type: "moveScreenshot", id: s.id, offset })}
           onDismissErrors={upload.dismissErrors}
         />
+      }
+      projectFooter={
+        <div className="flex items-center justify-between gap-3 border-t border-line pt-3 text-xs">
+          <p className={saveStatus === "error" ? "font-semibold text-[#9E1846]" : "text-muted"}>{SAVE_LABELS[saveStatus]}</p>
+          <button
+            type="button"
+            onClick={() => dispatchHistory({ type: "reset", at: Date.now() })}
+            disabled={state.usingSamples && !canUndo(history) && Object.keys(project.variables).length === 0}
+            className="shrink-0 rounded-md font-bold text-blue hover:underline disabled:pointer-events-none disabled:opacity-40"
+          >
+            Start over
+          </button>
+        </div>
       }
     />
   );
@@ -153,6 +238,9 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
       onViewChange={setView}
       onSlideChange={selectSlide}
       onAppNameChange={setAppName}
+      slideActions={slideActions}
+      size={getSize(previewSize)}
+      onSizeChange={setPreviewSize}
       />
     </>
   );
@@ -172,18 +260,27 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
       )}
 
       <header className="flex items-center justify-between gap-3 border-b border-line bg-white/80 px-4 py-3 backdrop-blur sm:px-6">
-        <Logo />
+        <Logo compact />
         <div className="flex items-center gap-2 sm:gap-3">
+          <div role="group" aria-label="History" className="flex items-center gap-1">
+            <HistoryButton label="Undo" shortcut="Ctrl+Z" onClick={undo} disabled={!canUndo(history)} path="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+            <HistoryButton label="Redo" shortcut="Ctrl+Shift+Z" onClick={redo} disabled={!canRedo(history)} path="m15 14 5-5-5-5m5 5H9.5a5.5 5.5 0 0 0 0 11H13" />
+          </div>
           <p role="status" className="sr-only text-sm font-semibold text-muted tabular-nums md:not-sr-only">
             {exportStatus ?? ""}
           </p>
-          <Button variant="secondary" onClick={exportCurrent} disabled={exportStatus !== null} aria-label={`Export slide ${slide + 1} as PNG`}>
+          <Button
+            variant="secondary"
+            onClick={exportCurrent}
+            disabled={exportStatus !== null}
+            aria-label={getSize(previewSize).kind === "feature" ? "Export feature graphic as PNG" : `Export slide ${slide + 1} as PNG`}
+          >
             <span aria-hidden="true">
-              <span className="hidden sm:inline">Export slide {slide + 1}</span>
+              <span className="hidden sm:inline">{getSize(previewSize).kind === "feature" ? "Export banner" : `Export slide ${slide + 1}`}</span>
               <span className="sm:hidden">PNG</span>
             </span>
           </Button>
-          <Button onClick={exportZip} disabled={exportStatus !== null} aria-label={`Download all ${slideCount} slides as ZIP`}>
+          <Button onClick={() => setExportOpen(true)} disabled={exportStatus !== null} aria-haspopup="dialog" aria-label={`Download all ${slideCount} slides as ZIP`}>
             <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
               <path d="M8 2v8m0 0-3-3m3 3 3-3M3 13h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -194,6 +291,17 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
           </Button>
         </div>
       </header>
+
+      <ExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        slideCount={slideCount}
+        sizes={chosenSizes(project.exportSizes)}
+        onSizesChange={(sizes) => dispatch({ type: "exportSizes", sizes })}
+        onDownload={exportZip}
+        status={exportStatus}
+        error={exportError}
+      />
 
       {exportError && (
         <div role="alert" className="flex items-center justify-between gap-3 border-b border-[#F3B5CC] bg-[#FFF0F5] px-4 py-2.5 text-sm font-semibold text-[#9E1846] sm:px-6">
@@ -206,11 +314,11 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
 
       {mode === "desktop" && (
         <div className="grid min-h-0 flex-1 grid-cols-[288px_minmax(0,1fr)_320px]">
-          <div className="overflow-y-auto border-r border-line p-5">{picker}</div>
+          <div className="relative overflow-y-auto border-r border-line p-5">{picker}</div>
           <main id="preview" tabIndex={-1} className="flex min-h-0 min-w-0 flex-col items-center gap-4 p-6 outline-none">
             {preview}
           </main>
-          <aside aria-label="Customize" className="overflow-y-auto border-l border-line bg-white/60 p-6">
+          <aside aria-label="Customize" className="relative overflow-y-auto border-l border-line bg-white/60 p-6">
             {inspector()}
           </aside>
         </div>
@@ -223,7 +331,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
             {preview}
           </main>
           <section aria-label="Customize" className="grid grid-cols-2 gap-8 border-t border-line bg-white/60 p-6">
-            {inspector(["screenshots"])}
+            {inspector(["screenshots", "layout"])}
             {inspector(["text", "style"])}
           </section>
         </>
@@ -237,7 +345,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
           <div className="border-t border-line px-4 pt-4">{picker}</div>
 
           <nav aria-label="Edit" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="grid grid-cols-4 gap-1">
               {(Object.keys(SHEET_TITLES) as InspectorSection[]).map((key) => (
                 <li key={key}>
                   <button
@@ -259,7 +367,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
 
           <Sheet
             open={sheet !== null}
-            title={sheet === "text" ? `Text, slide ${slide + 1}` : sheet ? SHEET_TITLES[sheet] : ""}
+            title={sheet === "text" || sheet === "layout" ? `${SHEET_TITLES[sheet]}, slide ${slide + 1}` : sheet ? SHEET_TITLES[sheet] : ""}
             onClose={() => {
               setSheet(null);
               sheetTrigger.current?.focus();
@@ -273,9 +381,34 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
   );
 }
 
+const SAVE_LABELS = {
+  idle: "Saved in this browser only",
+  saving: "Saving…",
+  saved: "Saved in this browser only",
+  error: "Not saved: browser storage is full or blocked",
+} as const;
+
+function HistoryButton({ label, shortcut, path, ...props }: { label: string; shortcut: string; path: string; onClick: () => void; disabled: boolean }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-keyshortcuts={shortcut.replace("Ctrl", "Control")}
+      title={`${label} (${shortcut})`}
+      className="grid size-9 place-items-center rounded-xl text-ink hover:bg-canvas disabled:pointer-events-none disabled:opacity-35"
+      {...props}
+    >
+      <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d={path} />
+      </svg>
+    </button>
+  );
+}
+
 function SheetIcon({ section }: { section: InspectorSection }) {
   const paths: Record<InspectorSection, string> = {
     screenshots: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 15h4",
+    layout: "M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z",
     text: "M5 6V4h14v2M12 4v16m-3 0h6",
     style: "M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15.5 15H18a3 3 0 0 0 3-3 9 9 0 0 0-9-9zM7.5 11.5h.01M10 7.5h.01M15 7.5h.01",
   };

@@ -1,0 +1,118 @@
+{
+  "id": "pro-productivity",
+  "name": "Pro Productivity",
+  "category": "Product",
+  "description": "Off-white grid paper, editorial serif and crisp blue accents.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#FAFAF7",
+    "foreground": "#16131F",
+    "primary": "#2F5BFF",
+    "accent": "#2F5BFF",
+    "surface": "#FFFFFF"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "pattern",
+    "color": "$background",
+    "ink": "$foreground",
+    "pattern": "grid",
+    "size": 72,
+    "opacity": 0.06
+  },
+  "overrides": {
+    "headline": {
+      "font": "serif",
+      "weight": 500,
+      "letterSpacing": -0.02,
+      "lineHeight": 1.04,
+      "emphasis": {
+        "color": "$accent",
+        "font": "serif",
+        "weight": 600
+      },
+      "marker": "#DCE5FF"
+    },
+    "badge": {
+      "color": "$accent",
+      "pill": {
+        "fill": "#E8EEFF",
+        "paddingX": 36,
+        "paddingY": 20
+      }
+    },
+    "shot": {
+      "device": "phone-island",
+      "shadow": {
+        "y": 36,
+        "blur": 80,
+        "color": "rgba(22, 19, 31, 0.18)"
+      }
+    },
+    "shot-back": {
+      "device": "phone-island",
+      "shadow": {
+        "y": 28,
+        "blur": 64,
+        "color": "rgba(22, 19, 31, 0.16)"
+      }
+    }
+  },
+  "slides": [
+    {
+      "layout": "badge-hero",
+      "defaults": {
+        "badge": "New: Smart lists",
+        "headline": "Plan your day in **seconds**",
+        "description": "Every task sorted by what matters most."
+      }
+    },
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "See your progress ==grow==",
+        "description": "Clear stats that keep you going."
+      }
+    },
+    {
+      "layout": "pop-duo",
+      "defaults": {
+        "headline": "Stay in sync with your **team**",
+        "description": "Chat and share without switching apps."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.03,
+            "y": 0.186,
+            "w": 0.74,
+            "h": 0.095
+          }
+        },
+        "callout-2": {
+          "region": {
+            "x": 0.23,
+            "y": 0.286,
+            "w": 0.74,
+            "h": 0.095
+          }
+        }
+      }
+    },
+    {
+      "layout": "review-phone",
+      "defaults": {
+        "headline": "Never miss a ==deadline==",
+        "description": "Smart reminders, right on time.",
+        "reviewQuote": "The reminders are so well timed. I haven't missed a bill since.",
+        "reviewAuthor": "Priya R."
+      }
+    }
+  ]
+}

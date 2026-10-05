@@ -1,11 +1,15 @@
-import type { Background, Canvas, ImageElement, ScreenshotElement, SlideSpec, TemplateElement } from "@/types/template";
-import { drawPhoneBody, drawPhoneDetails, drawPhoneRim, phoneScreen, type ScreenRect } from "./deviceRenderer";
+import type { Background, Canvas, ImageElement, ImageSlotElement, ScreenshotElement, SlideSpec, TemplateElement } from "@/types/template";
+import { drawBlock } from "./blockRenderer";
+import { drawCallout } from "./calloutRenderer";
+import { deviceScreen, drawDeviceBody, drawDeviceDetails, drawDeviceRim, type ScreenRect } from "./deviceRenderer";
 import { fitImageToSlot, safeFitMode } from "./imageFit";
-import { grainPattern, linearGradient } from "./paint";
+import { grainPattern, linearGradient, seededRandom, withAlpha } from "./paint";
 import { applyShadow, clearShadow, drawShape, roundRectPath } from "./shapeRenderer";
+import { fontString } from "./fonts";
+import { sizeOf, type ImageSource } from "./imageSource";
 import { drawText } from "./textRenderer";
 
-export type ImageSource = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
+export type { ImageSource };
 
 /** Decoded images keyed by URL. Missing entries render as placeholders. */
 export type LoadedImages = ReadonlyMap<string, ImageSource>;
@@ -24,7 +28,8 @@ export function drawSlide(canvas: HTMLCanvasElement, spec: SlideSpec, images: Lo
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  drawBackground(ctx, spec.background, spec.canvas);
+  const tiles = spec.collage.flatMap((s) => images.get(s.url) ?? []);
+  drawBackground(ctx, spec.background, spec.canvas, spec.panoramaOffset, spec.setWidth, tiles, scale);
 
   // Panorama back layer, shifted so this slide shows its own segment of the set.
   const panoramaBack = spec.panorama.filter((el) => el.layer !== "front");
@@ -84,39 +89,213 @@ function drawElement(ctx: CanvasRenderingContext2D, el: TemplateElement, spec: S
       case "image":
         drawImageElement(ctx, el, images.get(el.src));
         break;
+      case "imageSlot": {
+        const image = spec.images[el.key];
+        drawImageSlot(ctx, el, image ? images.get(image.url) : undefined, scale);
+        break;
+      }
+      case "callout": {
+        const shot = spec.screenshots[el.slot];
+        drawCallout(ctx, el, shot ? images.get(shot.url) : undefined, scale);
+        break;
+      }
+      case "rating":
+      case "laurels":
+      case "stat":
+      case "review":
+        drawBlock(ctx, el, scale);
+        break;
     }
     ctx.restore();
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D, bg: Background, { width, height }: Canvas): void {
-  if (bg.type === "solid") {
-    ctx.fillStyle = bg.color;
-  } else if (bg.type === "linear") {
-    ctx.fillStyle = linearGradient(ctx, bg, 0, 0, width, height);
-  } else {
-    const cx = bg.cx * width;
-    const cy = bg.cy * height;
-    const radius = Math.max(Math.hypot(cx, cy), Math.hypot(width - cx, cy), Math.hypot(cx, height - cy), Math.hypot(width - cx, height - cy));
-    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    for (const s of bg.stops) gradient.addColorStop(s.at, s.color);
-    ctx.fillStyle = gradient;
+function drawBackground(
+  ctx: CanvasRenderingContext2D,
+  bg: Background,
+  { width, height }: Canvas,
+  offset: number,
+  setWidth: number,
+  tiles: ImageSource[],
+  scale: number,
+): void {
+  switch (bg.type) {
+    case "solid":
+      ctx.fillStyle = bg.color;
+      break;
+    case "linear":
+      ctx.fillStyle = linearGradient(ctx, bg, 0, 0, width, height);
+      break;
+    case "radial": {
+      const cx = bg.cx * width;
+      const cy = bg.cy * height;
+      const radius = Math.max(Math.hypot(cx, cy), Math.hypot(width - cx, cy), Math.hypot(cx, height - cy), Math.hypot(width - cx, height - cy));
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      for (const s of bg.stops) gradient.addColorStop(s.at, s.color);
+      ctx.fillStyle = gradient;
+      break;
+    }
+    case "mesh":
+      return drawMesh(ctx, bg.colors, bg.seed ?? 1, width, height, offset, setWidth);
+    case "pattern":
+      return drawPattern(ctx, bg, width, height, offset);
+    case "collage":
+      return drawCollage(ctx, bg, width, height, offset, setWidth, tiles, scale);
   }
   ctx.fillRect(0, 0, width, height);
 }
 
-function sizeOf(img: ImageSource): { w: number; h: number } {
-  return img instanceof HTMLImageElement ? { w: img.naturalWidth, h: img.naturalHeight } : { w: img.width, h: img.height };
+/**
+ * Soft blobs laid out across the whole set, so neighbouring slides share
+ * color fields. Radial gradients fade to the blob's own color at alpha 0
+ * (fading to "transparent" would leave grey halos).
+ */
+function drawMesh(ctx: CanvasRenderingContext2D, colors: string[], seed: number, width: number, height: number, offset: number, setWidth: number): void {
+  const [base, ...blobs] = colors;
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, width, height);
+  if (blobs.length === 0) return;
+
+  const random = seededRandom(seed);
+  const count = Math.max(5, Math.ceil(setWidth / 480));
+  ctx.save();
+  ctx.translate(-offset, 0);
+  for (let i = 0; i < count; i++) {
+    const color = blobs[i % blobs.length];
+    const x = ((i + 0.15 + random() * 0.7) / count) * setWidth;
+    const y = (0.08 + random() * 0.84) * height;
+    const r = (0.6 + random() * 0.5) * width;
+    if (x + r < offset || x - r > offset + width) continue;
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
+    gradient.addColorStop(0, withAlpha(color, 0.95));
+    gradient.addColorStop(0.5, withAlpha(color, 0.5));
+    gradient.addColorStop(1, withAlpha(color, 0));
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.restore();
+}
+
+const COLLAGE_TILE = { w: 300, h: 640, gap: 36, radius: 34 };
+
+/**
+ * A tilted wall of screenshots laid out across the whole set (so it runs on
+ * across slide edges), then covered with the background color at `dim`.
+ */
+function drawCollage(
+  ctx: CanvasRenderingContext2D,
+  bg: Extract<Background, { type: "collage" }>,
+  width: number,
+  height: number,
+  offset: number,
+  setWidth: number,
+  tiles: ImageSource[],
+  scale: number,
+): void {
+  ctx.fillStyle = bg.color;
+  ctx.fillRect(0, 0, width, height);
+  if (tiles.length > 0) {
+    const { w, h, gap, radius } = COLLAGE_TILE;
+    const angle = ((bg.tilt ?? -12) * Math.PI) / 180;
+    const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+    const cx = setWidth / 2;
+    const cy = height / 2;
+    const reach = Math.hypot(setWidth, height);
+    const cols = Math.ceil(reach / (w + gap)) + 2;
+    const rows = Math.ceil(reach / (h + gap)) + 2;
+    const seed = bg.seed ?? 1;
+
+    ctx.save();
+    ctx.translate(-offset, 0);
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.translate(-cx, -cy);
+    if (bg.blur) ctx.filter = `blur(${bg.blur * scale}px)`;
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        // Alternate columns sit half a tile lower, like a poster wall.
+        const x = cx + (c - cols / 2) * (w + gap);
+        const y = cy + (r - rows / 2) * (h + gap) + (c % 2) * ((h + gap) / 2);
+        // Skip tiles that land outside this slide once rotated.
+        const dx = x + w / 2 - cx;
+        const dy = y + h / 2 - cy;
+        const wx = cx + dx * cos - dy * sin;
+        const wy = cy + dx * sin + dy * cos;
+        if (wx < offset - h || wx > offset + width + h || wy < -h || wy > height + h) continue;
+        const img = tiles[(c * 3 + r + seed) % tiles.length];
+        const { w: iw, h: ih } = sizeOf(img);
+        if (!iw || !ih) continue;
+        const f = fitImageToSlot(iw, ih, w, h, "cover", "top");
+        ctx.save();
+        roundRectPath(ctx, x, y, w, h, radius);
+        ctx.clip();
+        ctx.drawImage(img, f.sx, f.sy, f.sw, f.sh, x + f.dx, y + f.dy, f.dw, f.dh);
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.globalAlpha = bg.dim ?? 0.75;
+  ctx.fillStyle = bg.color;
+  ctx.fillRect(0, 0, width, height);
+  ctx.restore();
+}
+
+function drawPattern(ctx: CanvasRenderingContext2D, bg: Extract<Background, { type: "pattern" }>, width: number, height: number, offset: number): void {
+  ctx.fillStyle = bg.color;
+  ctx.fillRect(0, 0, width, height);
+
+  const size = bg.size ?? 64;
+  // Start on the set-wide grid so the pattern continues across slide edges.
+  const startX = -(offset % size);
+  ctx.save();
+  ctx.globalAlpha = bg.opacity ?? 0.1;
+  ctx.fillStyle = bg.ink;
+  ctx.strokeStyle = bg.ink;
+  ctx.lineWidth = Math.max(1.5, size * 0.03);
+
+  if (bg.pattern === "dots") {
+    const r = Math.max(2, size * 0.07);
+    for (let x = startX; x <= width + size; x += size) {
+      for (let y = size / 2; y <= height + size; y += size) {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  } else if (bg.pattern === "grid") {
+    ctx.beginPath();
+    for (let x = startX; x <= width; x += size) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+    }
+    for (let y = 0; y <= height; y += size) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+    }
+    ctx.stroke();
+  } else {
+    // Diagonal lines, continuous across slides.
+    ctx.beginPath();
+    for (let x = startX - height; x <= width; x += size) {
+      ctx.moveTo(x, height);
+      ctx.lineTo(x + height, 0);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawScreenshot(ctx: CanvasRenderingContext2D, el: ScreenshotElement, img: ImageSource | undefined, scale: number): void {
   const { x, y, width: w, height: h } = el;
 
-  if (el.device === "phone") {
-    const screen = phoneScreen(x, y, w, h, el.radius);
+  if (el.device) {
+    const model = el.device;
+    const screen = deviceScreen(model, x, y, w, h, el.radius);
     applyShadow(ctx, el.shadow, scale);
-    drawPhoneBody(ctx, x, y, w, h, el.radius, el.frameColor);
+    drawDeviceBody(ctx, model, x, y, w, h, el.radius, el.frameColor);
     clearShadow(ctx);
-    drawPhoneRim(ctx, x, y, w, h, el.radius);
+    drawDeviceRim(ctx, model, x, y, w, h, el.radius);
 
     ctx.save();
     roundRectPath(ctx, screen.x, screen.y, screen.w, screen.h, screen.r);
@@ -131,7 +310,7 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, el: ScreenshotElement, im
       drawPlaceholder(ctx, screen, el.placeholderColor);
     }
     ctx.restore();
-    drawPhoneDetails(ctx, screen, scale);
+    drawDeviceDetails(ctx, model, screen, scale);
     return;
   }
 
@@ -204,6 +383,65 @@ function drawPlaceholder(ctx: CanvasRenderingContext2D, r: ScreenRect, color = "
     roundRectPath(ctx, r.x + pad, top, r.w - pad * 2, r.w * 0.3, r.w * 0.05);
     ctx.fill();
   }
+}
+
+/**
+ * User image in a template slot. Contained images (mascots, transparent logos)
+ * cast their shadow from their own shape; covered ones from the rounded box.
+ */
+function drawImageSlot(ctx: CanvasRenderingContext2D, el: ImageSlotElement, img: ImageSource | undefined, scale: number): void {
+  const rect: ScreenRect = { x: el.x, y: el.y, w: el.width, h: el.height, r: el.radius ?? 0 };
+
+  if (img) {
+    if (el.fit === "contain") {
+      const { w, h } = sizeOf(img);
+      const f = fitImageToSlot(w, h, rect.w, rect.h, "contain");
+      ctx.save();
+      if (rect.r > 0) {
+        roundRectPath(ctx, rect.x + f.dx, rect.y + f.dy, f.dw, f.dh, rect.r);
+        ctx.clip();
+      }
+      applyShadow(ctx, el.shadow, scale);
+      ctx.drawImage(img, f.sx, f.sy, f.sw, f.sh, rect.x + f.dx, rect.y + f.dy, f.dw, f.dh);
+      ctx.restore();
+      return;
+    }
+    roundRectPath(ctx, rect.x, rect.y, rect.w, rect.h, rect.r);
+    applyShadow(ctx, el.shadow, scale);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fill();
+    clearShadow(ctx);
+    ctx.save();
+    roundRectPath(ctx, rect.x, rect.y, rect.w, rect.h, rect.r);
+    ctx.clip();
+    drawFitted(ctx, img, rect, { fit: "cover" });
+    ctx.restore();
+    return;
+  }
+
+  const letter = el.monogram?.text.trim().charAt(0).toUpperCase();
+  if (!el.monogram || !letter) return;
+  roundRectPath(ctx, rect.x, rect.y, rect.w, rect.h, rect.r);
+  applyShadow(ctx, el.shadow, scale);
+  ctx.fillStyle = el.monogram.fill;
+  ctx.fill();
+  clearShadow(ctx);
+  // Soft top-left light, like a glossy app icon.
+  ctx.save();
+  roundRectPath(ctx, rect.x, rect.y, rect.w, rect.h, rect.r);
+  ctx.clip();
+  const light = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
+  light.addColorStop(0, "rgba(255, 255, 255, 0.28)");
+  light.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = light;
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.restore();
+
+  ctx.font = fontString("display", 800, rect.h * 0.52);
+  ctx.fillStyle = el.monogram.color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(letter, rect.x + rect.w / 2, rect.y + rect.h * 0.53);
 }
 
 function drawImageElement(ctx: CanvasRenderingContext2D, el: ImageElement, img: ImageSource | undefined): void {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layoutText, wrap } from "./textLayout";
+import { layoutRich, layoutText, lineText, parseMarkup, wordText, wrap, type MeasurePiece } from "./textLayout";
 
 // Monospace stand-in: every character is half the font size wide.
 const measure = (text: string, size: number) => text.length * size * 0.5;
@@ -63,5 +63,49 @@ describe("layoutText", () => {
 
   it("returns no lines for blank text", () => {
     expect(layoutText("   ", measure, box).lines).toEqual([]);
+  });
+});
+
+describe("parseMarkup", () => {
+  it("splits words and keeps styles, including mixed-style words", () => {
+    expect(parseMarkup("Learn **anywhere** and ==fast==")).toEqual([
+      [[{ text: "Learn", style: 0 }], [{ text: "anywhere", style: 1 }], [{ text: "and", style: 0 }], [{ text: "fast", style: 2 }]],
+    ]);
+    expect(parseMarkup("**any**where")).toEqual([[[{ text: "any", style: 1 }, { text: "where", style: 0 }]]]);
+  });
+
+  it("styles every word of a multi-word span and keeps paragraphs", () => {
+    expect(parseMarkup("**learn fast**\nnow")).toEqual([
+      [[{ text: "learn", style: 1 }], [{ text: "fast", style: 1 }]],
+      [[{ text: "now", style: 0 }]],
+    ]);
+  });
+
+  it("leaves unmatched markers literal and returns nothing for blank text", () => {
+    expect(parseMarkup("5 ** 2")).toEqual([[[{ text: "5", style: 0 }], [{ text: "**", style: 0 }], [{ text: "2", style: 0 }]]]);
+    expect(parseMarkup("  ")).toEqual([]);
+  });
+});
+
+describe("layoutRich", () => {
+  // Emphasis is twice as wide, so styled words wrap sooner.
+  const measureStyled: MeasurePiece = (text, style, size) => text.length * size * 0.5 * (style === 1 ? 2 : 1);
+
+  it("measures emphasis with its own width", () => {
+    const plain = layoutRich(parseMarkup("abcd efgh"), measureStyled, { ...box, size: 50, minSize: 50 });
+    const bold = layoutRich(parseMarkup("abcd **efgh**"), measureStyled, { ...box, size: 50, minSize: 50 });
+    expect(plain.lines.map(lineText)).toEqual(["abcd efgh"]); // 9 chars × 25 = 225
+    expect(bold.lines.map(lineText)).toEqual(["abcd efgh"]); // 4×25 + 25 + 4×50 = 325, still fits 500
+    const tight = layoutRich(parseMarkup("abcd **efghij**"), measureStyled, { ...box, width: 300, size: 50, minSize: 50 });
+    expect(tight.lines.map(lineText)).toEqual(["abcd", "efghij"]);
+    expect(tight.lines[1][0][0].style).toBe(1);
+  });
+
+  it("truncates styled text with an ellipsis in the last piece's style", () => {
+    const result = layoutRich(parseMarkup(`**${"word ".repeat(40)}**`), measureStyled, box);
+    const lastWord = result.lines[result.lines.length - 1].at(-1)!;
+    expect(result.truncated).toBe(true);
+    expect(lastWord.at(-1)).toMatchObject({ style: 1 });
+    expect(wordText(lastWord).endsWith("…")).toBe(true);
   });
 });

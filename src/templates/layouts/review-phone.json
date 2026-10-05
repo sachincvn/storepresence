@@ -1,0 +1,118 @@
+{
+  "id": "review-phone",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "variables": [
+    {
+      "key": "headline",
+      "label": "Headline",
+      "default": "Your app, beautifully presented",
+      "perSlide": true,
+      "maxLength": 48
+    },
+    {
+      "key": "description",
+      "label": "Description",
+      "default": "",
+      "perSlide": true,
+      "multiline": true,
+      "maxLength": 90
+    },
+    {
+      "key": "reviewQuote",
+      "label": "Review",
+      "default": "Finally a planner I actually stick with.",
+      "perSlide": true,
+      "multiline": true,
+      "maxLength": 110
+    },
+    {
+      "key": "reviewAuthor",
+      "label": "Reviewer",
+      "default": "Alex M.",
+      "perSlide": true,
+      "maxLength": 32
+    }
+  ],
+  "elements": [
+    {
+      "type": "text",
+      "id": "headline",
+      "text": "{{headline}}",
+      "font": "display",
+      "size": 98,
+      "minSize": 68,
+      "weight": 800,
+      "lineHeight": 1,
+      "letterSpacing": -0.035,
+      "align": "center",
+      "verticalAlign": "bottom",
+      "color": "$foreground",
+      "maxLines": 2,
+      "x": 80,
+      "y": 130,
+      "width": 920,
+      "height": 290
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "text": "{{description}}",
+      "font": "sans",
+      "size": 38,
+      "minSize": 30,
+      "weight": 500,
+      "lineHeight": 1.32,
+      "align": "center",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "opacity": 0.78,
+      "maxLines": 2,
+      "x": 140,
+      "y": 444,
+      "width": 800,
+      "height": 104
+    },
+    {
+      "type": "screenshot",
+      "id": "shot",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 50,
+        "blur": 100,
+        "color": "rgba(22, 19, 31, 0.35)"
+      },
+      "x": 330,
+      "y": 640,
+      "width": 640,
+      "height": 1390,
+      "radius": 62,
+      "rotation": 4
+    },
+    {
+      "type": "review",
+      "id": "review",
+      "x": 70,
+      "y": 1260,
+      "width": 600,
+      "height": 460,
+      "quote": "{{reviewQuote}}",
+      "author": "{{reviewAuthor}}",
+      "color": "#16131F",
+      "cardColor": "#FFFFFF",
+      "starColor": "#FFB400",
+      "rotation": -3,
+      "shadow": {
+        "y": 30,
+        "blur": 70,
+        "color": "rgba(22, 19, 31, 0.3)"
+      }
+    }
+  ]
+}

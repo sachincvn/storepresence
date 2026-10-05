@@ -40,7 +40,7 @@ export function TemplatePicker({ project, selectedId, onSelect, layout }: Templa
               >
                 <span className="flex gap-0.5 overflow-hidden rounded-[10px]">
                   {Array.from({ length: STRIP_SLIDES }, (_, i) => (
-                    <SlideCanvas key={i} template={t} project={preview} slideIndex={i} scale={0.08} delay={300} className="min-w-0 flex-1" />
+                    <SlideCanvas key={i} template={t} project={preview} slideIndex={i} scale={0.08} delay={300} lazy className="min-w-0 flex-1" />
                   ))}
                 </span>
                 <span className="mt-2 flex items-baseline justify-between gap-2 px-0.5">

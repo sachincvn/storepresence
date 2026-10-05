@@ -1,0 +1,101 @@
+{
+  "id": "feature-graphic",
+  "canvas": {
+    "width": 1024,
+    "height": 500
+  },
+  "variables": [
+    {
+      "key": "appName",
+      "label": "App name",
+      "default": "Taskly",
+      "maxLength": 24
+    },
+    {
+      "key": "headline",
+      "label": "Headline",
+      "default": "Your app, beautifully presented",
+      "perSlide": true,
+      "maxLength": 48
+    }
+  ],
+  "elements": [
+    {
+      "type": "imageSlot",
+      "id": "app-icon",
+      "key": "appIcon",
+      "x": 72,
+      "y": 150,
+      "width": 200,
+      "height": 200,
+      "radius": 46,
+      "fit": "cover",
+      "shadow": {
+        "y": 14,
+        "blur": 30,
+        "color": "rgba(22, 19, 31, 0.3)"
+      },
+      "monogram": {
+        "text": "{{appName}}",
+        "fill": "$accent",
+        "color": "#FFFFFF"
+      }
+    },
+    {
+      "type": "text",
+      "id": "app-name",
+      "text": "{{appName}}",
+      "font": "display",
+      "size": 54,
+      "minSize": 36,
+      "weight": 800,
+      "letterSpacing": -0.03,
+      "align": "left",
+      "verticalAlign": "bottom",
+      "color": "$foreground",
+      "maxLines": 1,
+      "x": 304,
+      "y": 126,
+      "width": 400,
+      "height": 76
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "text": "{{headline}}",
+      "font": "display",
+      "size": 42,
+      "minSize": 28,
+      "weight": 700,
+      "lineHeight": 1.05,
+      "letterSpacing": -0.03,
+      "align": "left",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "maxLines": 3,
+      "x": 304,
+      "y": 214,
+      "width": 400,
+      "height": 160
+    },
+    {
+      "type": "screenshot",
+      "id": "shot",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone",
+      "placeholderColor": "$surface",
+      "rotation": -8,
+      "shadow": {
+        "y": 18,
+        "blur": 40,
+        "color": "rgba(22, 19, 31, 0.35)"
+      },
+      "x": 736,
+      "y": 64,
+      "width": 260,
+      "height": 563
+    }
+  ]
+}

@@ -4,7 +4,9 @@ import type { KeyboardEvent } from "react";
 import type { Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
 import { getSlideCount } from "@/templates/resolve";
+import { OUTPUT_SIZES, type OutputSize, type SizeId } from "@/templates/sizes";
 import { SlideCanvas } from "./SlideCanvas";
+import { SlideToolbar, type SlideActions } from "./SlideToolbar";
 import { StorePreview } from "./StorePreview";
 import type { LayoutMode } from "./useLayoutMode";
 
@@ -28,6 +30,10 @@ type PreviewAreaProps = {
   onViewChange: (view: View) => void;
   onSlideChange: (index: number) => void;
   onAppNameChange: (name: string) => void;
+  slideActions: SlideActions;
+  /** Store size the preview shows. */
+  size: OutputSize;
+  onSizeChange: (size: SizeId) => void;
 };
 
 export function PreviewArea(props: PreviewAreaProps) {
@@ -35,7 +41,9 @@ export function PreviewArea(props: PreviewAreaProps) {
   const slideCount = getSlideCount(template, project);
   const slides = Array.from({ length: slideCount }, (_, i) => i);
   const desktop = mode === "desktop";
-  const ratio = template.canvas.width / template.canvas.height;
+  const { size } = props;
+  const feature = size.kind === "feature";
+  const ratio = size.width / size.height;
 
   const editSlide = (index: number) => {
     props.onSlideChange(index);
@@ -53,6 +61,7 @@ export function PreviewArea(props: PreviewAreaProps) {
 
   return (
     <>
+      <div className="flex flex-wrap items-center justify-center gap-2">
       <div role="group" aria-label="Preview mode" className="flex rounded-2xl border border-line bg-white p-1">
         {VIEWS.map((v) => (
           <button
@@ -66,6 +75,19 @@ export function PreviewArea(props: PreviewAreaProps) {
           </button>
         ))}
       </div>
+      {view !== "store" && (
+        <label className="flex items-center gap-2 rounded-2xl border border-line bg-white py-1 pr-1 pl-3 text-sm font-bold">
+          <span className="text-muted">Size</span>
+          <select value={size.id} onChange={(e) => props.onSizeChange(e.target.value as SizeId)} className="rounded-xl bg-canvas px-2 py-1.5 text-sm font-bold">
+            {OUTPUT_SIZES.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.store === "App Store" ? "App Store" : "Play"} {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      </div>
 
       {view === "slide" && (
         <>
@@ -76,7 +98,8 @@ export function PreviewArea(props: PreviewAreaProps) {
               slideIndex={slide}
               scale={PREVIEW_SCALE}
               delay={80}
-              label={`Preview of slide ${slide + 1} of ${slideCount}, ${template.name} template`}
+              size={size}
+              label={feature ? `Preview of the feature graphic, ${template.name} template` : `Preview of slide ${slide + 1} of ${slideCount}, ${size.width} × ${size.height}, ${template.name} template`}
               className={`rounded-[20px] shadow-[0_24px_60px_-28px_rgb(22_19_31/0.45)] ${desktop ? "h-full max-h-full w-auto max-w-full" : "h-auto"}`}
               // Off desktop, size by width but cap the height so the slide strip stays in view.
               style={desktop ? undefined : { width: `min(100%, 400px, calc(${mode === "mobile" ? 58 : 66}dvh * ${ratio}))` }}
@@ -94,13 +117,14 @@ export function PreviewArea(props: PreviewAreaProps) {
                     onClick={() => props.onSlideChange(i)}
                     className={`block rounded-lg p-0.5 ${i === slide ? "ring-2 ring-blue" : "ring-1 ring-line hover:ring-ink/30"}`}
                   >
-                    <SlideCanvas template={template} project={project} slideIndex={i} scale={0.06} delay={200} className="w-11 rounded-md" />
+                    <SlideCanvas template={template} project={project} slideIndex={i} scale={0.06} delay={200} lazy className="w-11 rounded-md" />
                   </button>
                 </li>
               ))}
             </ol>
+            <SlideToolbar slide={slide} count={slideCount} {...props.slideActions} />
             <p className="text-xs text-muted tabular-nums">
-              Slide {slide + 1} of {slideCount}, {template.canvas.width} × {template.canvas.height} px
+              {feature ? "Feature graphic, one per set" : `Slide ${slide + 1} of ${slideCount}`}, {size.width} × {size.height} px
             </p>
           </div>
         </>
@@ -110,7 +134,7 @@ export function PreviewArea(props: PreviewAreaProps) {
         <div className="flex min-h-0 w-full flex-1 flex-col justify-center gap-3">
           {/* Tight gaps, like a store carousel, so shapes that span slides read as one piece. */}
           <ol aria-label="Full set" className={`flex min-h-0 gap-1.5 overflow-x-auto pb-2 ${desktop ? "flex-1" : ""}`}>
-            {slides.map((i) => (
+            {(feature ? [0] : slides).map((i) => (
               <li key={i} className={`flex shrink-0 ${desktop ? "h-full" : ""}`}>
                 <button type="button" onClick={() => editSlide(i)} aria-label={`Edit slide ${i + 1}`} className={`block rounded-xl ${desktop ? "h-full" : ""}`}>
                   <SlideCanvas
@@ -119,6 +143,7 @@ export function PreviewArea(props: PreviewAreaProps) {
                     slideIndex={i}
                     scale={0.3}
                     delay={120}
+                    size={size}
                     className={`w-auto rounded-xl ${desktop ? "h-full" : "h-[min(420px,60dvh)]"}`}
                   />
                 </button>

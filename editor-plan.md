@@ -216,10 +216,12 @@ Automated browser run against a production build, 19/19 passed:
 | – | Page errors | None |
 
 Plus 117 unit tests (`npm test`) and axe-core with 0 editor violations at 1440, 820 and 390 px.
-The browser QA script lives outside the repo (puppeteer-core in a scratch folder); adding Playwright to the repo would make it repeatable in CI.
+Now repeatable in the repo: `npm run test:e2e` (Playwright, `e2e/`, 20 tests: upload shapes, reorder/remove/replace, exact-size and deterministic PNG, ZIP, long/empty text, font and color, every template's ZIP, Template Lab, axe at 3 sizes, sheet focus, keyboard, landing gallery links).
 
-**☐ Step 13. Landing uses real engine (optional)**
-- Replace CSS-mock `StorePoster` previews with renderer output so landing = product.
+**☑ Step 13. Landing uses real engine (optional)**
+- Template gallery (`TemplateShowcase`) renders real templates: first 3 slides of each set via `TemplateSetPreview`, lazy (IntersectionObserver), all 6 templates.
+- Fixed: gallery links used mock ids (`sunny`, `lilac`, `mint`) the editor didn't know. Links now use real template ids (covered by an e2e test).
+- Hero, steps, features and closing CTA keep their CSS-mock posters (decorative, approved design).
 
 ---
 
@@ -235,6 +237,9 @@ New layout = new file in `src/templates/layouts/`, then any number of templates 
 ---
 
 ## 7. Later (not MVP)
+
+The post-MVP roadmap lives in `premium-plan.md`.
+
 
 - JSON Schema for editor autocompletion in `template.json`.
 - More output sizes per template (App Store 1290×2796) via per-size layouts.

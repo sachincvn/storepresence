@@ -1,0 +1,81 @@
+{
+  "id": "stat-hero",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "variables": [
+    {
+      "key": "statValue",
+      "label": "Big number",
+      "default": "10M+",
+      "perSlide": true,
+      "maxLength": 8
+    },
+    {
+      "key": "statLabel",
+      "label": "Number label",
+      "default": "tasks done every week",
+      "perSlide": true,
+      "maxLength": 40
+    },
+    {
+      "key": "headline",
+      "label": "Headline",
+      "default": "Your app, beautifully presented",
+      "perSlide": true,
+      "maxLength": 48
+    }
+  ],
+  "elements": [
+    {
+      "type": "stat",
+      "id": "stat",
+      "x": 80,
+      "y": 120,
+      "width": 920,
+      "height": 330,
+      "value": "{{statValue}}",
+      "label": "{{statLabel}}",
+      "color": "$foreground"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "text": "{{headline}}",
+      "font": "display",
+      "size": 76,
+      "minSize": 56,
+      "weight": 700,
+      "lineHeight": 1,
+      "letterSpacing": -0.025,
+      "align": "center",
+      "verticalAlign": "top",
+      "color": "$foreground",
+      "maxLines": 2,
+      "x": 120,
+      "y": 480,
+      "width": 840,
+      "height": 200
+    },
+    {
+      "type": "screenshot",
+      "id": "shot",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 50,
+        "blur": 100,
+        "color": "rgba(22, 19, 31, 0.35)"
+      },
+      "x": 235,
+      "y": 760,
+      "width": 610,
+      "height": 1325,
+      "radius": 60
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import type { Canvas, Layout, Template, ThemeKey } from "@/types/template";
-import { listPlaceholders, resolveTemplate } from "./resolve";
+import type { Canvas, Layout, Template, TemplateElement, ThemeKey } from "@/types/template";
+import { elementTexts, listPlaceholders, resolveTemplate } from "./resolve";
 
 /*
  * Template JSON has no compiler, so this is the safety net: every problem
@@ -11,10 +11,12 @@ import { listPlaceholders, resolveTemplate } from "./resolve";
 export const MIN_SLIDES = 4;
 
 const THEME_KEYS: readonly ThemeKey[] = ["background", "foreground", "primary", "accent", "surface"];
-const ELEMENT_TYPES = ["text", "screenshot", "shape", "image"] as const;
+const ELEMENT_TYPES = ["text", "screenshot", "shape", "image", "rating", "laurels", "stat", "review", "imageSlot", "callout"] as const;
+const IMAGE_SLOT_KEYS = ["appIcon", "logo", "mascot"];
+const ALIGNS = ["left", "center", "right"];
 const FONT_KEYS = ["display", "sans", "serif"];
 const FIT_MODES = ["contain", "cover"];
-const DEVICES = ["phone"];
+const DEVICES = ["phone", "phone-island", "flat"];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 type Obj = Record<string, unknown>;
@@ -121,7 +123,26 @@ export function validateTemplate(input: unknown, layouts: readonly Layout[]): st
       }
     });
   }
-  if (input.overrides !== undefined) checkOverrides(input.overrides, usedLayouts, add);
+  // Template overrides may target any layout a slide can use or switch to.
+  const choiceIds = Array.isArray(input.layoutChoices) ? input.layoutChoices : null;
+  const switchable = layouts.filter((l) =>
+    choiceIds
+      ? choiceIds.includes(l.id)
+      : canvasOk && l.canvas.width === (input.canvas as Canvas).width && l.canvas.height === (input.canvas as Canvas).height,
+  );
+  if (input.overrides !== undefined) checkOverrides(input.overrides, [...new Set([...usedLayouts, ...switchable])], add);
+
+  if (input.layoutChoices !== undefined) {
+    if (!Array.isArray(input.layoutChoices) || input.layoutChoices.length === 0) add("layoutChoices", "must be a non-empty array of layout ids");
+    else
+      for (const id of input.layoutChoices) {
+        const layout = layouts.find((l) => l.id === id);
+        if (!layout) add("layoutChoices", `unknown layout "${String(id)}"`);
+        else if (canvasOk && (layout.canvas.width !== (input.canvas as Canvas).width || layout.canvas.height !== (input.canvas as Canvas).height)) {
+          add("layoutChoices", `"${layout.id}" does not match the template canvas`);
+        }
+      }
+  }
 
   // Structure is broken; merging would only produce noise.
   if (errors.length > 0) return errors;
@@ -134,6 +155,12 @@ export function validateTemplate(input: unknown, layouts: readonly Layout[]): st
     const at = within(add, `slides[${i}]`);
     checkElements(design.elements, at, { canvas: resolved.canvas, variables, tokens: themeKeys, screenshots: true });
     for (const key of Object.keys(design.defaults)) if (!variables.includes(key)) at(`defaults.${key}`, "no variable with this key");
+
+    // Every layout a user can switch this slide to must also be valid (template overrides apply there too).
+    for (const [layoutId, alternate] of Object.entries(resolved.alternates[i] ?? {})) {
+      if (layoutId === design.layout) continue;
+      checkElements(alternate.elements, within(at, `as ${layoutId}`), { canvas: resolved.canvas, variables, tokens: themeKeys, screenshots: true });
+    }
   });
 
   checkElements(resolved.panorama, within(add, "panorama"), {
@@ -163,7 +190,7 @@ function checkElementShapes(value: unknown, where: string, add: Add) {
   if (!Array.isArray(value)) return add(where, "must be an array");
   value.forEach((el, i) => {
     if (!isObj(el) || !isText(el.id) || !oneOf(el.type, ELEMENT_TYPES)) {
-      add(`${where}[${i}]`, "needs a string id and a type (text, screenshot, shape, image)");
+      add(`${where}[${i}]`, `needs a string id and a type (${ELEMENT_TYPES.join(", ")})`);
     }
   });
 }
@@ -217,7 +244,29 @@ function checkStops(stops: unknown, where: string, add: Add, tokens: readonly st
 function checkBackground(value: unknown, where: string, add: Add, tokens: readonly string[]) {
   if (!isObj(value)) return add(where, "is required");
   if (value.type === "solid") return checkColor(value.color, `${where}.color`, add, tokens);
-  if (value.type !== "linear" && value.type !== "radial") return add(`${where}.type`, "must be solid, linear or radial");
+  if (value.type === "mesh") {
+    if (!Array.isArray(value.colors) || value.colors.length < 2) return add(`${where}.colors`, "needs at least 2 colors (base first)");
+    value.colors.forEach((c: unknown, i: number) => checkColor(c, `${where}.colors[${i}]`, add, tokens));
+    if (value.seed !== undefined && !Number.isInteger(value.seed)) add(`${where}.seed`, "must be a whole number");
+    return;
+  }
+  if (value.type === "pattern") {
+    checkColor(value.color, `${where}.color`, add, tokens);
+    checkColor(value.ink, `${where}.ink`, add, tokens);
+    if (!oneOf(value.pattern, ["grid", "dots", "lines"])) add(`${where}.pattern`, "must be grid, dots or lines");
+    if (value.size !== undefined && (!isNum(value.size) || value.size < 8)) add(`${where}.size`, "must be ≥ 8");
+    if (value.opacity !== undefined && (!isNum(value.opacity) || value.opacity < 0 || value.opacity > 1)) add(`${where}.opacity`, "must be 0–1");
+    return;
+  }
+  if (value.type === "collage") {
+    checkColor(value.color, `${where}.color`, add, tokens);
+    if (value.dim !== undefined && (!isNum(value.dim) || value.dim < 0 || value.dim > 1)) add(`${where}.dim`, "must be 0–1");
+    if (value.blur !== undefined && (!isNum(value.blur) || value.blur < 0)) add(`${where}.blur`, "must be ≥ 0");
+    if (value.tilt !== undefined && !isNum(value.tilt)) add(`${where}.tilt`, "must be a number (degrees)");
+    if (value.seed !== undefined && !Number.isInteger(value.seed)) add(`${where}.seed`, "must be a whole number");
+    return;
+  }
+  if (value.type !== "linear" && value.type !== "radial") return add(`${where}.type`, "must be solid, linear, radial, mesh, pattern or collage");
   if (value.type === "linear" && !isNum(value.angle)) add(`${where}.angle`, "must be a number (degrees)");
   if (value.type === "radial" && (!isNum(value.cx) || !isNum(value.cy))) add(where, "radial needs cx and cy (0–1)");
   checkStops(value.stops, where, add, tokens);
@@ -235,6 +284,8 @@ type ElementContext = {
 function checkElements(elements: readonly unknown[], add: Add, ctx: ElementContext) {
   const ids = new Set<string>();
   const slots = new Set<number>();
+  /** Callouts by slot; each must enlarge a screenshot the slide shows. */
+  const calloutSlots: [string, number][] = [];
 
   elements.forEach((el, i) => {
     if (!isObj(el)) return add(`elements[${i}]`, "must be an object");
@@ -261,13 +312,16 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
     }
     checkShadow(el.shadow, where, add, ctx.tokens);
 
+    if (ctx.variables) {
+      const texts = elementTexts(el as unknown as TemplateElement).filter((t) => typeof t === "string");
+      for (const key of new Set(texts.flatMap(listPlaceholders))) {
+        if (!ctx.variables.includes(key)) bad(`placeholder {{${key}}} has no matching variable`);
+      }
+    }
+
     switch (el.type) {
       case "text": {
         if (typeof el.text !== "string") bad("text must be a string");
-        else if (ctx.variables)
-          for (const key of listPlaceholders(el.text)) {
-            if (!ctx.variables.includes(key)) bad(`placeholder {{${key}}} has no matching variable`);
-          }
         if (!oneOf(el.font, FONT_KEYS)) bad(`font must be ${FONT_KEYS.join(", ")}`);
         if (!isNum(el.size) || el.size <= 0) bad("size must be a positive number");
         if (el.minSize !== undefined && (!isNum(el.minSize) || el.minSize <= 0 || (isNum(el.size) && el.minSize > el.size))) bad("minSize must be positive and ≤ size");
@@ -278,6 +332,15 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
         if (el.verticalAlign !== undefined && !oneOf(el.verticalAlign, ["top", "middle", "bottom"])) bad("verticalAlign must be top, middle or bottom");
         if (el.maxLines !== undefined && (!Number.isInteger(el.maxLines) || (el.maxLines as number) < 1)) bad("maxLines must be a whole number ≥ 1");
         checkColor(el.color, `${where}.color`, add, ctx.tokens);
+        if (el.marker !== undefined) checkColor(el.marker, `${where}.marker`, add, ctx.tokens);
+        if (el.emphasis !== undefined) {
+          if (!isObj(el.emphasis)) bad("emphasis must be an object");
+          else {
+            if (el.emphasis.color !== undefined) checkColor(el.emphasis.color, `${where}.emphasis.color`, add, ctx.tokens);
+            if (el.emphasis.weight !== undefined && (!isNum(el.emphasis.weight) || el.emphasis.weight < 100 || el.emphasis.weight > 900)) bad("emphasis.weight must be 100–900");
+            if (el.emphasis.font !== undefined && !oneOf(el.emphasis.font, FONT_KEYS)) bad(`emphasis.font must be ${FONT_KEYS.join(", ")}`);
+          }
+        }
         if (el.pill !== undefined) {
           if (!isObj(el.pill)) bad("pill must be an object");
           else {
@@ -315,6 +378,68 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
         checkStroke(el.stroke, where, add, ctx.tokens);
         break;
       }
+      case "rating": {
+        for (const key of ["score", "label"]) if (typeof el[key] !== "string") bad(`${key} must be a string`);
+        checkColor(el.color, `${where}.color`, add, ctx.tokens);
+        checkColor(el.starColor, `${where}.starColor`, add, ctx.tokens);
+        if (el.align !== undefined && !oneOf(el.align, ALIGNS)) bad("align must be left, center or right");
+        break;
+      }
+      case "laurels": {
+        if (typeof el.title !== "string") bad("title must be a string");
+        if (el.subtitle !== undefined && typeof el.subtitle !== "string") bad("subtitle must be a string");
+        checkColor(el.color, `${where}.color`, add, ctx.tokens);
+        if (el.leafColor !== undefined) checkColor(el.leafColor, `${where}.leafColor`, add, ctx.tokens);
+        if (el.starColor !== undefined) checkColor(el.starColor, `${where}.starColor`, add, ctx.tokens);
+        if (el.stars !== undefined && typeof el.stars !== "boolean") bad("stars must be true or false");
+        break;
+      }
+      case "stat": {
+        for (const key of ["value", "label"]) if (typeof el[key] !== "string") bad(`${key} must be a string`);
+        checkColor(el.color, `${where}.color`, add, ctx.tokens);
+        if (el.font !== undefined && !oneOf(el.font, FONT_KEYS)) bad(`font must be ${FONT_KEYS.join(", ")}`);
+        if (el.align !== undefined && !oneOf(el.align, ALIGNS)) bad("align must be left, center or right");
+        break;
+      }
+      case "review": {
+        for (const key of ["quote", "author"]) if (typeof el[key] !== "string") bad(`${key} must be a string`);
+        for (const key of ["color", "cardColor", "starColor"]) checkColor(el[key], `${where}.${key}`, add, ctx.tokens);
+        if (el.size !== undefined && (!isNum(el.size) || el.size <= 0)) bad("size must be a positive number");
+        if (el.radius !== undefined && (!isNum(el.radius) || el.radius < 0)) bad("radius must be ≥ 0");
+        break;
+      }
+      case "imageSlot": {
+        if (!oneOf(el.key, IMAGE_SLOT_KEYS)) bad(`key must be ${IMAGE_SLOT_KEYS.join(", ")}`);
+        if (!oneOf(el.fit, FIT_MODES)) bad("fit must be contain or cover");
+        if (el.radius !== undefined && (!isNum(el.radius) || el.radius < 0)) bad("radius must be ≥ 0");
+        if (el.monogram !== undefined) {
+          if (!isObj(el.monogram) || typeof el.monogram.text !== "string") bad("monogram needs text, fill and color");
+          else {
+            checkColor(el.monogram.fill, `${where}.monogram.fill`, add, ctx.tokens);
+            checkColor(el.monogram.color, `${where}.monogram.color`, add, ctx.tokens);
+          }
+        }
+        break;
+      }
+      case "callout": {
+        if (!ctx.screenshots) bad("callouts are not allowed here");
+        if (!Number.isInteger(el.slot) || (el.slot as number) < 0) bad("slot must be a whole number ≥ 0");
+        else calloutSlots.push([where, el.slot as number]);
+        const r = el.region;
+        if (!isObj(r) || ![r.x, r.y, r.w, r.h].every(isNum)) bad("region must be { x, y, w, h } in fractions of the screenshot");
+        else {
+          const [x, y, w, h] = [r.x, r.y, r.w, r.h] as number[];
+          if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > 1.0001 || y + h > 1.0001) bad("region must lie inside 0–1 with positive w and h");
+        }
+        if (el.style !== undefined && !oneOf(el.style, ["card", "glass", "bubble"])) bad("style must be card, glass or bubble");
+        if (el.fill !== undefined) checkColor(el.fill, `${where}.fill`, add, ctx.tokens);
+        for (const key of ["padding", "radius"]) if (el[key] !== undefined && (!isNum(el[key]) || (el[key] as number) < 0)) bad(`${key} must be ≥ 0`);
+        if (el.follow !== undefined && el.follow !== "y") bad('follow must be "y"');
+        if (el.tail !== undefined && !oneOf(el.tail, ["top", "bottom", "left", "right"])) bad("tail must be top, bottom, left or right");
+        if (el.tailAt !== undefined && (!isNum(el.tailAt) || el.tailAt < 0 || el.tailAt > 1)) bad("tailAt must be 0–1");
+        checkStroke(el.stroke, where, add, ctx.tokens);
+        break;
+      }
       case "image": {
         if (!isText(el.src)) bad("src is required");
         if (!oneOf(el.fit, FIT_MODES)) bad("fit must be contain or cover");
@@ -323,6 +448,10 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
       }
     }
   });
+
+  for (const [where, slot] of calloutSlots) {
+    if (!slots.has(slot)) add(where, `slot ${slot} has no screenshot on this slide to enlarge`);
+  }
 
   // Slots must be 0..n-1 so screenshots map to slides predictably.
   const sorted = [...slots].sort((a, b) => a - b);

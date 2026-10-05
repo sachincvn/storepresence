@@ -10,6 +10,7 @@ import {
   resolveSlide,
   resolveTemplate,
   themeFor,
+  usedImageSlots,
   variablesForSlide,
 } from "./resolve";
 
@@ -223,5 +224,131 @@ describe("headline font choice", () => {
   it("keeps the template font when nothing is chosen", () => {
     const spec = resolveSlide(resolved, project(), 0);
     expect(spec.elements.find((e) => e.id === "headline")).toMatchObject({ font: "display", weight: 800 });
+  });
+});
+
+describe("per-slide layout picks", () => {
+  it("offers the template's own layouts first, then other compatible ones", () => {
+    const tall = { ...single, id: "tall", canvas: { width: 1290, height: 2796 } };
+    const extra = { ...single, id: "extra" };
+    const r = resolveTemplate(template, [extra, single, duo, tall]);
+    expect(r.layoutChoices).toEqual(["single", "duo", "extra"]);
+    expect(Object.keys(r.alternates[0])).toEqual(["single", "duo", "extra"]);
+  });
+
+  it("swaps a slide's layout, keeping background, extras and defaults", () => {
+    const p = project({ screenshots: [shot("a"), shot("b")], slideLayouts: { b: "single" } });
+    const spec = resolveSlide(resolved, p, 1);
+    expect(spec.background).toMatchObject({ type: "solid", color: "#FFD43B" }); // slide 2's own background
+    expect(spec.elements.map((e) => e.id)).toEqual(["behind", "headline", "shot", "logo"]);
+    expect(spec.screenshots).toHaveLength(1);
+  });
+
+  it("drops slide overrides on other layouts but keeps template overrides", () => {
+    const p = project({ slideLayouts: { "slide-2": "duo" } });
+    const headless = resolveSlide(resolved, p, 2); // slide 3 normally single with headline size 60
+    expect(headless.elements.find((e) => e.id === "headline")).toBeUndefined();
+    const back = resolveSlide(resolved, project({ slideLayouts: { "slide-1": "single" } }), 1);
+    expect(back.elements.find((e) => e.id === "headline")).toMatchObject({ size: 70 }); // template override
+    expect(back.elements.find((e) => e.id === "shot")).not.toHaveProperty("radius", 10); // slide-2 override not applied
+  });
+
+  it("lists variables of the picked layout", () => {
+    const p = project({ slideLayouts: { "slide-1": "single" } });
+    expect(variablesForSlide(resolved, 1, p).map((v) => v.key)).toEqual(["headline", "appName"]);
+  });
+
+  it("ignores unknown picks", () => {
+    const p = project({ slideLayouts: { "slide-0": "nope" } });
+    expect(resolveSlide(resolved, p, 0).elements.map((e) => e.id)).toEqual(resolveSlide(resolved, project(), 0).elements.map((e) => e.id));
+  });
+});
+
+describe("emphasis defaults", () => {
+  it("uses the accent for emphasis and marker unless the template sets them", () => {
+    const headline = resolveSlide(resolved, project(), 0).elements.find((e) => e.id === "headline");
+    expect(headline).toMatchObject({ emphasis: { color: "#FFD43B" }, marker: "#FFD43B" });
+  });
+});
+
+describe("generated backdrops", () => {
+  it("replaces every slide background with a theme-colored mesh spanning the set", () => {
+    const spec = resolveSlide(resolved, project({ backdrop: { kind: "mesh", seed: 1 } }), 1);
+    expect(spec.background).toMatchObject({ type: "mesh", seed: 1 });
+    expect(spec.background.type === "mesh" && spec.background.colors[0]).toBe("#000000");
+    expect(spec.setWidth).toBe(1080 * 4);
+  });
+
+  it("produces only real colors (regression: tokens once lost their $)", () => {
+    for (const seed of [1, 2, 3, 4]) {
+      const bg = resolveSlide(resolved, project({ backdrop: { kind: "mesh", seed } }), 0).background;
+      const colors = bg.type === "mesh" ? bg.colors : [];
+      expect(colors.length).toBeGreaterThan(2);
+      for (const c of colors) expect(c).toMatch(/^(#[0-9A-F]{3,8}|rgba?\()/i);
+    }
+  });
+
+  it("shuffling rotates the blob colors", () => {
+    const colors = (seed: number) => {
+      const bg = resolveSlide(resolved, project({ backdrop: { kind: "mesh", seed } }), 0).background;
+      return bg.type === "mesh" ? bg.colors : [];
+    };
+    expect(colors(1)).not.toEqual(colors(2));
+    expect(colors(1)[0]).toBe(colors(2)[0]); // base stays the background
+  });
+
+  it("builds patterns from background and foreground", () => {
+    expect(resolveSlide(resolved, project({ backdrop: { kind: "dots", seed: 1 } }), 0).background).toMatchObject({
+      type: "pattern",
+      pattern: "dots",
+      color: "#000000",
+      ink: "#FFFFFF",
+    });
+  });
+  it("collage uses every screenshot as tiles, dimmed with the background", () => {
+    const p = project({ backdrop: { kind: "collage", seed: 2 }, screenshots: [shot("a"), shot("b"), shot("c")] });
+    expect(p.screenshots).toHaveLength(3);
+    const spec = resolveSlide(resolved, p, 0);
+    expect(spec.background).toMatchObject({ type: "collage", color: "#000000", seed: 2 });
+    expect(spec.collage).toEqual(p.screenshots);
+    // Shuffle changes the tilt.
+    const tilt = (seed: number) => {
+      const bg = resolveSlide(resolved, project({ backdrop: { kind: "collage", seed } }), 0).background;
+      return bg.type === "collage" ? bg.tilt : undefined;
+    };
+    expect(tilt(1)).not.toBe(tilt(2));
+    expect(resolveSlide(resolved, project(), 0).collage).toEqual([]);
+  });
+});
+
+describe("device overrides", () => {
+  it("swaps the model and color only where the template shows a device", () => {
+    const spec = resolveSlide(resolved, project({ deviceModel: "phone-island", deviceColor: "#E3E5EA" }), 0);
+    expect(spec.elements.find((e) => e.id === "shot")).toMatchObject({ device: "phone-island", frameColor: "#E3E5EA" });
+    const duoSpec = resolveSlide(resolved, project({ deviceModel: "flat" }), 1);
+    expect(duoSpec.elements.find((e) => e.id === "shot-back")).toMatchObject({ device: undefined }); // had no device
+  });
+});
+
+describe("image slots", () => {
+  const withIcon: Template = {
+    ...template,
+    elements: [
+      ...(template.elements ?? []),
+      { type: "imageSlot", id: "icon", key: "appIcon", x: 0, y: 0, width: 100, height: 100, fit: "cover", monogram: { text: "{{appName}}", fill: "$accent", color: "#FFFFFF" } },
+    ],
+  };
+  const r = resolveTemplate(withIcon, [single, duo]);
+
+  it("lists the slot keys a template uses", () => {
+    expect(usedImageSlots(r)).toEqual(["appIcon"]);
+    expect(usedImageSlots(resolved)).toEqual([]);
+  });
+
+  it("fills the monogram from the app name and passes user images through", () => {
+    const icon = shot("icon");
+    const spec = resolveSlide(r, project({ variables: { appName: "Taskly" }, images: { appIcon: icon } }), 0);
+    expect(spec.elements.find((e) => e.id === "icon")).toMatchObject({ monogram: { text: "Taskly", fill: "#FFD43B" } });
+    expect(spec.images.appIcon).toBe(icon);
   });
 });

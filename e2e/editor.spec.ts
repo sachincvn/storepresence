@@ -1,6 +1,7 @@
 import JSZip from "jszip";
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { createFixtures, exportFrom, pngSize, yourScreenshots } from "./helpers";
+import { createFixtures, exportFrom, pngSize, readDownload, yourScreenshots } from "./helpers";
 
 let fixtures: Awaited<ReturnType<typeof createFixtures>>;
 
@@ -103,4 +104,229 @@ test("Full set and Store preview show every slide", async ({ page }) => {
   await expect(page.getByRole("list", { name: "Store screenshots" }).getByRole("listitem")).toHaveCount(4);
   await page.getByRole("button", { name: "Edit slide 3" }).click();
   await expect(page.getByRole("button", { name: "Slide 3", exact: true })).toHaveAttribute("aria-current", "true");
+});
+
+test("layout picker switches the current slide and markup styles text", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+
+  await page.getByText("Review", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Review" })).toBeChecked();
+  await expect(page.getByRole("textbox", { name: "Review", exact: true })).toBeVisible(); // review quote field appears
+  const review = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(review.equals(before)).toBe(false);
+  expect(pngSize(review)).toEqual({ width: 1080, height: 1920 });
+
+  // Other slides keep their own layout.
+  await page.getByRole("button", { name: "Slide 2", exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Review" })).not.toBeChecked();
+
+  // Inline markup renders without the markers.
+  await page.getByRole("button", { name: "Slide 1", exact: true }).click();
+  await page.getByLabel("Headline").fill("Learn **anywhere**");
+  const marked = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  await page.getByLabel("Headline").fill("Learn anywhere");
+  const plain = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(marked.equals(plain)).toBe(false);
+});
+
+test("undo and redo edits from the header and keyboard", async ({ page }) => {
+  const undo = page.getByRole("button", { name: "Undo" });
+  const redo = page.getByRole("button", { name: "Redo" });
+  await expect(undo).toBeDisabled();
+
+  await page.getByLabel("Headline").fill("First");
+  await page.getByText("Editorial serif").click();
+  await undo.click();
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).not.toBeChecked();
+  await undo.click();
+  await expect(page.getByLabel("Headline")).not.toHaveValue("First");
+  await expect(undo).toBeDisabled();
+
+  await redo.click();
+  await expect(page.getByLabel("Headline")).toHaveValue("First");
+
+  // Outside text fields, Ctrl+Z / Ctrl+Shift+Z drive the editor history.
+  await page.getByRole("button", { name: "Slide 1", exact: true }).focus();
+  await page.keyboard.press("Control+Shift+Z");
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).toBeChecked();
+  await page.keyboard.press("Control+Z");
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).not.toBeChecked();
+
+  // A removed screenshot comes back on undo, image intact.
+  await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 2));
+  await expect(yourScreenshots(page)).toHaveCount(2);
+  await page.getByRole("button", { name: "Remove portrait.png" }).click();
+  await expect(yourScreenshots(page)).toHaveCount(1);
+  await undo.click();
+  await expect(yourScreenshots(page)).toHaveCount(2);
+  expect(pngSize((await exportFrom(page, /Download all 2 slides as ZIP/)).buffer).width).toBeGreaterThan(0);
+});
+
+test("work is saved in the browser and restored after reload; start over clears it", async ({ page }) => {
+  await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 3));
+  await expect(yourScreenshots(page)).toHaveCount(3);
+  await page.getByLabel("Headline").fill("Saved headline");
+  await page.getByText("Editorial serif").click();
+  await expect(page.getByText("Saved in this browser only")).toBeVisible();
+  await page.waitForTimeout(800); // past the save debounce
+
+  // Without a template in the URL, the saved template comes back too.
+  await page.goto("/editor");
+  await expect(yourScreenshots(page)).toHaveCount(3);
+  await expect(page.getByRole("button", { name: /^Lilac Clay/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Headline")).toHaveValue("Saved headline");
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).toBeChecked();
+  await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
+  const zip = await JSZip.loadAsync((await exportFrom(page, /Download all 3 slides as ZIP/)).buffer);
+  expect(Object.keys(zip.files)).toHaveLength(3);
+
+  // A template picked in the URL wins, keeping screenshots and text.
+  await page.goto("/editor?template=midnight");
+  await expect(page.getByRole("button", { name: /^Midnight/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(yourScreenshots(page)).toHaveCount(3);
+
+  await page.getByRole("button", { name: "Start over" }).click();
+  await expect(page.getByText("Showing 4 sample screenshots")).toBeVisible();
+  await page.waitForTimeout(800);
+  await page.reload();
+  await expect(page.getByText("Showing 4 sample screenshots")).toBeVisible();
+  await expect(page.getByLabel("Headline")).not.toHaveValue("Saved headline");
+});
+
+test("pop-out area can be re-picked from the keyboard and hidden per slide", async ({ page }) => {
+  await page.goto("/editor?template=studio-blue");
+  await page.getByRole("button", { name: "Slide 4", exact: true }).click();
+  const area = page.getByRole("group", { name: /^Pop-out area/ });
+  await expect(area).toBeVisible();
+  const before = (await exportFrom(page, /Export slide 4 as PNG/)).buffer;
+
+  const label = await area.getAttribute("aria-label");
+  await area.focus();
+  for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("Shift+ArrowDown");
+  await expect(area).not.toHaveAttribute("aria-label", label!);
+  const moved = (await exportFrom(page, /Export slide 4 as PNG/)).buffer;
+  expect(moved.equals(before)).toBe(false);
+  expect(pngSize(moved)).toEqual({ width: 1080, height: 1920 });
+
+  // Other slides keep their own (no pop-out on slide 1 of this template).
+  await page.getByRole("button", { name: "Slide 1", exact: true }).click();
+  await expect(area).toBeHidden();
+  await page.getByRole("button", { name: "Slide 4", exact: true }).click();
+  await expect(area).not.toHaveAttribute("aria-label", label!);
+
+  await page.getByRole("checkbox", { name: "Show pop-out" }).uncheck();
+  await expect(area).toBeHidden();
+  const hidden = (await exportFrom(page, /Export slide 4 as PNG/)).buffer;
+  expect(hidden.equals(moved)).toBe(false);
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(area).toBeVisible();
+  await page.getByRole("button", { name: "Reset" }).first().click();
+  await expect(area).toHaveAttribute("aria-label", label!);
+});
+
+test("slides can be added, duplicated, moved and deleted; text slides export with the set", async ({ page }) => {
+  const strip = page.getByRole("list", { name: /^Slides/ }).getByRole("listitem");
+  await expect(strip).toHaveCount(4);
+
+  await page.getByRole("button", { name: "Text slide" }).click();
+  await expect(strip).toHaveCount(5);
+  await expect(page.getByRole("button", { name: "Slide 2", exact: true })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByLabel("Headline")).toHaveValue(/in one place/);
+  // Text slides have no screenshot to pick.
+  await expect(page.getByRole("heading", { name: /^Screenshot, slide/ })).toBeHidden();
+
+  await page.getByRole("button", { name: "Duplicate" }).click();
+  await expect(strip).toHaveCount(6);
+  await page.getByRole("button", { name: "Move slide left" }).click();
+  await expect(page.getByRole("button", { name: "Slide 2", exact: true })).toHaveAttribute("aria-current", "true");
+  await page.getByRole("button", { name: "Delete slide" }).click();
+  await expect(strip).toHaveCount(5);
+
+  // Upload 3 screenshots: the text slide stays, each screenshot gets a slide.
+  await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 3));
+  await expect(strip).toHaveCount(3);
+  await page.getByRole("button", { name: "Slide 1", exact: true }).click();
+  await page.getByRole("button", { name: "Text slide" }).click();
+  await expect(strip).toHaveCount(4);
+
+  // Slide 3 shows the 2nd screenshot; switch it to the 3rd.
+  await page.getByRole("button", { name: "Slide 3", exact: true }).click();
+  await page.locator("label").filter({ has: page.getByRole("radio", { name: "tall-capture.png" }) }).click();
+  await expect(page.getByRole("radio", { name: "tall-capture.png" })).toBeChecked();
+
+  const zip = await JSZip.loadAsync((await exportFrom(page, /Download all 4 slides as ZIP/)).buffer);
+  const names = Object.keys(zip.files);
+  expect(names).toHaveLength(4);
+  for (const file of names) expect(pngSize(await zip.file(file)!.async("nodebuffer"))).toEqual({ width: 1080, height: 1920 });
+});
+
+test("brand colors come from the app icon and apply as one undo step", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  const match = page.getByRole("button", { name: /Match colors to your app icon/ });
+  await match.locator("xpath=..").locator('input[type="file"]').setInputFiles(fixtures.images[0]);
+
+  const bold = page.getByRole("button", { name: "Use bold brand colors" });
+  await expect(bold).toBeVisible();
+  await bold.click();
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Reset" })).toBeVisible();
+  const branded = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(branded.equals(before)).toBe(false);
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(bold).toHaveAttribute("aria-pressed", "false");
+});
+
+test("collage background and full screen layout render and export", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  await page.getByText("Collage", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Collage" })).toBeChecked();
+  const collage = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(collage.equals(before)).toBe(false);
+  await page.getByRole("button", { name: "Shuffle" }).click();
+  const shuffled = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(shuffled.equals(collage)).toBe(false);
+
+  await page.getByText("Full screen", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Full screen" })).toBeChecked();
+  const full = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(pngSize(full)).toEqual({ width: 1080, height: 1920 });
+});
+
+test("export dialog adds store sizes as folders at exact pixel sizes", async ({ page }) => {
+  await page.getByRole("button", { name: /Download all 4 slides as ZIP/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Export" });
+  await expect(dialog).toBeVisible();
+  expect((await new AxeBuilder({ page }).include("dialog").analyze()).violations).toEqual([]);
+  await dialog.getByText("Feature graphic").click();
+  await dialog.getByText('iPhone 6.9"').click();
+  await expect(dialog.getByRole("status")).toHaveText("9 files");
+
+  const [download] = await Promise.all([page.waitForEvent("download"), dialog.getByRole("button", { name: "Download ZIP" }).click()]);
+  const zip = await JSZip.loadAsync(await readDownload(download));
+  const files = Object.keys(zip.files).filter((n) => !zip.files[n].dir).sort();
+  expect(files).toEqual([
+    "app-store/iphone-6.9/01.png",
+    "app-store/iphone-6.9/02.png",
+    "app-store/iphone-6.9/03.png",
+    "app-store/iphone-6.9/04.png",
+    "google-play/feature-graphic.png",
+    "google-play/phone/01.png",
+    "google-play/phone/02.png",
+    "google-play/phone/03.png",
+    "google-play/phone/04.png",
+  ]);
+  const size = async (name: string) => pngSize(await zip.file(name)!.async("nodebuffer"));
+  expect(await size("app-store/iphone-6.9/01.png")).toEqual({ width: 1320, height: 2868 });
+  expect(await size("google-play/feature-graphic.png")).toEqual({ width: 1024, height: 500 });
+  expect(await size("google-play/phone/04.png")).toEqual({ width: 1080, height: 1920 });
+  await expect(dialog).toBeHidden();
+
+  // The preview size switch drives "Export slide" too.
+  await page.getByRole("combobox", { name: "Size" }).selectOption("ipad-13");
+  expect(pngSize((await exportFrom(page, /Export slide 1 as PNG/)).buffer)).toEqual({ width: 2064, height: 2752 });
+  await page.getByRole("combobox", { name: "Size" }).selectOption("play-feature");
+  expect(pngSize((await exportFrom(page, /Export feature graphic as PNG/)).buffer)).toEqual({ width: 1024, height: 500 });
 });

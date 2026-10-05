@@ -1,0 +1,157 @@
+{
+  "id": "cinematic",
+  "name": "Cinematic",
+  "category": "Dark",
+  "description": "Pitch black poster wall of your screens, red glow and frosted pop-outs.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#000000",
+    "foreground": "#FFFFFF",
+    "primary": "#17171A",
+    "accent": "#F43F3F",
+    "surface": "#17171A"
+  },
+  "editableColors": [
+    "accent"
+  ],
+  "background": {
+    "type": "collage",
+    "color": "$background",
+    "dim": 0.8,
+    "blur": 3,
+    "tilt": -12,
+    "seed": 1
+  },
+  "grain": 0.08,
+  "overrides": {
+    "headline": {
+      "weight": 800,
+      "letterSpacing": -0.045,
+      "lineHeight": 0.96,
+      "emphasis": {
+        "color": "$accent"
+      }
+    },
+    "description": {
+      "opacity": 0.62
+    },
+    "shot": {
+      "device": "flat",
+      "radius": 44,
+      "shadow": {
+        "y": 40,
+        "blur": 120,
+        "color": "rgba(0, 0, 0, 0.9)"
+      }
+    },
+    "shot-back": {
+      "device": "flat",
+      "radius": 40,
+      "opacity": 0.55,
+      "shadow": {
+        "y": 30,
+        "blur": 100,
+        "color": "rgba(0, 0, 0, 0.9)"
+      }
+    },
+    "callout": {
+      "style": "glass",
+      "padding": 20,
+      "radius": 36
+    },
+    "callout-2": {
+      "style": "glass",
+      "padding": 20,
+      "radius": 36
+    },
+    "laurels": {
+      "leafColor": "$accent"
+    },
+    "rating": {
+      "starColor": "$accent"
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "glow-1",
+      "shape": "circle",
+      "x": 140,
+      "y": 1300,
+      "width": 1700,
+      "height": 1100,
+      "fill": "$accent",
+      "blur": 200,
+      "opacity": 0.38
+    },
+    {
+      "type": "shape",
+      "id": "glow-2",
+      "shape": "circle",
+      "x": 2300,
+      "y": 1350,
+      "width": 1700,
+      "height": 1100,
+      "fill": "$accent",
+      "blur": 200,
+      "opacity": 0.32
+    },
+    {
+      "type": "shape",
+      "id": "beam",
+      "shape": "rect",
+      "x": 1650,
+      "y": -200,
+      "width": 260,
+      "height": 2400,
+      "rotation": 18,
+      "fill": "#FFFFFF",
+      "blur": 120,
+      "opacity": 0.08
+    }
+  ],
+  "slides": [
+    {
+      "layout": "zoom",
+      "defaults": {
+        "headline": "Your day, **in focus**",
+        "description": "Everything that matters, nothing more."
+      }
+    },
+    {
+      "layout": "pop-out",
+      "defaults": {
+        "headline": "Every minute **counts**",
+        "description": "See where your time really goes."
+      },
+      "overrides": {
+        "callout": {
+          "region": {
+            "x": 0.035,
+            "y": 0.178,
+            "w": 0.93,
+            "h": 0.262
+          }
+        }
+      }
+    },
+    {
+      "layout": "duo",
+      "defaults": {
+        "headline": "Made for **teams**",
+        "description": "Chat, share and plan together."
+      }
+    },
+    {
+      "layout": "proof-hero",
+      "defaults": {
+        "laurelTitle": "Loved by millions",
+        "laurelSubtitle": "Top rated planner",
+        "headline": "Never miss a **deadline**"
+      }
+    }
+  ]
+}

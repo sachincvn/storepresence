@@ -90,3 +90,41 @@ describe("editorReducer screenshots", () => {
     expect(editorReducer(s, { type: "replaceScreenshot", id: "s1", screenshot: shot("x") })).toBe(s);
   });
 });
+
+describe("editorReducer slide layouts", () => {
+  it("stores a pick per slide and clears it when the slide's own layout is chosen again", () => {
+    const tpl = templates[0];
+    const own = tpl.designs[1].layout!;
+    const other = tpl.layoutChoices.find((id) => id !== own)!;
+    let s = run({ type: "samplesReady", samples }, { type: "slide", index: 1 }, { type: "slideLayout", layout: other });
+    expect(s.project.slideLayouts).toEqual({ s2: other });
+    s = editorReducer(s, { type: "slideLayout", layout: own });
+    expect(s.project.slideLayouts).toEqual({});
+  });
+
+  it("moves layout picks from samples to uploads", () => {
+    const other = templates[0].layoutChoices.find((id) => id !== templates[0].designs[0].layout)!;
+    const s = run({ type: "samplesReady", samples }, { type: "slideLayout", layout: other }, { type: "addScreenshots", screenshots: [shot("a")] });
+    expect(s.project.slideLayouts?.a).toBe(other);
+  });
+});
+
+describe("editorReducer backdrop and device", () => {
+  it("sets, shuffles and clears a generated backdrop", () => {
+    let s = run({ type: "backdrop", kind: "mesh" });
+    expect(s.project.backdrop).toEqual({ kind: "mesh", seed: 1 });
+    s = editorReducer(s, { type: "backdrop", shuffle: true });
+    expect(s.project.backdrop).toEqual({ kind: "mesh", seed: 2 });
+    s = editorReducer(s, { type: "backdrop", kind: "dots" });
+    expect(s.project.backdrop).toEqual({ kind: "dots", seed: 2 });
+    s = editorReducer(s, { type: "backdrop", kind: null });
+    expect(s.project.backdrop).toBeUndefined();
+  });
+
+  it("sets and resets device model and color independently", () => {
+    let s = run({ type: "device", model: "phone-island" }, { type: "device", color: "#FFFFFF" });
+    expect(s.project).toMatchObject({ deviceModel: "phone-island", deviceColor: "#FFFFFF" });
+    s = editorReducer(s, { type: "device", color: null });
+    expect(s.project).toMatchObject({ deviceModel: "phone-island", deviceColor: undefined });
+  });
+});

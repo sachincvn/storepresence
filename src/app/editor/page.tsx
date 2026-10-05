@@ -8,6 +8,6 @@ export const metadata: Metadata = {
 
 export default async function EditorPage({ searchParams }: PageProps<"/editor">) {
   const { template } = await searchParams;
-  const initialTemplateId = typeof template === "string" && getTemplate(template) ? template : templates[0].id;
-  return <Editor initialTemplateId={initialTemplateId} />;
+  const fromUrl = typeof template === "string" && getTemplate(template) !== undefined;
+  return <Editor initialTemplateId={fromUrl ? template : templates[0].id} templateFromUrl={fromUrl} />;
 }
