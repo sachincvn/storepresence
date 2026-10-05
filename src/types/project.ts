@@ -26,6 +26,11 @@ export type SlideEntry = {
   design: number;
 };
 
+export type BlockKind = "rating" | "review" | "stat" | "laurels" | "appIcon" | "popout";
+
+/** A block the user added to a slide. Its look comes from the template; `x`/`y` is where it was placed. */
+export type AddedBlock = { id: string; kind: BlockKind; x: number; y: number };
+
 /** A user nudge on one element of one slide, on top of the template. */
 export type ElementEdit = {
   /** Move in template pixels. */
@@ -64,6 +69,8 @@ export type Project = {
   calloutRegions?: Record<string, Record<string, NormRect | null>>;
   /** Store sizes to export (ids from `OUTPUT_SIZES`). Undefined = Google Play phone only. */
   exportSizes?: string[];
+  /** Blocks added per slide (keyed like `slideVariables`). */
+  slideBlocks?: Record<string, AddedBlock[]>;
   /** Element nudges per slide (keyed like `slideVariables`), then by element id. */
   elementEdits?: Record<string, Record<string, ElementEdit>>;
   /** User-arranged slides. Undefined = one slide per screenshot (text-only designs added in place). */

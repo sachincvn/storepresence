@@ -106,6 +106,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
             selected={selectedElement}
             onSelect={onSelectElement}
             onEdit={(id, edit) => dispatch({ type: "elementEdit", id, edit })}
+            onRemove={(id) => dispatch({ type: "removeBlock", id })}
           />
         </Section>
       )}

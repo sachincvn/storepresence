@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type RefObject } from "react";
 import type { ElementEdit, Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
-import { applyEdit, elementBox, elementName, hitTest, snapMove, type Guide } from "@/templates/edits";
+import { applyEdit, elementBox, elementName, hitTest, isAddedBlock, snapMove, type Guide } from "@/templates/edits";
 import { designFor, getSlideKey, resolveSlide } from "@/templates/resolve";
 
 type Props = {
@@ -15,6 +15,8 @@ type Props = {
   selected: string | null;
   onSelect: (id: string | null) => void;
   onEdit: (id: string, edit: ElementEdit | null) => void;
+  /** Removes a block the user added. */
+  onRemove: (id: string) => void;
 };
 
 type Drag = { id: string; mode: "move" | "scale"; start: { x: number; y: number }; edit: ElementEdit; moved: boolean };
@@ -26,7 +28,7 @@ const pct = (v: number, of: number) => `${(v / of) * 100}%`;
  * to resize. Arrow keys nudge (Shift = more), + and − resize, Delete hides,
  * Escape deselects. Everything stays inside safe bounds.
  */
-export function CanvasOverlay({ template, project, slide, canvasRef, selected, onSelect, onEdit }: Props) {
+export function CanvasOverlay({ template, project, slide, canvasRef, selected, onSelect, onEdit, onRemove }: Props) {
   const overlay = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
@@ -103,7 +105,8 @@ export function CanvasOverlay({ template, project, slide, canvasRef, selected, o
     else if (e.key === "+" || e.key === "=") onEdit(selected, { ...edit, scale: (edit.scale ?? 1) * 1.05 });
     else if (e.key === "-") onEdit(selected, { ...edit, scale: (edit.scale ?? 1) / 1.05 });
     else if (e.key === "Delete" || e.key === "Backspace") {
-      onEdit(selected, { ...edit, hidden: true });
+      if (isAddedBlock(selected)) onRemove(selected);
+      else onEdit(selected, { ...edit, hidden: true });
       onSelect(null);
     } else if (e.key === "Escape") onSelect(null);
     else return;

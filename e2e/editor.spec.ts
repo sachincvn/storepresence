@@ -368,3 +368,28 @@ test("elements can be selected on the canvas, dragged, nudged, resized and hidde
   const reset = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
   expect(reset.equals(before)).toBe(true);
 });
+
+test("blocks can be added from the Add menu, edited, and removed", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  const menu = page.getByRole("menu", { name: "Add to slide" });
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("menuitem").first()).toBeFocused();
+  await menu.getByRole("menuitem", { name: /^Review/ }).click();
+  await expect(menu).toBeHidden();
+
+  // The new block is selected and its text fields appear.
+  await expect(page.getByRole("button", { name: "Review card (added)", pressed: true })).toBeVisible();
+  await page.getByRole("textbox", { name: "Review", exact: true }).fill("Best app I have ever used.");
+  const added = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(added.equals(before)).toBe(false);
+
+  // Keyboard menu: Escape closes and returns focus.
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Add", exact: true })).toBeFocused();
+
+  await page.getByRole("button", { name: "Remove review card (added)" }).click();
+  await expect(page.getByRole("button", { name: /Review card \(added\)/ })).toHaveCount(0);
+  expect((await exportFrom(page, /Export slide 1 as PNG/)).buffer.equals(before)).toBe(true);
+});

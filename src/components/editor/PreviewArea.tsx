@@ -39,6 +39,7 @@ type PreviewAreaProps = {
   selectedElement: string | null;
   onSelectElement: (id: string | null) => void;
   onEditElement: (id: string, edit: ElementEdit | null) => void;
+  onRemoveElement: (id: string) => void;
 };
 
 export function PreviewArea(props: PreviewAreaProps) {
@@ -121,6 +122,7 @@ export function PreviewArea(props: PreviewAreaProps) {
                 selected={props.selectedElement}
                 onSelect={props.onSelectElement}
                 onEdit={props.onEditElement}
+                onRemove={props.onRemoveElement}
               />
             )}
           </div>

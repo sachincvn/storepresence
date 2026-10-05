@@ -2,7 +2,7 @@
 
 import type { ElementEdit, Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
-import { EDIT_LIMITS, elementName } from "@/templates/edits";
+import { EDIT_LIMITS, elementName, isAddedBlock } from "@/templates/edits";
 import { designFor, getSlideKey } from "@/templates/resolve";
 
 type Props = {
@@ -12,13 +12,14 @@ type Props = {
   selected: string | null;
   onSelect: (id: string | null) => void;
   onEdit: (id: string, edit: ElementEdit | null) => void;
+  onRemove: (id: string) => void;
 };
 
 const EYE = "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z";
 const EYE_OFF = "M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.6 0 3-.4 4.3-1";
 
 /** Every element on the slide: select it, hide or show it, resize and rotate it. Works without a pointer. */
-export function ElementControls({ template, project, slide, selected, onSelect, onEdit }: Props) {
+export function ElementControls({ template, project, slide, selected, onSelect, onEdit, onRemove }: Props) {
   const elements = designFor(template, slide, project).elements;
   const edits = project.elementEdits?.[getSlideKey(template, project, slide)] ?? {};
   const current = elements.find((el) => el.id === selected);
@@ -42,6 +43,21 @@ export function ElementControls({ template, project, slide, selected, onSelect, 
                 {name}
                 {edits[el.id] && !hidden && <span className="ml-1.5 text-xs font-semibold text-blue">edited</span>}
               </button>
+              {isAddedBlock(el.id) ? (
+                <button
+                  type="button"
+                  aria-label={`Remove ${name.toLowerCase()}`}
+                  onClick={() => {
+                    onRemove(el.id);
+                    if (el.id === selected) onSelect(null);
+                  }}
+                  className="grid size-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-white hover:text-ink"
+                >
+                  <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 7h14M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3" />
+                  </svg>
+                </button>
+              ) : (
               <button
                 type="button"
                 aria-label={hidden ? `Show ${name.toLowerCase()}` : `Hide ${name.toLowerCase()}`}
@@ -55,6 +71,7 @@ export function ElementControls({ template, project, slide, selected, onSelect, 
                   <path d={hidden ? EYE_OFF : EYE} />
                 </svg>
               </button>
+              )}
             </li>
           );
         })}

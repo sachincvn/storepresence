@@ -121,7 +121,21 @@ const NAMES: Record<string, string> = {
   cta: "Button",
 };
 
+const TYPE_NAMES: Partial<Record<TemplateElement["type"], string>> = {
+  rating: "Rating",
+  review: "Review card",
+  stat: "Big number",
+  laurels: "Award",
+  imageSlot: "App icon",
+  callout: "Pop-out",
+  text: "Text",
+};
+
+/** Ids of blocks the user added (they can be removed, not just hidden). */
+export const isAddedBlock = (id: string) => id.startsWith("block-");
+
 /** Friendly name for an element in the editor. */
 export function elementName(el: TemplateElement): string {
+  if (isAddedBlock(el.id)) return `${TYPE_NAMES[el.type] ?? "Block"} (added)`;
   return NAMES[el.id] ?? (el.type === "shape" ? "Decoration" : el.id.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase()));
 }

@@ -12,8 +12,9 @@ import { createSampleScreenshots } from "@/lib/sampleShots";
 import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
-import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
-import type { ElementEdit, Screenshot } from "@/types/project";
+import { designFor, getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
+import { blockOptions } from "@/templates/blocks";
+import type { BlockKind, ElementEdit, Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
 import { BrandColors } from "./BrandColors";
 import { ExportDialog } from "@/components/export/ExportDialog";
@@ -169,6 +170,12 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
 
   const slideActions = {
     canAddText: canAddTextSlide(template, project, slide),
+    blocks: blockOptions(template, designFor(template, slide, project)),
+    onAddBlock: (kind: BlockKind) => {
+      const id = `block-${kind}-${newSlideKey().slice(-6)}`;
+      dispatch({ type: "addBlock", kind, id });
+      setSelection({ key: slideKey, id });
+    },
     onDuplicate: () => dispatch({ type: "duplicateSlide", key: newSlideKey() }),
     onAddText: () => dispatch({ type: "addTextSlide", key: newSlideKey() }),
     onMove: (offset: -1 | 1) => dispatch({ type: "moveSlide", offset }),
@@ -252,6 +259,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       selectedElement={selectedElement}
       onSelectElement={selectElement}
       onEditElement={editElement}
+      onRemoveElement={(id) => dispatch({ type: "removeBlock", id })}
       />
     </>
   );
