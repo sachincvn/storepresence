@@ -29,7 +29,9 @@ export function SiteHeader() {
           ))}
         </ul>
         <ButtonLink href={site.editorPath} size="md">
-          Create screenshots
+          {/* Short label on phones so the longer wordmark fits. */}
+          <span className="sm:hidden">Create</span>
+          <span className="hidden sm:inline">Create screenshots</span>
         </ButtonLink>
       </nav>
     </header>

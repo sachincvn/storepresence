@@ -356,12 +356,12 @@ Implement:
 
 - Stack in repo: Next.js 16 (App Router, `src/`), React 19, Tailwind CSS v4 (CSS-first `@theme`, no `tailwind.config`), TypeScript, JSZip.
 - Next.js 16 differs from older versions. Check `node_modules/next/dist/docs/` before using unfamiliar APIs.
-- Commands: `npm run dev`, `npm run build`, `npm run lint`, `npm test` (Vitest, `src/**/*.test.ts`).
+- Commands: `npm run dev`, `npm run build`, `npm run lint`, `npm test` (Vitest, `src/**/*.test.ts`), `npm run test:e2e` (Playwright, `e2e/`; builds and serves on port 3100, uses installed Chrome, `PW_BUNDLED=1` for bundled Chromium).
 - Editor/template engine build plan and status: `editor-plan.md`. Follow it step by step and tick steps when done.
 - When an AI agent runs `next dev`, Next.js appends a managed block to `AGENTS.md`. Prefer `npm run build` + `npx next start` for verification.
 - `next.config.ts` pins `turbopack.root` because a stray lockfile exists in the user's home directory.
-- Brand name "ShotDrop" is a placeholder, set in `src/lib/site.ts`.
-- Landing page: `src/components/landing/`. Template previews on the landing page are CSS mocks (`StorePoster` + `posters.ts`), not the real template engine.
+- Brand name: "StorePresence" (repo `storepresence`), set in `src/lib/site.ts`.
+- Landing page: `src/components/landing/`. The template gallery renders real templates (`TemplateSetPreview`); hero, steps, features and CTA use decorative CSS mocks (`StorePoster` + `posters.ts`).
 - Editor: `/editor` (`src/components/editor/`). Templates: `src/templates/` (JSON + `registry.ts`). Renderer: `src/renderer/` (pure TS, no React).
 - Adding or editing templates: follow `templates.md`, then check `/dev/templates` (Template Lab, dev only; `TEMPLATE_LAB=1 npx next start` opens it on a production build).
 
