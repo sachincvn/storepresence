@@ -2,6 +2,7 @@
 
 import { useCallback, useState, type Dispatch } from "react";
 import type { Screenshot } from "@/types/project";
+import type { ImageSlotKey } from "@/types/template";
 import { isAcceptedFile, MAX_SCREENSHOTS, readScreenshot } from "@/lib/upload";
 import { forgetImage } from "@/renderer/templateRenderer";
 import type { EditorAction } from "@/components/editor/editorState";
@@ -89,5 +90,31 @@ export function useScreenshotUpload({ dispatch, uploadedCount }: Options) {
     [dispatch],
   );
 
-  return { addFiles, replaceFile, remove, pending, errors, notice, dismissErrors: () => setErrors([]) };
+  /** App icon, logo or mascot. Replaces and frees any previous image for that slot. */
+  const setImage = useCallback(
+    async (key: ImageSlotKey, file: File | null, previous?: Screenshot) => {
+      if (!file) {
+        dispatch({ type: "image", key, image: null });
+        if (previous) releaseScreenshot(previous);
+        setNotice("Image removed.");
+        return;
+      }
+      if (!isAcceptedFile(file)) {
+        setErrors([`${file.name} isn't supported. Use PNG, JPG or WEBP.`]);
+        return;
+      }
+      try {
+        const image = await readScreenshot(file);
+        dispatch({ type: "image", key, image });
+        if (previous) releaseScreenshot(previous);
+        setNotice(`Added ${file.name}.`);
+        setErrors([]);
+      } catch {
+        setErrors([`Couldn't read ${file.name}. Try exporting it again as PNG.`]);
+      }
+    },
+    [dispatch],
+  );
+
+  return { addFiles, replaceFile, remove, setImage, pending, errors, notice, dismissErrors: () => setErrors([]) };
 }

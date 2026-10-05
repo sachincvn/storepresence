@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
 import { renderSlide } from "@/renderer/templateRenderer";
@@ -17,13 +17,32 @@ type SlideCanvasProps = {
   label?: string;
   className?: string;
   style?: CSSProperties;
+  /** Wait until the canvas is near the viewport before rendering (thumbnails). */
+  lazy?: boolean;
 };
 
 /** Live preview of one slide. Renders off-screen, then swaps in, so it never flashes blank. */
-export function SlideCanvas({ template, project, slideIndex, scale, delay = 0, label, className = "", style }: SlideCanvasProps) {
+export function SlideCanvas({ template, project, slideIndex, scale, delay = 0, label, className = "", style, lazy = false }: SlideCanvasProps) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const [visible, setVisible] = useState(!lazy);
 
   useEffect(() => {
+    const canvas = ref.current;
+    if (visible || !canvas) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        setVisible(true);
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
     let cancelled = false;
     const timer = setTimeout(async () => {
       try {
@@ -41,7 +60,7 @@ export function SlideCanvas({ template, project, slideIndex, scale, delay = 0, l
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [template, project, slideIndex, scale, delay]);
+  }, [template, project, slideIndex, scale, delay, visible]);
 
   return (
     <canvas

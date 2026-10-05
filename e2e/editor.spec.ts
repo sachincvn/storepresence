@@ -104,3 +104,26 @@ test("Full set and Store preview show every slide", async ({ page }) => {
   await page.getByRole("button", { name: "Edit slide 3" }).click();
   await expect(page.getByRole("button", { name: "Slide 3", exact: true })).toHaveAttribute("aria-current", "true");
 });
+
+test("layout picker switches the current slide and markup styles text", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+
+  await page.getByText("Review", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Review" })).toBeChecked();
+  await expect(page.getByRole("textbox", { name: "Review", exact: true })).toBeVisible(); // review quote field appears
+  const review = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(review.equals(before)).toBe(false);
+  expect(pngSize(review)).toEqual({ width: 1080, height: 1920 });
+
+  // Other slides keep their own layout.
+  await page.getByRole("button", { name: "Slide 2", exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Review" })).not.toBeChecked();
+
+  // Inline markup renders without the markers.
+  await page.getByRole("button", { name: "Slide 1", exact: true }).click();
+  await page.getByLabel("Headline").fill("Learn **anywhere**");
+  const marked = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  await page.getByLabel("Headline").fill("Learn anywhere");
+  const plain = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(marked.equals(plain)).toBe(false);
+});

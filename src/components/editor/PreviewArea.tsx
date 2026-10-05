@@ -94,7 +94,7 @@ export function PreviewArea(props: PreviewAreaProps) {
                     onClick={() => props.onSlideChange(i)}
                     className={`block rounded-lg p-0.5 ${i === slide ? "ring-2 ring-blue" : "ring-1 ring-line hover:ring-ink/30"}`}
                   >
-                    <SlideCanvas template={template} project={project} slideIndex={i} scale={0.06} delay={200} className="w-11 rounded-md" />
+                    <SlideCanvas template={template} project={project} slideIndex={i} scale={0.06} delay={200} lazy className="w-11 rounded-md" />
                   </button>
                 </li>
               ))}

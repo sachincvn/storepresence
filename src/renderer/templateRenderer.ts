@@ -49,6 +49,7 @@ export async function renderSlide(
   const urls = [
     ...spec.screenshots.flatMap((s) => (s ? [s.url] : [])),
     ...allElements.flatMap((el) => (el.type === "image" ? [el.src] : [])),
+    ...allElements.flatMap((el) => (el.type === "imageSlot" && spec.images[el.key] ? [spec.images[el.key]!.url] : [])),
   ];
   const [, results] = await Promise.all([
     ensureFonts(allElements),

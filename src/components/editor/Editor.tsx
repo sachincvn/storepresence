@@ -12,7 +12,8 @@ import { createSampleScreenshots } from "@/lib/sampleShots";
 import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
-import { getSlideCount } from "@/templates/resolve";
+import { getSlideCount, usedImageSlots } from "@/templates/resolve";
+import { BrandImages } from "@/components/upload/BrandImages";
 import { editorReducer, initialEditorState } from "./editorState";
 import { Inspector, type InspectorSection } from "./Inspector";
 import { PreviewArea, type View } from "./PreviewArea";
@@ -20,6 +21,7 @@ import { useLayoutMode } from "./useLayoutMode";
 
 const SHEET_TITLES: Record<InspectorSection, string> = {
   screenshots: "Screenshots",
+  layout: "Layout",
   text: "Text",
   style: "Style",
 };
@@ -31,7 +33,6 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
   const [sheet, setSheet] = useState<InspectorSection | null>(null);
   /** Button that opened the sheet; focus returns to it on close (mobile taps don't always focus). */
   const sheetTrigger = useRef<HTMLButtonElement | null>(null);
-  const [appName, setAppName] = useState("Taskly");
   /** null = idle; otherwise a short status for the export buttons. */
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -41,13 +42,17 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
   const template = getTemplate(project.templateId) ?? templates[0];
   const slideCount = getSlideCount(template, project);
   const upload = useScreenshotUpload({ dispatch, uploadedCount: state.usingSamples ? 0 : project.screenshots.length });
+  // One app name for templates, the store preview and the ZIP file name.
+  const appName = project.variables.appName ?? "Taskly";
+  const setAppName = (value: string) => dispatch({ type: "variable", key: "appName", value, perSlide: false });
+  const imageSlots = usedImageSlots(template);
 
   // Free every uploaded image when the editor closes.
-  const screenshotsRef = useRef(project.screenshots);
+  const uploadsRef = useRef<typeof project.screenshots>([]);
   useEffect(() => {
-    screenshotsRef.current = project.screenshots;
-  }, [project.screenshots]);
-  useEffect(() => () => screenshotsRef.current.forEach(releaseScreenshot), []);
+    uploadsRef.current = [...project.screenshots, ...Object.values(project.images ?? {})];
+  }, [project.screenshots, project.images]);
+  useEffect(() => () => uploadsRef.current.forEach(releaseScreenshot), []);
 
   // Sample screenshots need canvas, so they are created after mount.
   useEffect(() => {
@@ -121,6 +126,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
       dispatch={dispatch}
       sections={sections}
       bare={bare}
+      brandPanel={imageSlots.length > 0 ? <BrandImages keys={imageSlots} images={project.images ?? {}} onChange={upload.setImage} /> : undefined}
       screenshotPanel={
         <ScreenshotPanel
           screenshots={project.screenshots}
@@ -223,7 +229,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
             {preview}
           </main>
           <section aria-label="Customize" className="grid grid-cols-2 gap-8 border-t border-line bg-white/60 p-6">
-            {inspector(["screenshots"])}
+            {inspector(["screenshots", "layout"])}
             {inspector(["text", "style"])}
           </section>
         </>
@@ -237,7 +243,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
           <div className="border-t border-line px-4 pt-4">{picker}</div>
 
           <nav aria-label="Edit" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
-            <ul className="grid grid-cols-3 gap-2">
+            <ul className="grid grid-cols-4 gap-1">
               {(Object.keys(SHEET_TITLES) as InspectorSection[]).map((key) => (
                 <li key={key}>
                   <button
@@ -259,7 +265,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
 
           <Sheet
             open={sheet !== null}
-            title={sheet === "text" ? `Text, slide ${slide + 1}` : sheet ? SHEET_TITLES[sheet] : ""}
+            title={sheet === "text" || sheet === "layout" ? `${SHEET_TITLES[sheet]}, slide ${slide + 1}` : sheet ? SHEET_TITLES[sheet] : ""}
             onClose={() => {
               setSheet(null);
               sheetTrigger.current?.focus();
@@ -276,6 +282,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
 function SheetIcon({ section }: { section: InspectorSection }) {
   const paths: Record<InspectorSection, string> = {
     screenshots: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 15h4",
+    layout: "M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z",
     text: "M5 6V4h14v2M12 4v16m-3 0h6",
     style: "M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15.5 15H18a3 3 0 0 0 3-3 9 9 0 0 0-9-9zM7.5 11.5h.01M10 7.5h.01M15 7.5h.01",
   };

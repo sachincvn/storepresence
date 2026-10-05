@@ -1,7 +1,7 @@
 import type { HeadlineFontId, Project, Screenshot } from "@/types/project";
-import type { ThemeKey } from "@/types/template";
+import type { ImageSlotKey, ThemeKey } from "@/types/template";
 import { getTemplate } from "@/templates/registry";
-import { getSlideCount, getSlideKey } from "@/templates/resolve";
+import { designFor, getSlideCount, getSlideKey } from "@/templates/resolve";
 
 export type EditorState = {
   project: Project;
@@ -20,6 +20,11 @@ export type EditorAction =
   | { type: "resetColors" }
   | { type: "deviceFrame"; on: boolean }
   | { type: "headlineFont"; font: HeadlineFontId | undefined }
+  | { type: "slideLayout"; layout: string }
+  | { type: "image"; key: ImageSlotKey; image: Screenshot | null }
+  | { type: "device"; model?: Project["deviceModel"]; color?: string | null }
+  /** `kind: null` restores the template background; `shuffle` moves to the next seed. */
+  | { type: "backdrop"; kind?: "mesh" | "grid" | "dots" | null; shuffle?: boolean }
   | { type: "samplesReady"; samples: Screenshot[] }
   | { type: "addScreenshots"; screenshots: Screenshot[] }
   | { type: "removeScreenshot"; id: string }
@@ -95,6 +100,44 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case "headlineFont":
       return { ...state, project: { ...project, headlineFont: action.font } };
 
+    case "device":
+      return {
+        ...state,
+        project: {
+          ...project,
+          ...("model" in action ? { deviceModel: action.model } : {}),
+          // null resets the color to the template's.
+          ...("color" in action ? { deviceColor: action.color ?? undefined } : {}),
+        },
+      };
+
+    case "backdrop": {
+      if (action.kind === null) return { ...state, project: { ...project, backdrop: undefined } };
+      const kind = action.kind ?? project.backdrop?.kind;
+      if (!kind) return state;
+      // Seeds step deterministically so the reducer stays pure.
+      const seed = (project.backdrop?.seed ?? 1) + (action.shuffle ? 1 : 0);
+      return { ...state, project: { ...project, backdrop: { kind, seed } } };
+    }
+
+    case "image": {
+      const images = { ...project.images };
+      if (action.image) images[action.key] = action.image;
+      else delete images[action.key];
+      return { ...state, project: { ...project, images } };
+    }
+
+    case "slideLayout": {
+      const template = getTemplate(project.templateId);
+      if (!template) return state;
+      const key = getSlideKey(template, project, state.slide);
+      const slideLayouts = { ...project.slideLayouts };
+      // Picking the slide's own layout clears the override.
+      if (designFor(template, state.slide).layout === action.layout) delete slideLayouts[key];
+      else slideLayouts[key] = action.layout;
+      return { ...state, project: { ...project, slideLayouts } };
+    }
+
     case "samplesReady":
       if (shots.length > 0 && !state.usingSamples) return { ...state, samples: action.samples };
       return withScreenshots({ ...state, samples: action.samples }, action.samples, true);
@@ -104,11 +147,13 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (state.usingSamples) {
         // First upload replaces the samples; text typed on sample slides moves to the new ones.
         const slideVariables = { ...project.slideVariables };
+        const slideLayouts = { ...project.slideLayouts };
         action.screenshots.forEach((s, i) => {
           const sample = shots[i];
           if (sample && slideVariables[sample.id]) slideVariables[s.id] = slideVariables[sample.id];
+          if (sample && slideLayouts[sample.id]) slideLayouts[s.id] = slideLayouts[sample.id];
         });
-        return withScreenshots({ ...state, project: { ...project, slideVariables } }, action.screenshots, false, 0);
+        return withScreenshots({ ...state, project: { ...project, slideVariables, slideLayouts } }, action.screenshots, false, 0);
       }
       return withScreenshots(state, [...shots, ...action.screenshots], false, shots.length);
     }

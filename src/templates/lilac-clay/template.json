@@ -54,6 +54,12 @@
         "paddingX": 36,
         "paddingY": 20
       }
+    },
+    "headline": {
+      "emphasis": {
+        "color": "$primary"
+      },
+      "marker": "#FFFFFF"
     }
   },
   "panorama": [
@@ -108,21 +114,21 @@
     {
       "layout": "phone-tilt",
       "defaults": {
-        "headline": "Plan your day in seconds",
+        "headline": "Plan your day in **seconds**",
         "description": "Every task sorted by what matters most."
       }
     },
     {
       "layout": "phone-center",
       "defaults": {
-        "headline": "See your progress grow",
+        "headline": "See your progress ==grow==",
         "description": "Clear stats that keep you going."
       }
     },
     {
       "layout": "duo",
       "defaults": {
-        "headline": "Stay in sync with your team",
+        "headline": "Stay in sync with your **team**",
         "description": "Chat and share without switching apps."
       }
     },
@@ -130,7 +136,7 @@
       "layout": "badge-hero",
       "defaults": {
         "badge": "Never late again",
-        "headline": "Never miss a deadline",
+        "headline": "Never miss a ==deadline==",
         "description": "Smart reminders, right on time."
       }
     }

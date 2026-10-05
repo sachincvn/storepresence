@@ -1,0 +1,161 @@
+{
+  "id": "health-stats",
+  "name": "Health Stats",
+  "category": "Dark",
+  "description": "Deep night tones, neon rings across the set and big numbers.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#0B0F14",
+    "foreground": "#F2F5F7",
+    "primary": "#141B24",
+    "accent": "#3DF5A6",
+    "surface": "#151B23"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "$background",
+        "at": 0
+      },
+      {
+        "color": "$primary",
+        "at": 1
+      }
+    ]
+  },
+  "grain": 0.05,
+  "overrides": {
+    "headline": {
+      "emphasis": {
+        "color": "$accent"
+      },
+      "marker": "#1F6F52"
+    },
+    "stat": {
+      "color": "$accent"
+    },
+    "rating": {
+      "starColor": "$accent"
+    },
+    "laurels": {
+      "leafColor": "$accent",
+      "starColor": "$accent"
+    },
+    "shot": {
+      "device": "phone-island",
+      "frameColor": "#232B35",
+      "shadow": {
+        "y": 50,
+        "blur": 120,
+        "color": "rgba(0, 0, 0, 0.6)"
+      }
+    },
+    "shot-back": {
+      "device": "phone-island",
+      "frameColor": "#232B35",
+      "shadow": {
+        "y": 40,
+        "blur": 100,
+        "color": "rgba(0, 0, 0, 0.55)"
+      }
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "ring-1",
+      "shape": "circle",
+      "x": 820,
+      "y": 1330,
+      "width": 520,
+      "height": 520,
+      "fill": "transparent",
+      "stroke": {
+        "color": "$accent",
+        "width": 18
+      },
+      "opacity": 0.55
+    },
+    {
+      "type": "shape",
+      "id": "ring-2",
+      "shape": "circle",
+      "x": 1880,
+      "y": 160,
+      "width": 620,
+      "height": 620,
+      "fill": "transparent",
+      "stroke": {
+        "color": "$accent",
+        "width": 10
+      },
+      "opacity": 0.3
+    },
+    {
+      "type": "shape",
+      "id": "glow",
+      "shape": "circle",
+      "x": 2700,
+      "y": 700,
+      "width": 820,
+      "height": 820,
+      "fill": "$accent",
+      "blur": 170,
+      "opacity": 0.22
+    },
+    {
+      "type": "shape",
+      "id": "ring-3",
+      "shape": "circle",
+      "x": 3120,
+      "y": 1480,
+      "width": 380,
+      "height": 380,
+      "fill": "transparent",
+      "stroke": {
+        "color": "$accent",
+        "width": 14
+      },
+      "opacity": 0.5
+    }
+  ],
+  "slides": [
+    {
+      "layout": "stat-hero",
+      "defaults": {
+        "headline": "Plan your day in **seconds**",
+        "statValue": "8,432",
+        "statLabel": "steps today"
+      }
+    },
+    {
+      "layout": "phone-center",
+      "defaults": {
+        "headline": "See your progress ==grow==",
+        "description": "Clear stats that keep you going."
+      }
+    },
+    {
+      "layout": "zoom",
+      "defaults": {
+        "headline": "Stay in sync with your **team**",
+        "description": "Chat and share without switching apps."
+      }
+    },
+    {
+      "layout": "proof-hero",
+      "defaults": {
+        "headline": "Never miss a ==deadline=="
+      }
+    }
+  ]
+}

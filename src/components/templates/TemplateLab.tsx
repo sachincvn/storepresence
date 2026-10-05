@@ -14,6 +14,10 @@ const LONG_TEXT: Record<string, string> = {
   headline: "Track every habit, goal and streak in one place",
   description: "Stay focused with smart reminders, weekly insights and a calm plan for work and home.",
   badge: "New: smart weekly reminders",
+  reviewQuote: "I tried five planners this year and this is the only one my whole family still uses daily.",
+  reviewAuthor: "Jordan Lee, product designer",
+  statValue: "12.5M+",
+  statLabel: "tasks finished by people every week",
 };
 
 const NEUTRAL_THEME = { background: "#ECEEF4", foreground: "#16131F", primary: "#3D5AFE", accent: "#FF6FAE", surface: "#FFFFFF" };

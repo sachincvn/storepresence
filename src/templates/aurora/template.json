@@ -107,7 +107,7 @@
       "layout": "badge-hero",
       "defaults": {
         "badge": "New: Smart lists",
-        "headline": "Plan your day in seconds",
+        "headline": "Plan your day in **seconds**",
         "description": "Every task sorted by what matters most."
       },
       "overrides": {
@@ -128,22 +128,24 @@
     {
       "layout": "duo",
       "defaults": {
-        "headline": "See your progress grow",
+        "headline": "See your progress ==grow==",
         "description": "Clear stats that keep you going."
       }
     },
     {
       "layout": "zoom",
       "defaults": {
-        "headline": "Stay in sync with your team",
+        "headline": "Stay in sync with your **team**",
         "description": "Chat and share without switching apps."
       }
     },
     {
-      "layout": "phone-center",
+      "layout": "review-phone",
       "defaults": {
-        "headline": "Never miss a deadline",
-        "description": "Smart reminders, right on time."
+        "headline": "Never miss a ==deadline==",
+        "description": "Smart reminders, right on time.",
+        "reviewQuote": "The reminders are so well timed. I haven't missed a bill since.",
+        "reviewAuthor": "Priya R."
       }
     }
   ]

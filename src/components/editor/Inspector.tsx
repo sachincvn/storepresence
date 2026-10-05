@@ -5,6 +5,9 @@ import type { ResolvedTemplate, ThemeKey } from "@/types/template";
 import { HEADLINE_FONT_KEYS, HEADLINE_FONTS } from "@/templates/headlineFonts";
 import { getSlideValues, themeFor, variablesForSlide } from "@/templates/resolve";
 import type { EditorAction, EditorState } from "./editorState";
+import { BackgroundControls } from "./BackgroundControls";
+import { DeviceControls } from "./DeviceControls";
+import { LayoutPicker } from "./LayoutPicker";
 
 const COLOR_LABELS: Record<ThemeKey, string> = {
   background: "Background",
@@ -14,9 +17,9 @@ const COLOR_LABELS: Record<ThemeKey, string> = {
   surface: "Surface",
 };
 
-export type InspectorSection = "screenshots" | "text" | "style";
+export type InspectorSection = "screenshots" | "layout" | "text" | "style";
 
-const ALL_SECTIONS: InspectorSection[] = ["screenshots", "text", "style"];
+const ALL_SECTIONS: InspectorSection[] = ["screenshots", "layout", "text", "style"];
 
 /** Preview class per font key, so each option shows itself. */
 const FONT_PREVIEW = { display: "font-display", sans: "font-sans", serif: "font-serif" } as const;
@@ -27,6 +30,8 @@ type InspectorProps = {
   dispatch: Dispatch<EditorAction>;
   /** Upload and screenshot list, owned by the editor so page-wide drops share it. */
   screenshotPanel: ReactNode;
+  /** App icon / logo / mascot uploads; shown in Style when the template has image slots. */
+  brandPanel?: ReactNode;
   /** Which groups to show; mobile sheets and tablet columns show a subset. */
   sections?: InspectorSection[];
   /** Inside a titled sheet: drop the group heading the sheet title already shows. */
@@ -34,10 +39,10 @@ type InspectorProps = {
 };
 
 /** Controls are generated from the template's variables and editable colors. */
-export function Inspector({ template, state, dispatch, screenshotPanel, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
+export function Inspector({ template, state, dispatch, screenshotPanel, brandPanel, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
   const { project, slide } = state;
   const values = getSlideValues(template, project, slide);
-  const variables = variablesForSlide(template, slide);
+  const variables = variablesForSlide(template, slide, project);
   const hasDevice = template.designs.some((d) => d.elements.some((el) => el.type === "screenshot" && el.device));
   const theme = themeFor(template, project);
   const hasColorChanges = template.editableColors.some((key) => project.theme[key]);
@@ -49,12 +54,22 @@ export function Inspector({ template, state, dispatch, screenshotPanel, sections
     <div className="flex flex-col gap-7">
       {sections.includes("screenshots") && (bare ? screenshotPanel : <Section title="Screenshots">{screenshotPanel}</Section>)}
 
+      {sections.includes("layout") && (
+        <Section title={bare ? null : `Layout, slide ${slide + 1}`}>
+          <LayoutPicker template={template} project={project} slide={slide} onPick={(layout) => dispatch({ type: "slideLayout", layout })} />
+        </Section>
+      )}
+
       {sections.includes("text") && variables.length === 0 && (
         <p className="text-sm text-muted">This slide has no editable text.</p>
       )}
 
       {sections.includes("text") && variables.length > 0 && (
         <Section title={bare ? null : `Text, slide ${slide + 1}`}>
+          <p className="mb-4 text-xs leading-relaxed text-muted">
+            Tip: <code className="rounded bg-canvas px-1 font-bold text-ink">**word**</code> emphasizes,{" "}
+            <code className="rounded bg-canvas px-1 font-bold text-ink">==word==</code> highlights.
+          </p>
           <div className="flex flex-col gap-4">
             {variables.map((v) => {
               const id = `var-${v.key}`;
@@ -122,6 +137,14 @@ export function Inspector({ template, state, dispatch, screenshotPanel, sections
         </Section>
       )}
 
+      {sections.includes("style") && brandPanel && <Section title="Brand">{brandPanel}</Section>}
+
+      {sections.includes("style") && (
+        <Section title="Background">
+          <BackgroundControls project={project} dispatch={dispatch} />
+        </Section>
+      )}
+
       {sections.includes("style") && template.editableColors.length > 0 && (
         <Section
           title="Colors"
@@ -152,18 +175,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, sections
 
       {sections.includes("style") && hasDevice && (
         <Section title="Device">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={project.deviceFrame}
-            onClick={() => dispatch({ type: "deviceFrame", on: !project.deviceFrame })}
-            className="flex w-full items-center justify-between rounded-xl border border-line bg-white p-3 text-sm font-bold"
-          >
-            Phone frame
-            <span aria-hidden="true" className={`relative h-6 w-11 rounded-full transition-colors ${project.deviceFrame ? "bg-blue" : "bg-line"}`}>
-              <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-[left] ${project.deviceFrame ? "left-[22px]" : "left-0.5"}`} />
-            </span>
-          </button>
+          <DeviceControls project={project} dispatch={dispatch} />
         </Section>
       )}
     </div>

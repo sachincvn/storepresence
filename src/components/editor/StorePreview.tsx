@@ -55,13 +55,18 @@ export function StorePreview({ template, project, appName, onAppNameChange, onSe
 
         {/* App header */}
         <div className="flex items-center gap-4 px-6">
-          <span
-            aria-hidden="true"
-            className="grid size-[72px] shrink-0 place-items-center rounded-[20px] font-display text-3xl font-extrabold text-white shadow-[0_6px_16px_-8px_rgb(22_19_31/0.5)]"
-            style={{ background: `linear-gradient(135deg, ${theme.accent ?? "#3D5AFE"}, ${theme.primary ?? theme.background ?? "#16131F"})` }}
-          >
-            {name.charAt(0).toUpperCase()}
-          </span>
+          {project.images?.appIcon ? (
+            // eslint-disable-next-line @next/next/no-img-element -- object URL preview
+            <img src={project.images.appIcon.url} alt="" className="size-[72px] shrink-0 rounded-[20px] object-cover shadow-[0_6px_16px_-8px_rgb(22_19_31/0.5)]" />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="grid size-[72px] shrink-0 place-items-center rounded-[20px] font-display text-3xl font-extrabold text-white shadow-[0_6px_16px_-8px_rgb(22_19_31/0.5)]"
+              style={{ background: `linear-gradient(135deg, ${theme.accent ?? "#3D5AFE"}, ${theme.primary ?? theme.background ?? "#16131F"})` }}
+            >
+              {name.charAt(0).toUpperCase()}
+            </span>
+          )}
           <div className="min-w-0">
             <p className="truncate text-xl font-bold">{name}</p>
             <p className="text-sm font-semibold text-[#1A7F5A]">Your Studio</p>

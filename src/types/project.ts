@@ -1,4 +1,4 @@
-import type { ThemeTokens } from "./template";
+import type { ImageSlotKey, ThemeTokens } from "./template";
 
 /** Headline font picked in the editor; undefined = the template's own. */
 export type HeadlineFontId = "grotesk" | "serif" | "sans";
@@ -25,4 +25,14 @@ export type Project = {
   theme: ThemeTokens;
   deviceFrame: boolean;
   headlineFont?: HeadlineFontId;
+  /** Overrides the template's device model on every slide (only where the template shows a device). */
+  deviceModel?: "phone" | "phone-island" | "flat";
+  /** Overrides the device body color. */
+  deviceColor?: string;
+  /** Replaces template backgrounds with a generated one; `seed` changes with "Shuffle". */
+  backdrop?: { kind: "mesh" | "grid" | "dots"; seed: number };
+  /** User images for template image slots (app icon, logo, mascot). */
+  images?: Partial<Record<ImageSlotKey, Screenshot>>;
+  /** Per-slide layout picks, keyed like `slideVariables`. */
+  slideLayouts?: Record<string, string>;
 };

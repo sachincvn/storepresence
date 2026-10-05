@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "schema": "ts-json-schema-generator --path src/types/template.ts --type Template --tsconfig tsconfig.json -o src/templates/template.schema.json && ts-json-schema-generator --path src/types/template.ts --type Layout --tsconfig tsconfig.json -o src/templates/layout.schema.json"
   },
   "dependencies": {
     "jszip": "^3.10.2",
@@ -23,9 +24,11 @@
     "@types/node": "^22.20.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "ajv": "^8.20.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
+    "ts-json-schema-generator": "^2.9.0",
     "typescript": "^5",
     "vitest": "^5.0.3"
   }

@@ -45,3 +45,31 @@ export function grainPattern(ctx: CanvasRenderingContext2D): CanvasPattern | nul
   }
   return ctx.createPattern(grainTile, "repeat");
 }
+
+/** Small seeded PRNG (mulberry32): same seed, same layout, so exports are reproducible. */
+export function seededRandom(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Same color with a new alpha. Canvas gradients to "transparent" go grey, so fade to the color itself. */
+export function withAlpha(color: string, alpha: number): string {
+  const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    const h = hex[1].length === 3 ? hex[1].replace(/./g, (c) => c + c) : hex[1];
+    const n = Number.parseInt(h, 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+  }
+  const rgb = color.match(/^rgba?\(([^)]+)\)$/i);
+  if (rgb) {
+    const [r, g, b] = rgb[1].split(",").map((v) => v.trim());
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return alpha === 0 ? "transparent" : color;
+}

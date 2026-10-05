@@ -5,9 +5,13 @@ import { createFixtures, exportFrom, pngSize, yourScreenshots } from "./helpers"
 const TEMPLATES = [
   ["aurora", "Aurora"],
   ["studio-blue", "Studio Blue"],
+  ["mono-minimal", "Mono Minimal"],
   ["sunny-pop", "Sunny Pop"],
+  ["calm-wellness", "Calm Wellness"],
   ["lilac-clay", "Lilac Clay"],
   ["midnight", "Midnight"],
+  ["pro-productivity", "Pro Productivity"],
+  ["health-stats", "Health Stats"],
   ["fresh-mint", "Fresh Mint"],
 ] as const;
 

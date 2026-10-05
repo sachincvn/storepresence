@@ -238,6 +238,9 @@ New layout = new file in `src/templates/layouts/`, then any number of templates 
 
 ## 7. Later (not MVP)
 
+The post-MVP roadmap lives in `premium-plan.md`.
+
+
 - JSON Schema for editor autocompletion in `template.json`.
 - More output sizes per template (App Store 1290×2796) via per-size layouts.
 - Multi-screenshot slides (2–3 phones per image) — the model already supports `slot` indexes.

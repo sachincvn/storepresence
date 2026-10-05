@@ -356,8 +356,10 @@ Implement:
 
 - Stack in repo: Next.js 16 (App Router, `src/`), React 19, Tailwind CSS v4 (CSS-first `@theme`, no `tailwind.config`), TypeScript, JSZip.
 - Next.js 16 differs from older versions. Check `node_modules/next/dist/docs/` before using unfamiliar APIs.
-- Commands: `npm run dev`, `npm run build`, `npm run lint`, `npm test` (Vitest, `src/**/*.test.ts`), `npm run test:e2e` (Playwright, `e2e/`; builds and serves on port 3100, uses installed Chrome, `PW_BUNDLED=1` for bundled Chromium).
+- Commands: `npm run dev`, `npm run build`, `npm run lint`, `npm test` (Vitest, `src/**/*.test.ts`), `npm run test:e2e` (Playwright, `e2e/`; builds and serves on port 3100, uses installed Chrome, `PW_BUNDLED=1` for bundled Chromium), `npm run schema` (regenerate template/layout JSON Schemas after changing `src/types/template.ts`).
+- Golden images live in `e2e/visual.spec.ts-snapshots/` (per platform). After an intended visual change, review and run `npx playwright test e2e/visual.spec.ts --update-snapshots`.
 - Editor/template engine build plan and status: `editor-plan.md`. Follow it step by step and tick steps when done.
+- Next phases (premium templates, callouts, devices, blocks, multi-size, localization): `premium-plan.md`.
 - When an AI agent runs `next dev`, Next.js appends a managed block to `AGENTS.md`. Prefer `npm run build` + `npx next start` for verification.
 - `next.config.ts` pins `turbopack.root` because a stray lockfile exists in the user's home directory.
 - Brand name: "StorePresence" (repo `storepresence`), set in `src/lib/site.ts`.
