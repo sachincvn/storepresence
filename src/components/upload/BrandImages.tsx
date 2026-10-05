@@ -14,7 +14,7 @@ const LABELS: Record<ImageSlotKey, { title: string; hint: string }> = {
 type BrandImagesProps = {
   keys: ImageSlotKey[];
   images: Partial<Record<ImageSlotKey, Screenshot>>;
-  onChange: (key: ImageSlotKey, file: File | null, previous?: Screenshot) => void;
+  onChange: (key: ImageSlotKey, file: File | null) => void;
 };
 
 /** Upload spots for the image slots this template uses. */
@@ -52,7 +52,7 @@ function BrandImage({ slot, image, onChange }: { slot: ImageSlotKey; image?: Scr
             <span className="sr-only"> {title.toLowerCase()}</span>
           </button>
           {image && (
-            <button type="button" onClick={() => onChange(slot, null, image)} className="rounded text-xs font-bold text-muted hover:text-ink hover:underline">
+            <button type="button" onClick={() => onChange(slot, null)} className="rounded text-xs font-bold text-muted hover:text-ink hover:underline">
               Remove<span className="sr-only"> {title.toLowerCase()}</span>
             </button>
           )}
@@ -67,7 +67,7 @@ function BrandImage({ slot, image, onChange }: { slot: ImageSlotKey; image?: Scr
         aria-hidden="true"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) onChange(slot, file, image);
+          if (file) onChange(slot, file);
           e.target.value = "";
         }}
       />

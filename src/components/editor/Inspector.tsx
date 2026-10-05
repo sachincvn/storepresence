@@ -30,6 +30,8 @@ type InspectorProps = {
   dispatch: Dispatch<EditorAction>;
   /** Upload and screenshot list, owned by the editor so page-wide drops share it. */
   screenshotPanel: ReactNode;
+  /** Save status and "Start over", shown under the screenshots. */
+  projectFooter?: ReactNode;
   /** App icon / logo / mascot uploads; shown in Style when the template has image slots. */
   brandPanel?: ReactNode;
   /** Which groups to show; mobile sheets and tablet columns show a subset. */
@@ -39,7 +41,7 @@ type InspectorProps = {
 };
 
 /** Controls are generated from the template's variables and editable colors. */
-export function Inspector({ template, state, dispatch, screenshotPanel, brandPanel, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
+export function Inspector({ template, state, dispatch, screenshotPanel, projectFooter, brandPanel, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
   const { project, slide } = state;
   const values = getSlideValues(template, project, slide);
   const variables = variablesForSlide(template, slide, project);
@@ -52,7 +54,20 @@ export function Inspector({ template, state, dispatch, screenshotPanel, brandPan
 
   return (
     <div className="flex flex-col gap-7">
-      {sections.includes("screenshots") && (bare ? screenshotPanel : <Section title="Screenshots">{screenshotPanel}</Section>)}
+      {sections.includes("screenshots") &&
+        (bare ? (
+          <div className="flex flex-col gap-5">
+            {screenshotPanel}
+            {projectFooter}
+          </div>
+        ) : (
+          <Section title="Screenshots">
+            <div className="flex flex-col gap-5">
+              {screenshotPanel}
+              {projectFooter}
+            </div>
+          </Section>
+        ))}
 
       {sections.includes("layout") && (
         <Section title={bare ? null : `Layout, slide ${slide + 1}`}>

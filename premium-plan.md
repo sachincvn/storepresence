@@ -206,7 +206,7 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 2. Screenshot collage backdrop and full-bleed mode (3.6).
 3. Intro/outro/text-only slides and slide list (3.7, 4.4).
 4. Brand match from app icon (4.5).
-5. Undo/redo, autosave, projects (4.4).
+5. ◐ Undo/redo, autosave, projects (4.4): ☑ undo/redo (header + Ctrl+Z, typing merged per field), autosave to IndexedDB with restore and undoable Start over; ☐ multiple named projects.
 6. 4 new templates: Playful Learning, Cinematic, Fintech Glass, Social Pop.
 
 ### Phase F — Freedom without chaos (≈ 3 weeks)

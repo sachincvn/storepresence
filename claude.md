@@ -364,6 +364,7 @@ Implement:
 - `next.config.ts` pins `turbopack.root` because a stray lockfile exists in the user's home directory.
 - Brand name: "StorePresence" (repo `storepresence`), set in `src/lib/site.ts`.
 - Landing page: `src/components/landing/`. The template gallery renders real templates (`TemplateSetPreview`); hero, steps, features and CTA use decorative CSS mocks (`StorePoster` + `posters.ts`).
+- Editor state: `editorState.ts` (pure reducer) wrapped by `history.ts` (undo/redo). Autosave: `useAutosave.ts` + `src/lib/projectStore.ts` (IndexedDB, this browser only). Uploaded images are freed only when no undo step references them, never directly on remove.
 - Editor: `/editor` (`src/components/editor/`). Templates: `src/templates/` (JSON + `registry.ts`). Renderer: `src/renderer/` (pure TS, no React).
 - Adding or editing templates: follow `templates.md`, then check `/dev/templates` (Template Lab, dev only; `TEMPLATE_LAB=1 npx next start` opens it on a production build).
 

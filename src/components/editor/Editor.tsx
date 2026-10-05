@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState, type DragEvent } from "react";
 import { Logo } from "@/components/landing/Logo";
 import { TemplatePicker } from "@/components/templates/TemplatePicker";
 import { Button } from "@/components/ui/Button";
@@ -13,8 +13,11 @@ import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
 import { getSlideCount, usedImageSlots } from "@/templates/resolve";
+import type { Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
-import { editorReducer, initialEditorState } from "./editorState";
+import type { EditorAction } from "./editorState";
+import { canRedo, canUndo, historyReducer, initialHistory, referencedImages } from "./history";
+import { useAutosave } from "./useAutosave";
 import { Inspector, type InspectorSection } from "./Inspector";
 import { PreviewArea, type View } from "./PreviewArea";
 import { useLayoutMode } from "./useLayoutMode";
@@ -26,8 +29,20 @@ const SHEET_TITLES: Record<InspectorSection, string> = {
   style: "Style",
 };
 
-export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
-  const [state, dispatch] = useReducer(editorReducer, initialTemplateId, initialEditorState);
+type EditorProps = {
+  initialTemplateId: string;
+  /** True when the URL picked the template; it then wins over the autosaved one. */
+  templateFromUrl?: boolean;
+};
+
+export function Editor({ initialTemplateId, templateFromUrl = false }: EditorProps) {
+  const [history, dispatchHistory] = useReducer(historyReducer, initialTemplateId, initialHistory);
+  const state = history.present;
+  // Edits carry a timestamp so a burst of typing becomes one undo step.
+  const dispatch = useCallback((action: EditorAction) => dispatchHistory({ ...action, at: Date.now() }), []);
+  const undo = useCallback(() => dispatchHistory({ type: "undo" }), []);
+  const redo = useCallback(() => dispatchHistory({ type: "redo" }), []);
+  const saveStatus = useAutosave(state, dispatchHistory, templateFromUrl ? initialTemplateId : undefined);
   const mode = useLayoutMode();
   const [view, setView] = useState<View>("slide");
   const [sheet, setSheet] = useState<InspectorSection | null>(null);
@@ -47,12 +62,30 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
   const setAppName = (value: string) => dispatch({ type: "variable", key: "appName", value, perSlide: false });
   const imageSlots = usedImageSlots(template);
 
-  // Free every uploaded image when the editor closes.
-  const uploadsRef = useRef<typeof project.screenshots>([]);
+  // Uploaded images stay in memory while any undo step can show them, and are freed after.
+  const liveImages = useRef(new Map<string, Screenshot>());
   useEffect(() => {
-    uploadsRef.current = [...project.screenshots, ...Object.values(project.images ?? {})];
-  }, [project.screenshots, project.images]);
-  useEffect(() => () => uploadsRef.current.forEach(releaseScreenshot), []);
+    const referenced = referencedImages(history);
+    liveImages.current.forEach((image, url) => referenced.has(url) || releaseScreenshot(image));
+    liveImages.current = referenced;
+  }, [history]);
+  useEffect(() => () => liveImages.current.forEach(releaseScreenshot), []);
+
+  // Undo/redo shortcuts. Text fields keep their own undo for typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const target = e.target as HTMLElement;
+      if (target.isContentEditable || target.matches("textarea, input:not([type=checkbox], [type=radio], [type=color], [type=file], [type=button])")) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) undo();
+      else if ((key === "z" && e.shiftKey) || key === "y") redo();
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
 
   // Sample screenshots need canvas, so they are created after mount.
   useEffect(() => {
@@ -63,7 +96,7 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [dispatch]);
 
   // Keep the URL shareable as the template changes.
   useEffect(() => {
@@ -143,6 +176,19 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
           onDismissErrors={upload.dismissErrors}
         />
       }
+      projectFooter={
+        <div className="flex items-center justify-between gap-3 border-t border-line pt-3 text-xs">
+          <p className={saveStatus === "error" ? "font-semibold text-[#9E1846]" : "text-muted"}>{SAVE_LABELS[saveStatus]}</p>
+          <button
+            type="button"
+            onClick={() => dispatchHistory({ type: "reset", at: Date.now() })}
+            disabled={state.usingSamples && !canUndo(history) && Object.keys(project.variables).length === 0}
+            className="shrink-0 rounded-md font-bold text-blue hover:underline disabled:pointer-events-none disabled:opacity-40"
+          >
+            Start over
+          </button>
+        </div>
+      }
     />
   );
 
@@ -178,8 +224,12 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
       )}
 
       <header className="flex items-center justify-between gap-3 border-b border-line bg-white/80 px-4 py-3 backdrop-blur sm:px-6">
-        <Logo />
+        <Logo compact />
         <div className="flex items-center gap-2 sm:gap-3">
+          <div role="group" aria-label="History" className="flex items-center gap-1">
+            <HistoryButton label="Undo" shortcut="Ctrl+Z" onClick={undo} disabled={!canUndo(history)} path="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+            <HistoryButton label="Redo" shortcut="Ctrl+Shift+Z" onClick={redo} disabled={!canRedo(history)} path="m15 14 5-5-5-5m5 5H9.5a5.5 5.5 0 0 0 0 11H13" />
+          </div>
           <p role="status" className="sr-only text-sm font-semibold text-muted tabular-nums md:not-sr-only">
             {exportStatus ?? ""}
           </p>
@@ -276,6 +326,30 @@ export function Editor({ initialTemplateId }: { initialTemplateId: string }) {
         </>
       )}
     </div>
+  );
+}
+
+const SAVE_LABELS = {
+  idle: "Saved in this browser only",
+  saving: "Saving…",
+  saved: "Saved in this browser only",
+  error: "Not saved: browser storage is full or blocked",
+} as const;
+
+function HistoryButton({ label, shortcut, path, ...props }: { label: string; shortcut: string; path: string; onClick: () => void; disabled: boolean }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-keyshortcuts={shortcut.replace("Ctrl", "Control")}
+      title={`${label} (${shortcut})`}
+      className="grid size-9 place-items-center rounded-xl text-ink hover:bg-canvas disabled:pointer-events-none disabled:opacity-35"
+      {...props}
+    >
+      <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d={path} />
+      </svg>
+    </button>
   );
 }
 

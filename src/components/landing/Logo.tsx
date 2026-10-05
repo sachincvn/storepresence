@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
 
-export function Logo({ className = "" }: { className?: string }) {
+/** `compact`: mark only on phones (the name stays for screen readers). */
+export function Logo({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   return (
     <Link
       href="/"
@@ -13,7 +14,7 @@ export function Logo({ className = "" }: { className?: string }) {
         <rect x="11" y="7" width="12" height="20" rx="3.5" fill="#FFFFFF" stroke="#16131F" strokeWidth="2" transform="rotate(-10 17 17)" />
         <circle cx="25" cy="24" r="5" fill="#FFD43B" stroke="#16131F" strokeWidth="2" />
       </svg>
-      {site.name}
+      <span className={compact ? "max-sm:sr-only" : undefined}>{site.name}</span>
     </Link>
   );
 }

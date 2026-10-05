@@ -127,3 +127,67 @@ test("layout picker switches the current slide and markup styles text", async ({
   const plain = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
   expect(marked.equals(plain)).toBe(false);
 });
+
+test("undo and redo edits from the header and keyboard", async ({ page }) => {
+  const undo = page.getByRole("button", { name: "Undo" });
+  const redo = page.getByRole("button", { name: "Redo" });
+  await expect(undo).toBeDisabled();
+
+  await page.getByLabel("Headline").fill("First");
+  await page.getByText("Editorial serif").click();
+  await undo.click();
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).not.toBeChecked();
+  await undo.click();
+  await expect(page.getByLabel("Headline")).not.toHaveValue("First");
+  await expect(undo).toBeDisabled();
+
+  await redo.click();
+  await expect(page.getByLabel("Headline")).toHaveValue("First");
+
+  // Outside text fields, Ctrl+Z / Ctrl+Shift+Z drive the editor history.
+  await page.getByRole("button", { name: "Slide 1", exact: true }).focus();
+  await page.keyboard.press("Control+Shift+Z");
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).toBeChecked();
+  await page.keyboard.press("Control+Z");
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).not.toBeChecked();
+
+  // A removed screenshot comes back on undo, image intact.
+  await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 2));
+  await expect(yourScreenshots(page)).toHaveCount(2);
+  await page.getByRole("button", { name: "Remove portrait.png" }).click();
+  await expect(yourScreenshots(page)).toHaveCount(1);
+  await undo.click();
+  await expect(yourScreenshots(page)).toHaveCount(2);
+  expect(pngSize((await exportFrom(page, /Download all 2 slides as ZIP/)).buffer).width).toBeGreaterThan(0);
+});
+
+test("work is saved in the browser and restored after reload; start over clears it", async ({ page }) => {
+  await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 3));
+  await expect(yourScreenshots(page)).toHaveCount(3);
+  await page.getByLabel("Headline").fill("Saved headline");
+  await page.getByText("Editorial serif").click();
+  await expect(page.getByText("Saved in this browser only")).toBeVisible();
+  await page.waitForTimeout(800); // past the save debounce
+
+  // Without a template in the URL, the saved template comes back too.
+  await page.goto("/editor");
+  await expect(yourScreenshots(page)).toHaveCount(3);
+  await expect(page.getByRole("button", { name: /^Lilac Clay/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Headline")).toHaveValue("Saved headline");
+  await expect(page.getByRole("radio", { name: "Editorial serif" })).toBeChecked();
+  await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
+  const zip = await JSZip.loadAsync((await exportFrom(page, /Download all 3 slides as ZIP/)).buffer);
+  expect(Object.keys(zip.files)).toHaveLength(3);
+
+  // A template picked in the URL wins, keeping screenshots and text.
+  await page.goto("/editor?template=midnight");
+  await expect(page.getByRole("button", { name: /^Midnight/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(yourScreenshots(page)).toHaveCount(3);
+
+  await page.getByRole("button", { name: "Start over" }).click();
+  await expect(page.getByText("Showing 4 sample screenshots")).toBeVisible();
+  await page.waitForTimeout(800);
+  await page.reload();
+  await expect(page.getByText("Showing 4 sample screenshots")).toBeVisible();
+  await expect(page.getByLabel("Headline")).not.toHaveValue("Saved headline");
+});
