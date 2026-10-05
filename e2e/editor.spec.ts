@@ -260,3 +260,20 @@ test("slides can be added, duplicated, moved and deleted; text slides export wit
   expect(names).toHaveLength(4);
   for (const file of names) expect(pngSize(await zip.file(file)!.async("nodebuffer"))).toEqual({ width: 1080, height: 1920 });
 });
+
+test("brand colors come from the app icon and apply as one undo step", async ({ page }) => {
+  const before = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  const match = page.getByRole("button", { name: /Match colors to your app icon/ });
+  await match.locator("xpath=..").locator('input[type="file"]').setInputFiles(fixtures.images[0]);
+
+  const bold = page.getByRole("button", { name: "Use bold brand colors" });
+  await expect(bold).toBeVisible();
+  await bold.click();
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Reset" })).toBeVisible();
+  const branded = (await exportFrom(page, /Export slide 1 as PNG/)).buffer;
+  expect(branded.equals(before)).toBe(false);
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(bold).toHaveAttribute("aria-pressed", "false");
+});

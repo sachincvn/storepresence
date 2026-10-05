@@ -1,5 +1,5 @@
 import type { HeadlineFontId, Project, Screenshot, SlideEntry } from "@/types/project";
-import type { ImageSlotKey, NormRect, ResolvedTemplate, ThemeKey } from "@/types/template";
+import type { ImageSlotKey, NormRect, ResolvedTemplate, ThemeKey, ThemeTokens } from "@/types/template";
 import { getTemplate } from "@/templates/registry";
 import { designFor, getSlideCount, getSlideKey, getSlides, ownDesign, slideEntries, slideIndexForShot, textLayoutFor } from "@/templates/resolve";
 
@@ -21,6 +21,8 @@ export type EditorAction =
   | { type: "variable"; key: string; value: string; perSlide: boolean }
   | { type: "color"; key: ThemeKey; value: string }
   | { type: "resetColors" }
+  /** Replaces all user colors at once (e.g. a brand suggestion), as one undo step. */
+  | { type: "theme"; theme: ThemeTokens }
   | { type: "deviceFrame"; on: boolean }
   | { type: "headlineFont"; font: HeadlineFontId | undefined }
   | { type: "slideLayout"; layout: string }
@@ -157,6 +159,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "color":
       return { ...state, project: { ...project, theme: { ...project.theme, [action.key]: action.value } } };
+
+    case "theme":
+      return { ...state, project: { ...project, theme: { ...action.theme } } };
 
     case "resetColors":
       return { ...state, project: { ...project, theme: {} } };

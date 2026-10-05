@@ -184,6 +184,8 @@ All elements need `type`, `id`, `x`, `y`, `width`, `height`. Optional on all of 
 - `pattern`: `{ color, ink, pattern: "grid" | "dots" | "lines", size, opacity }`, continuous across slides.
 - Users can replace template backgrounds with a generated Mesh, Grid or Dots and press Shuffle; mesh colors are mixed from the template's own background and accent.
 
+**Brand match**: users can upload their app icon and get up to three color suggestions. Suggestions only change `editableColors`; backgrounds keep 4.5:1 contrast with fixed text colors and accents 3:1 with their background. Make `foreground` editable only if every layout reads well in both light and dark text.
+
 **Colors** are literal CSS colors (`#FFD43B`, `rgba(…)`, `transparent`) or theme tokens (`$background`, `$foreground`, `$primary`, `$accent`, `$surface`). Use tokens for anything that should follow the user's color picks.
 
 ---

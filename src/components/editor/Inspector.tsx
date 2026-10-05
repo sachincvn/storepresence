@@ -33,6 +33,8 @@ type InspectorProps = {
   screenshotPanel: ReactNode;
   /** Save status and "Start over", shown under the screenshots. */
   projectFooter?: ReactNode;
+  /** Brand color suggestions from the app icon, shown at the top of Colors. */
+  brandColors?: ReactNode;
   /** App icon / logo / mascot uploads; shown in Style when the template has image slots. */
   brandPanel?: ReactNode;
   /** Which groups to show; mobile sheets and tablet columns show a subset. */
@@ -42,7 +44,7 @@ type InspectorProps = {
 };
 
 /** Controls are generated from the template's variables and editable colors. */
-export function Inspector({ template, state, dispatch, screenshotPanel, projectFooter, brandPanel, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
+export function Inspector({ template, state, dispatch, screenshotPanel, projectFooter, brandPanel, brandColors, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
   const { project, slide } = state;
   const values = getSlideValues(template, project, slide);
   const variables = variablesForSlide(template, slide, project);
@@ -250,6 +252,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
             )
           }
         >
+          {brandColors}
           <div className="flex flex-col gap-2">
             {template.editableColors.map((key) => (
               <label key={key} className="flex cursor-pointer items-center gap-3 rounded-xl border border-line bg-white p-2 pr-3">

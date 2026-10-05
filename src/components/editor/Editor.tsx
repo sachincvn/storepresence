@@ -15,6 +15,7 @@ import { getTemplate, templates } from "@/templates/registry";
 import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
 import type { Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
+import { BrandColors } from "./BrandColors";
 import { canAddTextSlide, type EditorAction } from "./editorState";
 import { canRedo, canUndo, historyReducer, initialHistory, referencedImages } from "./history";
 import { useAutosave } from "./useAutosave";
@@ -172,6 +173,15 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       dispatch={dispatch}
       sections={sections}
       bare={bare}
+      brandColors={
+        <BrandColors
+          template={template}
+          theme={project.theme}
+          icon={project.images?.appIcon}
+          onUpload={(file) => upload.setImage("appIcon", file)}
+          onApply={(theme) => dispatch({ type: "theme", theme })}
+        />
+      }
       brandPanel={imageSlots.length > 0 ? <BrandImages keys={imageSlots} images={project.images ?? {}} onChange={upload.setImage} /> : undefined}
       screenshotPanel={
         <ScreenshotPanel
