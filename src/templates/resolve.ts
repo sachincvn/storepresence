@@ -1,6 +1,7 @@
 import { mixHex } from "@/lib/color";
 import type { Project, Screenshot, SlideEntry } from "@/types/project";
 import { regionCenterY } from "@/renderer/calloutRenderer";
+import { applyEdit, clampEdit } from "./edits";
 import { getHeadlineFont, HEADLINE_FONT_KEYS, type HeadlineFont } from "./headlineFonts";
 import type {
   Background,
@@ -315,8 +316,11 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
   const { design, regions, resolve, background } = slideContext(template, project, slideIndex);
   const plan = getSlides(template, project)[slideIndex];
   const screenshots = slotScreenshots(template, project, slideIndex);
-  // A callout set to null is hidden on this slide.
-  const elements = design.elements.filter((el) => !(el.type === "callout" && regions[el.id] === null)).map(resolve);
+  const edits = project.elementEdits?.[getSlideKey(template, project, slideIndex)] ?? {};
+  // A callout set to null is hidden on this slide; any element can be hidden with an edit.
+  const elements = design.elements
+    .filter((el) => !(el.type === "callout" && regions[el.id] === null) && !edits[el.id]?.hidden)
+    .map((el) => resolve(edits[el.id] ? applyEdit(el, clampEdit(el, edits[el.id], template.canvas)) : el));
 
   return {
     canvas: template.canvas,

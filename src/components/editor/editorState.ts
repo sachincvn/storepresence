@@ -1,4 +1,5 @@
-import type { HeadlineFontId, Project, Screenshot, SlideEntry } from "@/types/project";
+import type { ElementEdit, HeadlineFontId, Project, Screenshot, SlideEntry } from "@/types/project";
+import { clampEdit } from "@/templates/edits";
 import type { ImageSlotKey, NormRect, ResolvedTemplate, ThemeKey, ThemeTokens } from "@/types/template";
 import { getTemplate } from "@/templates/registry";
 import { designFor, getSlideCount, getSlideKey, getSlides, ownDesign, slideEntries, slideIndexForShot, textLayoutFor } from "@/templates/resolve";
@@ -22,6 +23,10 @@ export type EditorAction =
   | { type: "color"; key: ThemeKey; value: string }
   | { type: "resetColors" }
   | { type: "exportSizes"; sizes: string[] }
+  /** Sets one element's nudge on the selected slide (clamped to safe bounds); null resets it. */
+  | { type: "elementEdit"; id: string; edit: ElementEdit | null }
+  /** Resets every nudge on the selected slide. */
+  | { type: "resetElementEdits" }
   /** Replaces all user colors at once (e.g. a brand suggestion), as one undo step. */
   | { type: "theme"; theme: ThemeTokens }
   | { type: "deviceFrame"; on: boolean }
@@ -99,6 +104,7 @@ function copySlideChoices(project: Project, from: string, to: string, layout?: s
   return {
     ...project,
     slideLayouts,
+    elementEdits: project.elementEdits?.[from] && !layout ? { ...project.elementEdits, [to]: { ...project.elementEdits[from] } } : project.elementEdits,
     slideVariables: project.slideVariables[from] ? { ...project.slideVariables, [to]: { ...project.slideVariables[from] } } : project.slideVariables,
     calloutRegions: project.calloutRegions?.[from] ? { ...project.calloutRegions, [to]: { ...project.calloutRegions[from] } } : project.calloutRegions,
   };
@@ -163,6 +169,26 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "theme":
       return { ...state, project: { ...project, theme: { ...action.theme } } };
+
+    case "elementEdit": {
+      const template = getTemplate(project.templateId);
+      const el = template && designFor(template, state.slide, project).elements.find((e) => e.id === action.id);
+      if (!template || !el) return state;
+      const key = getSlideKey(template, project, state.slide);
+      const slide = { ...project.elementEdits?.[key] };
+      const edit = action.edit && clampEdit(el, action.edit, template.canvas);
+      if (edit && Object.keys(edit).length > 0) slide[action.id] = edit;
+      else delete slide[action.id];
+      return { ...state, project: { ...project, elementEdits: { ...project.elementEdits, [key]: slide } } };
+    }
+
+    case "resetElementEdits": {
+      const template = getTemplate(project.templateId);
+      if (!template) return state;
+      const elementEdits = { ...project.elementEdits };
+      delete elementEdits[getSlideKey(template, project, state.slide)];
+      return { ...state, project: { ...project, elementEdits } };
+    }
 
     case "exportSizes":
       return { ...state, project: { ...project, exportSizes: [...action.sizes] } };

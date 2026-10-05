@@ -9,6 +9,7 @@ import { BackgroundControls } from "./BackgroundControls";
 import { DeviceControls } from "./DeviceControls";
 import { LayoutPicker } from "./LayoutPicker";
 import { RegionPicker } from "./RegionPicker";
+import { ElementControls } from "./ElementControls";
 
 const COLOR_LABELS: Record<ThemeKey, string> = {
   background: "Background",
@@ -31,6 +32,9 @@ type InspectorProps = {
   dispatch: Dispatch<EditorAction>;
   /** Upload and screenshot list, owned by the editor so page-wide drops share it. */
   screenshotPanel: ReactNode;
+  /** Element picked on the canvas or in the Elements list. */
+  selectedElement?: string | null;
+  onSelectElement?: (id: string | null) => void;
   /** Save status and "Start over", shown under the screenshots. */
   projectFooter?: ReactNode;
   /** Brand color suggestions from the app icon, shown at the top of Colors. */
@@ -44,7 +48,7 @@ type InspectorProps = {
 };
 
 /** Controls are generated from the template's variables and editable colors. */
-export function Inspector({ template, state, dispatch, screenshotPanel, projectFooter, brandPanel, brandColors, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
+export function Inspector({ template, state, dispatch, screenshotPanel, projectFooter, brandPanel, brandColors, selectedElement = null, onSelectElement, sections = ALL_SECTIONS, bare = false }: InspectorProps) {
   const { project, slide } = state;
   const values = getSlideValues(template, project, slide);
   const variables = variablesForSlide(template, slide, project);
@@ -81,6 +85,28 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
       {sections.includes("layout") && (
         <Section title={bare ? null : `Layout, slide ${slide + 1}`}>
           <LayoutPicker template={template} project={project} slide={slide} onPick={(layout) => dispatch({ type: "slideLayout", layout })} />
+        </Section>
+      )}
+
+      {sections.includes("layout") && onSelectElement && (
+        <Section
+          title={`Elements, slide ${slide + 1}`}
+          action={
+            Object.keys(project.elementEdits?.[getSlideKey(template, project, slide)] ?? {}).length > 0 && (
+              <button type="button" onClick={() => dispatch({ type: "resetElementEdits" })} className="rounded-md text-xs font-bold text-blue hover:underline">
+                Reset all
+              </button>
+            )
+          }
+        >
+          <ElementControls
+            template={template}
+            project={project}
+            slide={slide}
+            selected={selectedElement}
+            onSelect={onSelectElement}
+            onEdit={(id, edit) => dispatch({ type: "elementEdit", id, edit })}
+          />
         </Section>
       )}
 

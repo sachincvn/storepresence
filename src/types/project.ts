@@ -26,6 +26,18 @@ export type SlideEntry = {
   design: number;
 };
 
+/** A user nudge on one element of one slide, on top of the template. */
+export type ElementEdit = {
+  /** Move in template pixels. */
+  dx?: number;
+  dy?: number;
+  /** Multiplies the element's size. */
+  scale?: number;
+  /** Degrees added to the element's rotation. */
+  rotation?: number;
+  hidden?: boolean;
+};
+
 export type Project = {
   templateId: string;
   /** Upload order = slide order. */
@@ -52,6 +64,8 @@ export type Project = {
   calloutRegions?: Record<string, Record<string, NormRect | null>>;
   /** Store sizes to export (ids from `OUTPUT_SIZES`). Undefined = Google Play phone only. */
   exportSizes?: string[];
+  /** Element nudges per slide (keyed like `slideVariables`), then by element id. */
+  elementEdits?: Record<string, Record<string, ElementEdit>>;
   /** User-arranged slides. Undefined = one slide per screenshot (text-only designs added in place). */
   slides?: SlideEntry[];
 };
