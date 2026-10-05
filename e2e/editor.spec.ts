@@ -224,3 +224,39 @@ test("pop-out area can be re-picked from the keyboard and hidden per slide", asy
   await page.getByRole("button", { name: "Reset" }).first().click();
   await expect(area).toHaveAttribute("aria-label", label!);
 });
+
+test("slides can be added, duplicated, moved and deleted; text slides export with the set", async ({ page }) => {
+  const strip = page.getByRole("list", { name: /^Slides/ }).getByRole("listitem");
+  await expect(strip).toHaveCount(4);
+
+  await page.getByRole("button", { name: "Text slide" }).click();
+  await expect(strip).toHaveCount(5);
+  await expect(page.getByRole("button", { name: "Slide 2", exact: true })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByLabel("Headline")).toHaveValue(/in one place/);
+  // Text slides have no screenshot to pick.
+  await expect(page.getByRole("heading", { name: /^Screenshot, slide/ })).toBeHidden();
+
+  await page.getByRole("button", { name: "Duplicate" }).click();
+  await expect(strip).toHaveCount(6);
+  await page.getByRole("button", { name: "Move slide left" }).click();
+  await expect(page.getByRole("button", { name: "Slide 2", exact: true })).toHaveAttribute("aria-current", "true");
+  await page.getByRole("button", { name: "Delete slide" }).click();
+  await expect(strip).toHaveCount(5);
+
+  // Upload 3 screenshots: the text slide stays, each screenshot gets a slide.
+  await page.locator('input[type="file"][multiple]').setInputFiles(fixtures.images.slice(0, 3));
+  await expect(strip).toHaveCount(3);
+  await page.getByRole("button", { name: "Slide 1", exact: true }).click();
+  await page.getByRole("button", { name: "Text slide" }).click();
+  await expect(strip).toHaveCount(4);
+
+  // Slide 3 shows the 2nd screenshot; switch it to the 3rd.
+  await page.getByRole("button", { name: "Slide 3", exact: true }).click();
+  await page.locator("label").filter({ has: page.getByRole("radio", { name: "tall-capture.png" }) }).click();
+  await expect(page.getByRole("radio", { name: "tall-capture.png" })).toBeChecked();
+
+  const zip = await JSZip.loadAsync((await exportFrom(page, /Download all 4 slides as ZIP/)).buffer);
+  const names = Object.keys(zip.files);
+  expect(names).toHaveLength(4);
+  for (const file of names) expect(pngSize(await zip.file(file)!.async("nodebuffer"))).toEqual({ width: 1080, height: 1920 });
+});

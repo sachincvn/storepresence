@@ -12,10 +12,10 @@ import { createSampleScreenshots } from "@/lib/sampleShots";
 import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
-import { getSlideCount, usedImageSlots } from "@/templates/resolve";
+import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
 import type { Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
-import type { EditorAction } from "./editorState";
+import { canAddTextSlide, type EditorAction } from "./editorState";
 import { canRedo, canUndo, historyReducer, initialHistory, referencedImages } from "./history";
 import { useAutosave } from "./useAutosave";
 import { Inspector, type InspectorSection } from "./Inspector";
@@ -28,6 +28,11 @@ const SHEET_TITLES: Record<InspectorSection, string> = {
   text: "Text",
   style: "Style",
 };
+
+/** New slides need ids; made outside the reducer so it stays pure. */
+function newSlideKey(): string {
+  return `slide-${typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now().toString(36)}`;
+}
 
 type EditorProps = {
   initialTemplateId: string;
@@ -149,6 +154,14 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
     },
   };
 
+  const slideActions = {
+    canAddText: canAddTextSlide(template, project, slide),
+    onDuplicate: () => dispatch({ type: "duplicateSlide", key: newSlideKey() }),
+    onAddText: () => dispatch({ type: "addTextSlide", key: newSlideKey() }),
+    onMove: (offset: -1 | 1) => dispatch({ type: "moveSlide", offset }),
+    onRemove: () => dispatch({ type: "removeSlide" }),
+  };
+
   const selectTemplate = (id: string) => dispatch({ type: "template", id });
   const selectSlide = (index: number) => dispatch({ type: "slide", index });
 
@@ -164,11 +177,15 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
         <ScreenshotPanel
           screenshots={project.screenshots}
           usingSamples={state.usingSamples}
-          selected={slide}
+          // Screenshots and slides are separate lists; highlight the screenshot this slide shows.
+          selected={project.screenshots.findIndex((s) => s.id === getSlides(template, project)[slide]?.shot?.id)}
           pending={upload.pending}
           errors={upload.errors}
           notice={upload.notice}
-          onSelect={selectSlide}
+          onSelect={(i) => {
+            const index = slideIndexForShot(template, project, project.screenshots[i]?.id ?? "");
+            if (index >= 0) selectSlide(index);
+          }}
           onAdd={upload.addFiles}
           onReplace={upload.replaceFile}
           onRemove={upload.remove}
@@ -205,6 +222,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       onViewChange={setView}
       onSlideChange={selectSlide}
       onAppNameChange={setAppName}
+      slideActions={slideActions}
       />
     </>
   );

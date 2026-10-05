@@ -12,6 +12,9 @@ const NAMES: Record<string, string> = {
   "brand-hero": "App intro",
   "pop-out": "Pop-out",
   "pop-duo": "Two pop-outs",
+  intro: "Intro",
+  statement: "Statement",
+  outro: "Outro",
 };
 
 export function layoutName(id: string): string {

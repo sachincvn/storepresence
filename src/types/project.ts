@@ -13,6 +13,19 @@ export type Screenshot = {
   height: number;
 };
 
+/**
+ * One slide in a user-arranged set. Exists only after the user adds, removes,
+ * reorders or re-assigns slides; until then slides follow the screenshots.
+ */
+export type SlideEntry = {
+  /** Key for this slide's text, layout and callout choices. */
+  key: string;
+  /** Screenshot id shown in slot 0, or null for a text-only slide. */
+  shot: string | null;
+  /** Template design index (background, default text). Wraps when the template has fewer designs. */
+  design: number;
+};
+
 export type Project = {
   templateId: string;
   /** Upload order = slide order. */
@@ -37,4 +50,6 @@ export type Project = {
   slideLayouts?: Record<string, string>;
   /** Per-slide callout areas by element id, keyed like `slideVariables`. `null` hides that callout. */
   calloutRegions?: Record<string, Record<string, NormRect | null>>;
+  /** User-arranged slides. Undefined = one slide per screenshot (text-only designs added in place). */
+  slides?: SlideEntry[];
 };

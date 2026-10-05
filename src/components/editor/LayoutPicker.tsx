@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import type { Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
-import { designFor, getSlideKey } from "@/templates/resolve";
+import { designFor, getSlideKey, ownDesign } from "@/templates/resolve";
 import { layoutName } from "./layoutNames";
 import { SlideCanvas } from "./SlideCanvas";
 
@@ -18,7 +18,7 @@ type LayoutPickerProps = {
 export function LayoutPicker({ template, project, slide, onPick }: LayoutPickerProps) {
   const key = getSlideKey(template, project, slide);
   const current = designFor(template, slide, project).layout;
-  const own = designFor(template, slide).layout;
+  const own = ownDesign(template, slide, project).layout;
 
   const variants = useMemo(
     () =>

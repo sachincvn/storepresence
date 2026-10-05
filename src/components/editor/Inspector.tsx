@@ -3,7 +3,7 @@
 import type { Dispatch, ReactNode } from "react";
 import type { ResolvedTemplate, ThemeKey } from "@/types/template";
 import { HEADLINE_FONT_KEYS, HEADLINE_FONTS } from "@/templates/headlineFonts";
-import { getSlideKey, getSlideValues, slideCallouts, themeFor, variablesForSlide } from "@/templates/resolve";
+import { designFor, getSlideKey, getSlides, getSlideValues, slideCallouts, slotScreenshots, themeFor, variablesForSlide } from "@/templates/resolve";
 import type { EditorAction, EditorState } from "./editorState";
 import { BackgroundControls } from "./BackgroundControls";
 import { DeviceControls } from "./DeviceControls";
@@ -51,6 +51,9 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
   const callouts = slideCallouts(template, slide, project);
   const regions = project.calloutRegions?.[getSlideKey(template, project, slide)] ?? {};
   const shots = project.screenshots;
+  const slotShots = slotScreenshots(template, project, slide);
+  const slideShot = getSlides(template, project)[slide]?.shot ?? null;
+  const showsScreenshot = designFor(template, slide, project).slots > 0;
   const hasColorChanges = template.editableColors.some((key) => project.theme[key]);
   // The template's own headline font, so "Template" previews what it really uses.
   const templateFont =
@@ -79,7 +82,33 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
         </Section>
       )}
 
-      {sections.includes("layout") && callouts.length > 0 && shots.length > 0 && (
+      {sections.includes("layout") && showsScreenshot && shots.length > 1 && (
+        <Section title={`Screenshot, slide ${slide + 1}`}>
+          <fieldset>
+            <legend className="sr-only">Screenshot shown on slide {slide + 1}</legend>
+            <div className="grid grid-cols-5 gap-1.5">
+              {shots.map((s) => {
+                const checked = s.id === slideShot?.id;
+                return (
+                  <label
+                    key={s.id}
+                    className={`cursor-pointer overflow-hidden rounded-lg border-2 bg-white has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue ${
+                      checked ? "border-blue" : "border-transparent ring-1 ring-line hover:ring-ink/30"
+                    }`}
+                  >
+                    <input type="radio" name="slide-shot" checked={checked} onChange={() => dispatch({ type: "slideShot", shotId: s.id })} className="sr-only" />
+                    <span className="sr-only">{s.name}</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- local object/data URL */}
+                    <img src={s.url} alt="" className="aspect-[9/16] w-full object-cover object-top" />
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        </Section>
+      )}
+
+      {sections.includes("layout") && callouts.length > 0 && slotShots.some(Boolean) && (
         <Section
           title={`Pop-out, slide ${slide + 1}`}
           action={
@@ -98,7 +127,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
             {callouts.map((el, i) => {
               const name = callouts.length > 1 ? `Pop-out ${i + 1}` : "Pop-out";
               const visible = regions[el.id] !== null;
-              const shot = shots[(slide + el.slot) % shots.length];
+              const shot = slotShots[el.slot];
               return (
                 <div key={el.id} className="flex flex-col gap-3">
                   <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-bold">
@@ -110,7 +139,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
                       className="size-5 accent-blue"
                     />
                   </label>
-                  {visible && (
+                  {visible && shot && (
                     <RegionPicker
                       src={shot.url}
                       label={`${name} area`}

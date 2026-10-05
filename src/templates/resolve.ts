@@ -1,5 +1,5 @@
 import { mixHex } from "@/lib/color";
-import type { Project } from "@/types/project";
+import type { Project, Screenshot, SlideEntry } from "@/types/project";
 import { regionCenterY } from "@/renderer/calloutRenderer";
 import { getHeadlineFont, HEADLINE_FONT_KEYS, type HeadlineFont } from "./headlineFonts";
 import type {
@@ -138,19 +138,90 @@ export function fillPlaceholders(text: string, values: Record<string, string>): 
   return text.replace(PLACEHOLDER, (_, key: string) => values[key] ?? "");
 }
 
+/** What slide lookups need from a project. */
+export type SlideSource = Pick<Project, "screenshots" | "slideLayouts" | "slides">;
+
+/** One output image: which design it uses, its key for user choices, and its main screenshot. */
+export type SlidePlan = { key: string; design: number; shot: Screenshot | null };
+
+/**
+ * The set's slides, in order.
+ *
+ * Without user-arranged slides, every screenshot gets one slide and designs
+ * follow the template order. Text-only designs (no screenshot) appear once,
+ * in place, without using up a screenshot; text designs after the last phone
+ * design close the set. Before any upload the template's own set is shown.
+ */
+export function getSlides(template: ResolvedTemplate, project: SlideSource): SlidePlan[] {
+  const shots = project.screenshots;
+  const count = template.designs.length;
+  if (project.slides && project.slides.length > 0) {
+    const byId = new Map(shots.map((s) => [s.id, s]));
+    return project.slides.map((entry) => ({ key: entry.key, design: entry.design % count, shot: entry.shot ? (byId.get(entry.shot) ?? null) : null }));
+  }
+
+  const phone = template.designs.flatMap((d, i) => (d.slots > 0 ? [i] : []));
+  const text = (i: number): SlidePlan => ({ key: `text-${i}`, design: i, shot: null });
+  if (phone.length === 0) return template.designs.map((_, i) => text(i));
+
+  const plans: SlidePlan[] = [];
+  const last = phone[phone.length - 1];
+  let next = 0;
+  for (let i = 0; i <= last; i++) {
+    if (template.designs[i].slots === 0) plans.push(text(i));
+    else if (shots.length === 0) plans.push({ key: `slide-${plans.length}`, design: i, shot: null });
+    else if (next < shots.length) plans.push({ key: shots[next].id, design: i, shot: shots[next++] });
+  }
+  // More screenshots than phone designs: keep cycling the phone designs.
+  for (let extra = 0; next < shots.length; extra++) {
+    plans.push({ key: shots[next].id, design: phone[extra % phone.length], shot: shots[next++] });
+  }
+  for (let i = last + 1; i < count; i++) plans.push(text(i));
+  return plans;
+}
+
+/** Turns the current slides into an editable list (before the first slide edit). */
+export function slideEntries(template: ResolvedTemplate, project: SlideSource): SlideEntry[] {
+  return getSlides(template, project).map((p) => ({ key: p.key, design: p.design, shot: p.shot?.id ?? null }));
+}
+
+/** Index of the first slide showing a screenshot, or -1. */
+export function slideIndexForShot(template: ResolvedTemplate, project: SlideSource, shotId: string): number {
+  return getSlides(template, project).findIndex((p) => p.shot?.id === shotId);
+}
+
+/** Screenshots a slide shows per slot: its own first, then the following ones, wrapping. */
+export function slotScreenshots(template: ResolvedTemplate, project: SlideSource, slideIndex: number): (Screenshot | null)[] {
+  const plan = getSlides(template, project)[slideIndex];
+  const slots = designFor(template, slideIndex, project).slots;
+  const shots = project.screenshots;
+  const start = plan?.shot ? shots.indexOf(plan.shot) : -1;
+  return Array.from({ length: slots }, (_, slot) => (start >= 0 ? shots[(start + slot) % shots.length] : null));
+}
+
+/** A layout without screenshots this design can switch to, for new text slides. */
+export function textLayoutFor(template: ResolvedTemplate, design: number, preferred = "statement"): string | null {
+  if (template.designs[design]?.slots === 0) return null;
+  const options = Object.entries(template.alternates[design] ?? {}).filter(([, d]) => d.slots === 0);
+  return (options.find(([id]) => id === preferred) ?? options[0])?.[0] ?? null;
+}
+
 /** The slide's design, honouring a user layout pick when a project is given. */
-export function designFor(
-  template: ResolvedTemplate,
-  slideIndex: number,
-  project?: Pick<Project, "screenshots" | "slideLayouts">,
-): ResolvedSlideDesign {
-  const index = slideIndex % template.designs.length;
-  const picked = project?.slideLayouts?.[getSlideKey(template, project, slideIndex)];
+export function designFor(template: ResolvedTemplate, slideIndex: number, project?: SlideSource): ResolvedSlideDesign {
+  const plan = project ? getSlides(template, project)[slideIndex] : undefined;
+  const index = plan ? plan.design : slideIndex % template.designs.length;
+  const picked = plan && project?.slideLayouts?.[plan.key];
   return (picked && template.alternates[index]?.[picked]) || template.designs[index];
 }
 
+/** The slide's template design, ignoring any layout the user picked. */
+export function ownDesign(template: ResolvedTemplate, slideIndex: number, project: SlideSource): ResolvedSlideDesign {
+  const plan = getSlides(template, project)[slideIndex];
+  return template.designs[plan ? plan.design : slideIndex % template.designs.length];
+}
+
 /** Callout elements on a slide (respecting the user's layout pick). */
-export function slideCallouts(template: ResolvedTemplate, slideIndex: number, project?: Pick<Project, "screenshots" | "slideLayouts">) {
+export function slideCallouts(template: ResolvedTemplate, slideIndex: number, project?: SlideSource) {
   return designFor(template, slideIndex, project).elements.filter((el): el is CalloutElement => el.type === "callout");
 }
 
@@ -181,21 +252,20 @@ export function elementTexts(el: TemplateElement): string[] {
   }
 }
 
-/** One slide per screenshot. Before any upload, the template's full set is shown. */
-export function getSlideCount(template: ResolvedTemplate, project: Pick<Project, "screenshots">): number {
-  return project.screenshots.length || template.designs.length;
+export function getSlideCount(template: ResolvedTemplate, project: SlideSource): number {
+  return getSlides(template, project).length;
 }
 
-/** Per-slide text is stored under the slide's screenshot id, so it follows reordering. */
-export function getSlideKey(_template: ResolvedTemplate, project: Pick<Project, "screenshots">, slideIndex: number): string {
-  return project.screenshots[slideIndex]?.id ?? `slide-${slideIndex}`;
+/** Per-slide choices are stored under the slide's key (its screenshot id by default), so they follow reordering. */
+export function getSlideKey(template: ResolvedTemplate, project: SlideSource, slideIndex: number): string {
+  return getSlides(template, project)[slideIndex]?.key ?? `slide-${slideIndex}`;
 }
 
 /** Variables whose placeholders appear on this slide (e.g. a badge only some layouts have). */
 export function variablesForSlide(
   template: ResolvedTemplate,
   slideIndex: number,
-  project?: Pick<Project, "screenshots" | "slideLayouts">,
+  project?: SlideSource,
 ): TemplateVariable[] {
   const used = new Set(designFor(template, slideIndex, project).elements.flatMap((el) => elementTexts(el).flatMap(listPlaceholders)));
   return template.variables.filter((v) => used.has(v.key));
@@ -222,7 +292,7 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
   const values = getSlideValues(template, project, slideIndex);
   const color = (c: Color) => resolveColor(c, theme);
   const design = designFor(template, slideIndex, project);
-  const shots = project.screenshots;
+  const plan = getSlides(template, project)[slideIndex];
   const regions = project.calloutRegions?.[getSlideKey(template, project, slideIndex)] ?? {};
   const ctx: ResolveContext = {
     regions,
@@ -235,8 +305,7 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     accent: theme.accent ?? theme.foreground ?? "#000000",
   };
   const resolve = (el: TemplateElement) => resolveElement(el, ctx);
-  // Extra phones show the following screenshots, wrapping around.
-  const screenshots = Array.from({ length: design.slots }, (_, slot) => (shots.length > 0 ? shots[(slideIndex + slot) % shots.length] : null));
+  const screenshots = slotScreenshots(template, project, slideIndex);
   // A callout set to null is hidden on this slide.
   const elements = design.elements.filter((el) => !(el.type === "callout" && regions[el.id] === null)).map(resolve);
 
@@ -245,7 +314,8 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     background: resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, color),
     grain: template.grain,
     panorama: template.panorama.map(resolve),
-    panoramaOffset: (slideIndex % template.designs.length) * template.canvas.width,
+    // Panorama segments belong to designs, so a slide shows its design's piece.
+    panoramaOffset: (plan?.design ?? slideIndex % template.designs.length) * template.canvas.width,
     setWidth: template.canvas.width * template.designs.length,
     elements: elements.map((el) => (el.type === "callout" && el.follow === "y" ? followSource(el, elements, screenshots, template.canvas.height) : el)),
     images: project.images ?? {},

@@ -5,6 +5,7 @@ import type { Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
 import { getSlideCount } from "@/templates/resolve";
 import { SlideCanvas } from "./SlideCanvas";
+import { SlideToolbar, type SlideActions } from "./SlideToolbar";
 import { StorePreview } from "./StorePreview";
 import type { LayoutMode } from "./useLayoutMode";
 
@@ -28,6 +29,7 @@ type PreviewAreaProps = {
   onViewChange: (view: View) => void;
   onSlideChange: (index: number) => void;
   onAppNameChange: (name: string) => void;
+  slideActions: SlideActions;
 };
 
 export function PreviewArea(props: PreviewAreaProps) {
@@ -99,6 +101,7 @@ export function PreviewArea(props: PreviewAreaProps) {
                 </li>
               ))}
             </ol>
+            <SlideToolbar slide={slide} count={slideCount} {...props.slideActions} />
             <p className="text-xs text-muted tabular-nums">
               Slide {slide + 1} of {slideCount}, {template.canvas.width} × {template.canvas.height} px
             </p>

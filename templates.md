@@ -76,6 +76,8 @@ The Lab is hidden in production builds. To open it there, run `TEMPLATE_LAB=1 np
 ## 3. Slides and screenshots
 
 - One output image per uploaded screenshot. Slide designs repeat in order (5 screenshots on a 4-design template: designs 1, 2, 3, 4, 1).
+- **Text-only designs** (a layout without screenshots, e.g. `intro`, `statement`, `outro`) appear once, in place, and do not use up a screenshot. Text designs after the last phone design close the set. Example: `[intro, A, B, outro]` with 4 screenshots gives intro, A, B, A, B, outro.
+- Users can also arrange slides themselves: add a text slide, duplicate, move, delete, and pick which screenshot a slide shows. Their slides keep the design they were created from.
 - Before any upload the editor shows the template's full set with 4 sample screens.
 - In a layout, `slot: 0` is the slide's own screenshot. `slot: 1` is the **next** screenshot (used by `duo` for the back phone), wrapping around.
 - Each slide can set `layout`, `background`, `overrides` (these win over template overrides), extra `elements` and `defaults` (default text per variable for that slide).
@@ -107,8 +109,11 @@ Extra elements are drawn behind the layout unless they have `"layer": "front"`.
 | `brand-hero` | App icon (monogram fallback), app name, headline, rating, phone, optional mascot | appName, headline, ratingScore, ratingLabel | 1 |
 | `pop-out` | Headline top, phone, one area of the screen lifted out on a card over its own spot | headline, description | 1 |
 | `pop-duo` | Smaller phone with two tilted pop-out cards (left and right) | headline, description | 1 |
+| `intro` | Big app icon, app name, headline, rating, award wreath | appName, headline, ratingScore, ratingLabel, laurelTitle, laurelSubtitle | 0 |
+| `statement` | Small app icon and a huge headline; the default for new text slides | appName, headline, description | 0 |
+| `outro` | Headline, app icon, app name, download button, rating | headline, appName, ctaLabel, ratingScore, ratingLabel | 0 |
 
-Element ids you can target with `overrides`: `headline`, `description`, `badge`, `shot`, `shot-back`, `laurels`, `rating`, `review`, `stat`, `callout`, `callout-2`.
+Element ids you can target with `overrides`: `headline`, `description`, `badge`, `shot`, `shot-back`, `laurels`, `rating`, `review`, `stat`, `callout`, `callout-2`, `app-icon`, `app-name`, `cta`.
 
 **Users can switch any slide to another layout** in the editor (Layout section). The slide keeps its background, extra elements and default text; slide-level `overrides` only apply on the slide's own layout, template-level `overrides` apply everywhere. The validator checks every slide on every layout choice, so a template override that breaks on another layout is reported as `slides[2] › as review-phone › …`.
 
