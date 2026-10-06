@@ -128,7 +128,7 @@ Panorama elements use one wide coordinate space: `x` runs from `0` to `canvas.wi
 
 Place shapes **across a seam** so neighbouring screenshots read as one piece in the store carousel. Example: a sphere at `x: 840, width: 480` spans the seam at 1080.
 
-Screenshots are not allowed in the panorama.
+**Phones can straddle slides**: a `screenshot` in the panorama uses `slot` as the screenshot's place in the upload list (wrapping), so a phone centered on a seam shows half on each slide. If every slide design is text-only (e.g. `headline-top`), uploads fill the panorama phones and the slide count stays fixed. See the Panorama template. Callouts are not allowed in the panorama.
 
 ---
 
@@ -150,6 +150,7 @@ Users can move, resize, rotate and hide any slide element in the editor. Their e
 
 **screenshot**
 - `slot`, `fit` (`cover` or `contain`), `align` (`top` or `center`), `radius`, `shadow`.
+- `perspective`: `left`, `right`, `flat` or `iso` shows the device at an angle within the same box (visual size kept). Users can set an angle for the whole set in Device → Angle.
 - `device`: `phone` (punch-hole), `phone-island` (pill camera), `flat` (screen only); plus `frameColor`, `placeholderColor`. Users can switch the model and frame color for the whole set; only elements that already have a `device` change.
 - Crop safety: `cover` may trim the bottom of tall screenshots, but if it would cut more than 35% off the sides (landscape, square, tablet captures) the renderer switches to `contain`. The empty bands get a blurred copy of the screenshot.
 

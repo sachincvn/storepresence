@@ -17,6 +17,7 @@ const ALIGNS = ["left", "center", "right"];
 const FONT_KEYS = ["display", "sans", "serif"];
 const FIT_MODES = ["contain", "cover"];
 const DEVICES = ["phone", "phone-island", "flat"];
+const PERSPECTIVES = ["left", "right", "flat", "iso"];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 type Obj = Record<string, unknown>;
@@ -277,7 +278,7 @@ type ElementContext = {
   /** Declared variable keys, for placeholder checks. */
   variables?: string[];
   tokens: readonly string[];
-  /** Panorama elements cannot hold screenshots. */
+  /** False in the panorama: no callouts there, and phones pick screenshots by upload position. */
   screenshots: boolean;
 };
 
@@ -355,9 +356,10 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
         break;
       }
       case "screenshot": {
-        if (!ctx.screenshots) bad("screenshots are not allowed here");
+        // Panorama phones pick a screenshot by its place in the upload list, so slots need not be consecutive there.
         if (!Number.isInteger(el.slot) || (el.slot as number) < 0) bad("slot must be a whole number ≥ 0");
-        else slots.add(el.slot as number);
+        else if (ctx.screenshots) slots.add(el.slot as number);
+        if (el.perspective !== undefined && !oneOf(el.perspective, PERSPECTIVES)) bad(`perspective must be ${PERSPECTIVES.join(", ")}`);
         if (!oneOf(el.fit, FIT_MODES)) bad("fit must be contain or cover");
         if (el.align !== undefined && !oneOf(el.align, ["center", "top"])) bad("align must be center or top");
         if (el.radius !== undefined && (!isNum(el.radius) || el.radius < 0)) bad("radius must be ≥ 0");

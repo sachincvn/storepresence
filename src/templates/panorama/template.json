@@ -1,0 +1,206 @@
+{
+  "id": "panorama",
+  "name": "Panorama",
+  "category": "Story",
+  "description": "One continuous scene: phones cross the slide edges so the carousel reads as a single image.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "theme": {
+    "background": "#DCEBFF",
+    "foreground": "#0F1B3D",
+    "primary": "#B9D3FF",
+    "accent": "#FF6B4A",
+    "surface": "#FFFFFF"
+  },
+  "editableColors": [
+    "background",
+    "accent"
+  ],
+  "background": {
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "$background",
+        "at": 0
+      },
+      {
+        "color": "$primary",
+        "at": 1
+      }
+    ]
+  },
+  "overrides": {
+    "headline": {
+      "emphasis": {
+        "color": "$accent"
+      }
+    }
+  },
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "disk-1",
+      "shape": "circle",
+      "fill": "$accent",
+      "x": 590,
+      "y": 890,
+      "width": 980,
+      "height": 980
+    },
+    {
+      "type": "shape",
+      "id": "disk-2",
+      "shape": "circle",
+      "fill": "#FFC94D",
+      "x": 1780,
+      "y": 1080,
+      "width": 760,
+      "height": 760
+    },
+    {
+      "type": "shape",
+      "id": "disk-3",
+      "shape": "circle",
+      "fill": "$accent",
+      "x": 2750,
+      "y": 890,
+      "width": 980,
+      "height": 980
+    },
+    {
+      "type": "screenshot",
+      "id": "phone-a",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone-island",
+      "frameColor": "#0F1B3D",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(15, 27, 61, 0.35)"
+      },
+      "rotation": -6,
+      "x": 70,
+      "y": 760,
+      "width": 700,
+      "height": 1517,
+      "perspective": "left"
+    },
+    {
+      "type": "screenshot",
+      "id": "phone-b",
+      "slot": 1,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone-island",
+      "frameColor": "#0F1B3D",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(15, 27, 61, 0.35)"
+      },
+      "rotation": -8,
+      "x": 730,
+      "y": 680,
+      "width": 700,
+      "height": 1517
+    },
+    {
+      "type": "screenshot",
+      "id": "phone-c",
+      "slot": 2,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone-island",
+      "frameColor": "#0F1B3D",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(15, 27, 61, 0.35)"
+      },
+      "rotation": 6,
+      "x": 1810,
+      "y": 740,
+      "width": 700,
+      "height": 1517
+    },
+    {
+      "type": "screenshot",
+      "id": "phone-d",
+      "slot": 3,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone-island",
+      "frameColor": "#0F1B3D",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(15, 27, 61, 0.35)"
+      },
+      "rotation": -7,
+      "x": 2890,
+      "y": 680,
+      "width": 700,
+      "height": 1517
+    },
+    {
+      "type": "screenshot",
+      "id": "phone-e",
+      "slot": 0,
+      "fit": "cover",
+      "align": "top",
+      "device": "phone-island",
+      "frameColor": "#0F1B3D",
+      "placeholderColor": "$surface",
+      "shadow": {
+        "y": 40,
+        "blur": 90,
+        "color": "rgba(15, 27, 61, 0.35)"
+      },
+      "rotation": 6,
+      "x": 3550,
+      "y": 760,
+      "width": 700,
+      "height": 1517,
+      "perspective": "right"
+    }
+  ],
+  "slides": [
+    {
+      "layout": "headline-top",
+      "defaults": {
+        "headline": "Plan your day in **seconds**",
+        "description": "Every task sorted by what matters most."
+      }
+    },
+    {
+      "layout": "headline-top",
+      "defaults": {
+        "headline": "See your progress **grow**",
+        "description": "Clear stats that keep you going."
+      }
+    },
+    {
+      "layout": "headline-top",
+      "defaults": {
+        "headline": "Stay in sync with your **team**",
+        "description": "Chat and share without switching apps."
+      }
+    },
+    {
+      "layout": "headline-top",
+      "defaults": {
+        "headline": "Never miss a **deadline**",
+        "description": "Smart reminders, right on time."
+      }
+    }
+  ]
+}

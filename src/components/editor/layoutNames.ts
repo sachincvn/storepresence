@@ -16,6 +16,7 @@ const NAMES: Record<string, string> = {
   statement: "Statement",
   outro: "Outro",
   "full-bleed": "Full screen",
+  "headline-top": "Headline only",
 };
 
 export function layoutName(id: string): string {

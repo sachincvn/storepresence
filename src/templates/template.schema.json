@@ -469,6 +469,10 @@
           "description": "Space between the panel edge and the enlarged area. Defaults to 16; 0 shows the area alone.",
           "type": "number"
         },
+        "perspective": {
+          "$ref": "#/definitions/Perspective",
+          "description": "Shows the device at an angle. Fits within the same box."
+        },
         "pill": {
           "additionalProperties": false,
           "description": "Draws the text inside a rounded badge sized to the text.",
@@ -565,7 +569,7 @@
         "slot": {
           "anyOf": [
             {
-              "description": "0 = the slide's own screenshot, 1 = the next one, and so on.",
+              "description": "0 = the slide's own screenshot, 1 = the next one, and so on. In the panorama (phones that straddle slides) it is the screenshot's position in the upload list, wrapping.",
               "type": "number"
             },
             {
@@ -573,7 +577,7 @@
               "type": "number"
             }
           ],
-          "description": "0 = the slide's own screenshot, 1 = the next one, and so on."
+          "description": "0 = the slide's own screenshot, 1 = the next one, and so on. In the panorama (phones that straddle slides) it is the screenshot's position in the upload list, wrapping."
         },
         "src": {
           "description": "URL of a static asset, e.g. `/templates/<id>/logo.png` (file in `public/`).",
@@ -1017,6 +1021,16 @@
       ],
       "type": "string"
     },
+    "Perspective": {
+      "description": "Angle presets for devices: turned left or right, lying flat, or isometric.",
+      "enum": [
+        "left",
+        "right",
+        "flat",
+        "iso"
+      ],
+      "type": "string"
+    },
     "RatingElement": {
       "additionalProperties": false,
       "description": "Stars + score + label, e.g. ★★★★★ 4.9 · 120K ratings. Partial stars follow the score.",
@@ -1214,6 +1228,10 @@
           "description": "0–1",
           "type": "number"
         },
+        "perspective": {
+          "$ref": "#/definitions/Perspective",
+          "description": "Shows the device at an angle. Fits within the same box."
+        },
         "placeholderColor": {
           "$ref": "#/definitions/Color",
           "description": "Shown when no screenshot is assigned."
@@ -1233,7 +1251,7 @@
           "$ref": "#/definitions/Shadow"
         },
         "slot": {
-          "description": "0 = the slide's own screenshot, 1 = the next one, and so on.",
+          "description": "0 = the slide's own screenshot, 1 = the next one, and so on. In the panorama (phones that straddle slides) it is the screenshot's position in the upload list, wrapping.",
           "type": "number"
         },
         "type": {

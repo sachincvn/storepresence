@@ -8,6 +8,7 @@ import { applyShadow, clearShadow, drawShape, roundRectPath } from "./shapeRende
 import { fontString } from "./fonts";
 import { sizeOf, type ImageSource } from "./imageSource";
 import { drawText } from "./textRenderer";
+import { deviceBox, drawWarped, perspectivePoint } from "./perspective";
 
 export type { ImageSource };
 
@@ -289,6 +290,41 @@ function drawPattern(ctx: CanvasRenderingContext2D, bg: Extract<Background, { ty
 
 function drawScreenshot(ctx: CanvasRenderingContext2D, el: ScreenshotElement, img: ImageSource | undefined, scale: number): void {
   const { x, y, width: w, height: h } = el;
+
+  if (el.perspective && typeof document !== "undefined") {
+    // Draw the device flat, warp it into perspective, then cast its shadow from the warped shape.
+    const box = deviceBox(el);
+    const res = scale * (el.scale ?? 1);
+    // The angled device can reach past its box; the warp canvas covers its projected outline.
+    const corners = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([u, v]) => perspectivePoint(box, el.perspective!, box.x + u * box.width, box.y + v * box.height));
+    const out = {
+      x: Math.min(...corners.map((p) => p[0])) - 2,
+      y: Math.min(...corners.map((p) => p[1])) - 2,
+      width: Math.max(...corners.map((p) => p[0])) - Math.min(...corners.map((p) => p[0])) + 4,
+      height: Math.max(...corners.map((p) => p[1])) - Math.min(...corners.map((p) => p[1])) + 4,
+    };
+    const offscreen = (b: { width: number; height: number }) => {
+      const c = document.createElement("canvas");
+      c.width = Math.ceil(b.width * res);
+      c.height = Math.ceil(b.height * res);
+      return c;
+    };
+    const flat = offscreen(box);
+    const fctx = flat.getContext("2d");
+    const warped = offscreen(out);
+    const wctx = warped.getContext("2d");
+    if (!fctx || !wctx) return;
+    fctx.setTransform(res, 0, 0, res, -box.x * res, -box.y * res);
+    fctx.imageSmoothingQuality = "high";
+    drawScreenshot(fctx, { ...el, perspective: undefined, shadow: undefined }, img, res);
+    wctx.setTransform(res, 0, 0, res, -out.x * res, -out.y * res);
+    wctx.imageSmoothingQuality = "high";
+    drawWarped(wctx, flat, box, el.perspective, res);
+    applyShadow(ctx, el.shadow, scale);
+    ctx.drawImage(warped, out.x, out.y, out.width, out.height);
+    clearShadow(ctx);
+    return;
+  }
 
   if (el.device) {
     const model = el.device;

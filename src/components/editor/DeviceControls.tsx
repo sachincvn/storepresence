@@ -14,6 +14,15 @@ const MODELS: { id: Model | "template" | "none"; label: string }[] = [
   { id: "none", label: "None" },
 ];
 
+const ANGLES: { id: NonNullable<Project["deviceAngle"]> | "template"; label: string }[] = [
+  { id: "template", label: "Template" },
+  { id: "straight", label: "Straight" },
+  { id: "left", label: "Turn left" },
+  { id: "right", label: "Turn right" },
+  { id: "flat", label: "Lay flat" },
+  { id: "iso", label: "Isometric" },
+];
+
 const COLORS = [
   { value: "#16131F", label: "Black" },
   { value: "#E3E5EA", label: "Silver" },
@@ -49,6 +58,32 @@ export function DeviceControls({ project, dispatch }: { project: Project; dispat
               {m.label}
             </label>
           ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="mb-2 text-sm font-bold">Angle</legend>
+        <div className="flex flex-wrap gap-1.5">
+          {ANGLES.map((a) => {
+            const checked = (project.deviceAngle ?? "template") === a.id;
+            return (
+              <label
+                key={a.id}
+                className={`cursor-pointer rounded-xl border px-3 py-1.5 text-sm font-bold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue ${
+                  checked ? "border-blue bg-white ring-1 ring-blue" : "border-line bg-white hover:border-ink/30"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="device-angle"
+                  checked={checked}
+                  onChange={() => dispatch({ type: "deviceAngle", angle: a.id === "template" ? undefined : a.id })}
+                  className="sr-only"
+                />
+                {a.label}
+              </label>
+            );
+          })}
         </div>
       </fieldset>
 

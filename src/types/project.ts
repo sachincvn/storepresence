@@ -57,6 +57,8 @@ export type Project = {
   headlineFont?: HeadlineFontId;
   /** Overrides the template's device model on every slide (only where the template shows a device). */
   deviceModel?: "phone" | "phone-island" | "flat";
+  /** Overrides the device angle on every slide; "straight" removes the template's angle. */
+  deviceAngle?: "straight" | "left" | "right" | "flat" | "iso";
   /** Overrides the device body color. */
   deviceColor?: string;
   /** Replaces template backgrounds with a generated one; `seed` changes with "Shuffle". */

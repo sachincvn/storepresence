@@ -306,6 +306,7 @@ export function slideContext(template: ResolvedTemplate, project: Project, slide
     deviceFrame: project.deviceFrame,
     deviceModel: project.deviceModel,
     deviceColor: project.deviceColor,
+    deviceAngle: project.deviceAngle,
     headlineFont: getHeadlineFont(project.headlineFont),
     accent: theme.accent ?? theme.foreground ?? "#000000",
   };
@@ -320,7 +321,16 @@ export function slideContext(template: ResolvedTemplate, project: Project, slide
 export function resolveSlide(template: ResolvedTemplate, project: Project, slideIndex: number): SlideSpec {
   const { design, regions, resolve, background } = slideContext(template, project, slideIndex);
   const plan = getSlides(template, project)[slideIndex];
-  const screenshots = slotScreenshots(template, project, slideIndex);
+  const slotShots = slotScreenshots(template, project, slideIndex);
+  // Phones in the panorama show screenshots by their place in the upload list.
+  const panoramaShots: SlideSpec["screenshots"] = [];
+  const panorama = template.panorama.map(resolve).map((el) => {
+    if (el.type !== "screenshot") return el;
+    const shots = project.screenshots;
+    panoramaShots.push(shots.length > 0 ? shots[el.slot % shots.length] : null);
+    return { ...el, slot: slotShots.length + panoramaShots.length - 1 };
+  });
+  const screenshots = [...slotShots, ...panoramaShots];
   const edits = project.elementEdits?.[getSlideKey(template, project, slideIndex)] ?? {};
   // A callout set to null is hidden on this slide; any element can be hidden with an edit.
   const elements = design.elements
@@ -332,7 +342,7 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     background,
     collage: background.type === "collage" ? project.screenshots : [],
     grain: template.grain,
-    panorama: template.panorama.map(resolve),
+    panorama,
     // Panorama segments belong to designs, so a slide shows its design's piece.
     panoramaOffset: (plan?.design ?? slideIndex % template.designs.length) * template.canvas.width,
     setWidth: template.canvas.width * template.designs.length,
@@ -410,12 +420,13 @@ type ResolveContext = {
   deviceFrame: boolean;
   deviceModel: Project["deviceModel"];
   deviceColor: string | undefined;
+  deviceAngle: Project["deviceAngle"];
   headlineFont: HeadlineFont | undefined;
   /** Literal accent color, the default for emphasis and markers. */
   accent: string;
 };
 
-function resolveElement(el: TemplateElement, { color, values, regions, deviceFrame, deviceModel, deviceColor, headlineFont, accent }: ResolveContext): TemplateElement {
+function resolveElement(el: TemplateElement, { color, values, regions, deviceFrame, deviceModel, deviceColor, deviceAngle, headlineFont, accent }: ResolveContext): TemplateElement {
   const fill = (text: string) => fillPlaceholders(text, values);
   switch (el.type) {
     case "text":
@@ -443,6 +454,8 @@ function resolveElement(el: TemplateElement, { color, values, regions, deviceFra
         placeholderColor: el.placeholderColor && color(el.placeholderColor),
         // User model choice applies only where the template shows a device.
         device: deviceFrame && el.device ? (deviceModel ?? el.device) : undefined,
+        // So does the angle; "straight" removes the template's own.
+        perspective: el.device && deviceAngle ? (deviceAngle === "straight" ? undefined : deviceAngle) : el.perspective,
       };
     case "shape":
       return {

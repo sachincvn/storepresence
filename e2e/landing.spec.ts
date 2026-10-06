@@ -6,7 +6,7 @@ test("template gallery shows real renders and links open the right template", as
   await gallery.scrollIntoViewIfNeeded();
 
   const cards = gallery.getByRole("listitem");
-  await expect(cards).toHaveCount(14);
+  await expect(cards).toHaveCount(15);
 
   // Previews are real renderer output: the first canvas gets painted once in view.
   const firstCanvas = gallery.locator("canvas").first();

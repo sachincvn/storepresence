@@ -40,6 +40,8 @@ export type EditorAction =
   | { type: "calloutRegion"; id: string; region: NormRect | null | undefined }
   | { type: "image"; key: ImageSlotKey; image: Screenshot | null }
   | { type: "device"; model?: Project["deviceModel"]; color?: string | null }
+  /** Device angle for the set; undefined restores the template's. */
+  | { type: "deviceAngle"; angle: Project["deviceAngle"] }
   /** `kind: null` restores the template background; `shuffle` moves to the next seed. */
   | { type: "backdrop"; kind?: NonNullable<Project["backdrop"]>["kind"] | null; shuffle?: boolean }
   | { type: "samplesReady"; samples: Screenshot[] }
@@ -229,6 +231,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "headlineFont":
       return { ...state, project: { ...project, headlineFont: action.font } };
+
+    case "deviceAngle":
+      return { ...state, project: { ...project, deviceAngle: action.angle } };
 
     case "device":
       return {

@@ -22,6 +22,9 @@ export type FitMode = "contain" | "cover";
 /** Where the image sits in the slot when it does not fill it exactly. */
 export type FitAlign = "center" | "top";
 
+/** Angle presets for devices: turned left or right, lying flat, or isometric. */
+export type Perspective = "left" | "right" | "flat" | "iso";
+
 /** phone = punch-hole camera, phone-island = pill-shaped camera, flat = screen only. */
 export type DeviceKey = "phone" | "phone-island" | "flat";
 
@@ -120,8 +123,14 @@ export type TextElement = Box & {
 
 export type ScreenshotElement = Box & {
   type: "screenshot";
-  /** 0 = the slide's own screenshot, 1 = the next one, and so on. */
+  /**
+   * 0 = the slide's own screenshot, 1 = the next one, and so on. In the
+   * panorama (phones that straddle slides) it is the screenshot's position in
+   * the upload list, wrapping.
+   */
   slot: number;
+  /** Shows the device at an angle. Fits within the same box. */
+  perspective?: Perspective;
   fit: FitMode;
   align?: FitAlign;
   radius?: number;
