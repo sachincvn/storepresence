@@ -365,7 +365,8 @@ Implement:
 - Brand name: "StorePresence" (repo `storepresence`), set in `src/lib/site.ts`.
 - Landing page: `src/components/landing/`. The template gallery renders real templates (`TemplateSetPreview`); hero, steps, features and CTA use decorative CSS mocks (`StorePoster` + `posters.ts`).
 - Editor state: `editorState.ts` (pure reducer) wrapped by `history.ts` (undo/redo). Autosave: `useAutosave.ts` + `src/lib/projectStore.ts` (IndexedDB, this browser only). Uploaded images are freed only when no undo step references them, never directly on remove.
-- Slides: `getSlides()` in `src/templates/resolve.ts` is the single source of the slide list (keys, designs, screenshots). Until the user arranges slides, slides follow screenshots; `project.slides` holds user-arranged slides.
+- Slides: `getSlides()` in `src/templates/resolve.ts` is the single source of the slide list (keys, designs, screenshots). One slide per screenshot; text-only designs appear in place.
+- Keep the editor minimal (Screenshots, Text, Style: font, brand images, background, colors, device). Canvas editing, a blocks menu, slide arranging, per-slide layout/pop-out pickers, device angle, collage and brand-match controls were tried and removed on purpose. Richer looks belong in templates, not in more editor controls.
 - Store sizes: `src/templates/sizes.ts` (`OUTPUT_SIZES`, `adaptSpec` reflow) and `featureGraphic.ts`; templates stay designed at 1080 × 1920. Export dialog: `src/components/export/ExportDialog.tsx`.
 - Editor: `/editor` (`src/components/editor/`). Templates: `src/templates/` (JSON + `registry.ts`). Renderer: `src/renderer/` (pure TS, no React).
 - Adding or editing templates: follow `templates.md`, then check `/dev/templates` (Template Lab, dev only; `TEMPLATE_LAB=1 npx next start` opens it on a production build).

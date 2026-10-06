@@ -17,6 +17,7 @@ const ALIGNS = ["left", "center", "right"];
 const FONT_KEYS = ["display", "sans", "serif"];
 const FIT_MODES = ["contain", "cover"];
 const DEVICES = ["phone", "phone-island", "flat"];
+const PERSPECTIVES = ["left", "right", "flat", "iso"];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 type Obj = Record<string, unknown>;
@@ -123,26 +124,8 @@ export function validateTemplate(input: unknown, layouts: readonly Layout[]): st
       }
     });
   }
-  // Template overrides may target any layout a slide can use or switch to.
-  const choiceIds = Array.isArray(input.layoutChoices) ? input.layoutChoices : null;
-  const switchable = layouts.filter((l) =>
-    choiceIds
-      ? choiceIds.includes(l.id)
-      : canvasOk && l.canvas.width === (input.canvas as Canvas).width && l.canvas.height === (input.canvas as Canvas).height,
-  );
-  if (input.overrides !== undefined) checkOverrides(input.overrides, [...new Set([...usedLayouts, ...switchable])], add);
-
-  if (input.layoutChoices !== undefined) {
-    if (!Array.isArray(input.layoutChoices) || input.layoutChoices.length === 0) add("layoutChoices", "must be a non-empty array of layout ids");
-    else
-      for (const id of input.layoutChoices) {
-        const layout = layouts.find((l) => l.id === id);
-        if (!layout) add("layoutChoices", `unknown layout "${String(id)}"`);
-        else if (canvasOk && (layout.canvas.width !== (input.canvas as Canvas).width || layout.canvas.height !== (input.canvas as Canvas).height)) {
-          add("layoutChoices", `"${layout.id}" does not match the template canvas`);
-        }
-      }
-  }
+  // Template overrides may target any layout the slides use.
+  if (input.overrides !== undefined) checkOverrides(input.overrides, usedLayouts, add);
 
   // Structure is broken; merging would only produce noise.
   if (errors.length > 0) return errors;
@@ -156,11 +139,6 @@ export function validateTemplate(input: unknown, layouts: readonly Layout[]): st
     checkElements(design.elements, at, { canvas: resolved.canvas, variables, tokens: themeKeys, screenshots: true });
     for (const key of Object.keys(design.defaults)) if (!variables.includes(key)) at(`defaults.${key}`, "no variable with this key");
 
-    // Every layout a user can switch this slide to must also be valid (template overrides apply there too).
-    for (const [layoutId, alternate] of Object.entries(resolved.alternates[i] ?? {})) {
-      if (layoutId === design.layout) continue;
-      checkElements(alternate.elements, within(at, `as ${layoutId}`), { canvas: resolved.canvas, variables, tokens: themeKeys, screenshots: true });
-    }
   });
 
   checkElements(resolved.panorama, within(add, "panorama"), {
@@ -277,7 +255,7 @@ type ElementContext = {
   /** Declared variable keys, for placeholder checks. */
   variables?: string[];
   tokens: readonly string[];
-  /** Panorama elements cannot hold screenshots. */
+  /** False in the panorama: no callouts there, and phones pick screenshots by upload position. */
   screenshots: boolean;
 };
 
@@ -303,7 +281,6 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
     for (const key of ["x", "y"]) if (!isNum(el[key])) bad(`${key} must be a number`);
     for (const key of ["width", "height"]) if (!isNum(el[key]) || (el[key] as number) <= 0) bad(`${key} must be a positive number`);
     if (el.rotation !== undefined && !isNum(el.rotation)) bad("rotation must be a number (degrees)");
-    if (el.scale !== undefined && (!isNum(el.scale) || el.scale < 0.2 || el.scale > 3)) bad("scale must be 0.2–3");
     if (el.opacity !== undefined && (!isNum(el.opacity) || el.opacity < 0 || el.opacity > 1)) bad("opacity must be 0–1");
     if (el.layer !== undefined && !oneOf(el.layer, ["back", "front"])) bad('layer must be "back" or "front"');
     if (ctx.canvas && [el.x, el.y, el.width, el.height].every(isNum)) {
@@ -355,9 +332,10 @@ function checkElements(elements: readonly unknown[], add: Add, ctx: ElementConte
         break;
       }
       case "screenshot": {
-        if (!ctx.screenshots) bad("screenshots are not allowed here");
+        // Panorama phones pick a screenshot by its place in the upload list, so slots need not be consecutive there.
         if (!Number.isInteger(el.slot) || (el.slot as number) < 0) bad("slot must be a whole number ≥ 0");
-        else slots.add(el.slot as number);
+        else if (ctx.screenshots) slots.add(el.slot as number);
+        if (el.perspective !== undefined && !oneOf(el.perspective, PERSPECTIVES)) bad(`perspective must be ${PERSPECTIVES.join(", ")}`);
         if (!oneOf(el.fit, FIT_MODES)) bad("fit must be contain or cover");
         if (el.align !== undefined && !oneOf(el.align, ["center", "top"])) bad("align must be center or top");
         if (el.radius !== undefined && (!isNum(el.radius) || el.radius < 0)) bad("radius must be ≥ 0");

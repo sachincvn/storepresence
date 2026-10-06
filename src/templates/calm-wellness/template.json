@@ -50,15 +50,6 @@
         "color": "rgba(76, 46, 150, 0.2)"
       }
     },
-    "shot-back": {
-      "device": "phone-island",
-      "frameColor": "#FFFFFF",
-      "shadow": {
-        "y": 30,
-        "blur": 70,
-        "color": "rgba(76, 46, 150, 0.18)"
-      }
-    },
     "stat": {
       "color": "$primary",
       "font": "serif"

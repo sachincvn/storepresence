@@ -1,6 +1,7 @@
 import type { CalloutElement, NormRect, ScreenshotElement, Shadow } from "@/types/template";
 import { deviceScreen } from "./deviceRenderer";
 import { fitImageToSlot, safeFitMode } from "./imageFit";
+import { deviceBox, perspectivePoint } from "./perspective";
 import { sizeOf, type ImageSource } from "./imageSource";
 import { applyShadow, clearShadow, roundRectPath } from "./shapeRenderer";
 
@@ -60,9 +61,8 @@ export function regionCenterY(shot: ScreenshotElement, image: { w: number; h: nu
   const f = fitImageToSlot(image.w, image.h, screen.w, screen.h, fit, shot.align);
   const r = clampRegion(region);
   const y = clamp(screen.y + f.dy + ((r.y + r.h / 2) * image.h - f.sy) * (f.dh / f.sh), screen.y + f.dy, screen.y + f.dy + f.dh);
-  // A scaled phone grows around its center.
-  const cy = shot.y + shot.height / 2;
-  return cy + (y - cy) * (shot.scale ?? 1);
+  // An angled phone moves the area with it.
+  return shot.perspective ? perspectivePoint(deviceBox(shot), shot.perspective, screen.x + screen.w / 2, y)[1] : y;
 }
 
 export function drawCallout(ctx: CanvasRenderingContext2D, el: CalloutElement, img: ImageSource | undefined, scale: number): void {

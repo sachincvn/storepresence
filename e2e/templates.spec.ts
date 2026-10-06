@@ -17,7 +17,11 @@ const TEMPLATES = [
   ["cinematic", "Cinematic"],
   ["fintech-glass", "Fintech Glass"],
   ["social-pop", "Social Pop"],
+  ["panorama", "Panorama"],
 ] as const;
+
+/** Slides per set with 5 uploads: one per screenshot, except fixed panorama sets. */
+const SLIDES_WITH_FIVE: Record<string, number> = { panorama: 4 };
 
 let images: string[];
 
@@ -33,9 +37,10 @@ for (const [id, name] of TEMPLATES) {
     await page.locator('input[type="file"][multiple]').setInputFiles(images);
     await expect(yourScreenshots(page)).toHaveCount(5);
 
-    const zip = await JSZip.loadAsync((await exportFrom(page, /Download all 5 slides as ZIP/)).buffer);
+    const count = SLIDES_WITH_FIVE[id] ?? 5;
+    const zip = await JSZip.loadAsync((await exportFrom(page, new RegExp(`Download all ${count} slides as ZIP`))).buffer);
     const names = Object.keys(zip.files);
-    expect(names).toHaveLength(5);
+    expect(names).toHaveLength(count);
     for (const file of names) {
       const png = await zip.file(file)!.async("nodebuffer");
       expect(pngSize(png), `${id}/${file}`).toEqual({ width: 1080, height: 1920 });

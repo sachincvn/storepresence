@@ -15,6 +15,13 @@ describe("template registry", () => {
   });
 
   it("every slide of every template shows at least one screenshot", () => {
-    for (const t of templates) for (const [i, d] of t.designs.entries()) expect(d.slots, `${t.id} slide ${i + 1}`).toBeGreaterThan(0);
+    for (const t of templates) {
+      for (const [i, d] of t.designs.entries()) {
+        // A phone in the panorama that crosses this slide counts too.
+        const [start, end] = [i * t.canvas.width, (i + 1) * t.canvas.width];
+        const panoramaPhones = t.panorama.filter((el) => el.type === "screenshot" && el.x < end && el.x + el.width > start).length;
+        expect(d.slots + panoramaPhones, `${t.id} slide ${i + 1}`).toBeGreaterThan(0);
+      }
+    }
   });
 });

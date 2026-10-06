@@ -62,7 +62,8 @@ describe("validateTemplate", () => {
     ["gradient with one stop", { background: { type: "linear", angle: 0, stops: [{ color: "#000", at: 0 }] } }, /at least 2 stops/],
     ["background token missing", { background: { type: "solid", color: "$accent" } }, /unknown theme token "\$accent"/],
     ["template override unknown element", { overrides: { nope: { size: 1 } } }, /overrides.nope: no element "nope"/],
-    ["panorama screenshot", { panorama: [{ type: "screenshot", id: "s", slot: 0, x: 0, y: 0, width: 10, height: 10, fit: "cover" }] }, /panorama › s: screenshots are not allowed here/],
+    ["panorama callout", { panorama: [{ type: "callout", id: "c", slot: 0, region: { x: 0, y: 0, w: 0.5, h: 0.2 }, x: 0, y: 0, width: 10, height: 10 }] }, /panorama › c: callouts are not allowed here/],
+    ["bad perspective", { panorama: [{ type: "screenshot", id: "s", slot: 3, perspective: "upside", x: 0, y: 0, width: 10, height: 10, fit: "cover" }] }, /perspective must be left, right, flat, iso/],
   ])("reports %s", (_, changes, message) => {
     expect(validateTemplate(withChanges(changes), [layout]).join("\n")).toMatch(message);
   });
@@ -192,14 +193,6 @@ describe("validateTemplate: blocks, emphasis and layout choices", () => {
     expect(errors).toMatch(/headline.marker: unknown theme token "\$nope"/);
   });
 
-  it("checks layoutChoices and validates each alternate layout", () => {
-    expect(validateTemplate(withChanges({ layoutChoices: ["phone", "nope"] }), [layout]).join("\n")).toMatch(/layoutChoices: unknown layout "nope"/);
-
-    const fixed = { ...proofLayout, variables: [...proofLayout.variables, { key: "count", label: "Count", default: "" }] };
-    // A template override that is fine on its own layout but breaks the alternate.
-    const errors = validateTemplate(withChanges({ overrides: { rating: { color: "$accent" } } }), [layout, fixed]).join("\n");
-    expect(errors).toMatch(/slides\[0\] › as proof › rating.color: unknown theme token "\$accent"/);
-  });
 });
 
 describe("validateTemplate: generated backgrounds", () => {

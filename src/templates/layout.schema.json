@@ -65,10 +65,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "shadow": {
           "$ref": "#/definitions/Shadow"
         },
@@ -243,10 +239,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "src": {
           "description": "URL of a static asset, e.g. `/templates/<id>/logo.png` (file in `public/`).",
           "type": "string"
@@ -333,10 +325,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "shadow": {
           "$ref": "#/definitions/Shadow"
         },
@@ -404,10 +392,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "starColor": {
@@ -524,6 +508,16 @@
       ],
       "type": "object"
     },
+    "Perspective": {
+      "description": "Angle presets for devices: turned left or right, lying flat, or isometric.",
+      "enum": [
+        "left",
+        "right",
+        "flat",
+        "iso"
+      ],
+      "type": "string"
+    },
     "RatingElement": {
       "additionalProperties": false,
       "description": "Stars + score + label, e.g. ★★★★★ 4.9 · 120K ratings. Partial stars follow the score.",
@@ -562,10 +556,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "score": {
@@ -643,10 +633,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "shadow": {
           "$ref": "#/definitions/Shadow"
         },
@@ -721,6 +707,10 @@
           "description": "0–1",
           "type": "number"
         },
+        "perspective": {
+          "$ref": "#/definitions/Perspective",
+          "description": "Shows the device at an angle. Fits within the same box."
+        },
         "placeholderColor": {
           "$ref": "#/definitions/Color",
           "description": "Shown when no screenshot is assigned."
@@ -732,15 +722,11 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "shadow": {
           "$ref": "#/definitions/Shadow"
         },
         "slot": {
-          "description": "0 = the slide's own screenshot, 1 = the next one, and so on.",
+          "description": "0 = the slide's own screenshot, 1 = the next one, and so on. In the panorama (phones that straddle slides) it is the screenshot's position in the upload list, wrapping.",
           "type": "number"
         },
         "type": {
@@ -829,10 +815,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "shadow": {
@@ -938,10 +920,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "type": {
@@ -1126,10 +1104,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "size": {

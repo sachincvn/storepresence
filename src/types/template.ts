@@ -22,6 +22,9 @@ export type FitMode = "contain" | "cover";
 /** Where the image sits in the slot when it does not fill it exactly. */
 export type FitAlign = "center" | "top";
 
+/** Angle presets for devices: turned left or right, lying flat, or isometric. */
+export type Perspective = "left" | "right" | "flat" | "iso";
+
 /** phone = punch-hole camera, phone-island = pill-shaped camera, flat = screen only. */
 export type DeviceKey = "phone" | "phone-island" | "flat";
 
@@ -70,8 +73,6 @@ type Box = {
   height: number;
   /** Degrees, clockwise, around the box center. */
   rotation?: number;
-  /** Uniform scale around the box center (text, devices and shadows scale together). */
-  scale?: number;
   /** 0–1 */
   opacity?: number;
   /** Extra elements default to "back" (behind layout elements). */
@@ -120,8 +121,14 @@ export type TextElement = Box & {
 
 export type ScreenshotElement = Box & {
   type: "screenshot";
-  /** 0 = the slide's own screenshot, 1 = the next one, and so on. */
+  /**
+   * 0 = the slide's own screenshot, 1 = the next one, and so on. In the
+   * panorama (phones that straddle slides) it is the screenshot's position in
+   * the upload list, wrapping.
+   */
   slot: number;
+  /** Shows the device at an angle. Fits within the same box. */
+  perspective?: Perspective;
   fit: FitMode;
   align?: FitAlign;
   radius?: number;
@@ -324,11 +331,6 @@ export type Template = {
    */
   panorama?: TemplateElement[];
   slides: SlideDesign[];
-  /**
-   * Layouts users may switch a slide to. Defaults to every registered layout
-   * with the same canvas size.
-   */
-  layoutChoices?: string[];
 };
 
 export type ResolvedSlideDesign = {
@@ -354,10 +356,6 @@ export type ResolvedTemplate = {
   grain: number;
   panorama: TemplateElement[];
   designs: ResolvedSlideDesign[];
-  /** Layouts a slide can switch to, in picker order. */
-  layoutChoices: string[];
-  /** Per design index: the same slide rebuilt on each layout choice. */
-  alternates: Record<string, ResolvedSlideDesign>[];
 };
 
 /**

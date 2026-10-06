@@ -62,11 +62,6 @@
       "padding": 20,
       "radius": 36
     },
-    "callout-2": {
-      "style": "glass",
-      "padding": 20,
-      "radius": 36
-    },
     "laurels": {
       "leafColor": "$accent"
     },

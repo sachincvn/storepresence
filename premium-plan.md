@@ -1,5 +1,7 @@
 # Premium Plan — StorePresence
 
+> **Simplified (2026-10-06):** the editor is back to the brief's minimal controls. Removed from the UI and code: canvas drag/resize and the Elements list, the blocks menu, slide arranging (duplicate, text slide, move, delete, per-slide screenshot), the per-slide layout and pop-out pickers, the device angle control, the collage backdrop option and brand match. Template-side features stay (pop-outs, angled phones, panorama phones, collage backgrounds, store sizes). Items below marked ☑ for those removed controls are historical.
+
 How to get from "good templates" to screenshots that look like top-chart apps (Duolingo, Netflix, X, Revolut, Headspace…), while staying easy: no Figma, no Canva, no design skills.
 
 Status of the MVP: `editor-plan.md` (all 13 steps done).
@@ -213,7 +215,7 @@ Ordered by impact ÷ effort. Each phase ends usable and shippable.
 
 1. ☑ Select and nudge on canvas with safe bounds and snapping (4.2): click/drag/corner-scale on the preview, keyboard nudges, snapping guides, per-slide element edits (move, size, rotation, hide) as deltas over the template, Elements list as accessible fallback.
 2. ☑ Blocks menu (4.3): Add menu with Rating, Review, Big number, Award, App icon and Pop-out; blocks borrow the template's styling, use its text fields, drop into the spot covering the least text, and can be moved, resized, hidden or removed. ☐ Feature list, sticker and free text blocks.
-3. Perspective device presets and slide-straddling phones (3.2).
+3. ☑ Perspective device presets and slide-straddling phones (3.2): `perspective` (turn left/right, lay flat, isometric) via triangle-mesh warp with true-outline shadows, set-wide Angle control; panorama phones (`slot` = upload position) and the Panorama template.
 4. Gallery filters and hover preview (4.7).
 
 ### Phase G — Scale (≈ 3–4 weeks)

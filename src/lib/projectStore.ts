@@ -11,6 +11,7 @@ const DB_VERSION = 1;
 const IMAGES = "images";
 const SESSIONS = "sessions";
 const CURRENT = "current";
+const BACKDROPS: string[] = ["mesh", "grid", "dots"];
 /** Bump when the saved shape changes incompatibly; older saves are ignored. */
 const FORMAT = 1;
 
@@ -90,10 +91,12 @@ export function fromStored(stored: StoredSession, urlFor: (id: string) => string
   );
   // If every upload went missing, fall back to the samples rather than an empty set.
   const usingSamples = stored.usingSamples || screenshots.length === 0;
+  // Saves from older versions may use a backdrop kind that no longer exists.
+  const backdrop = stored.project.backdrop && BACKDROPS.includes(stored.project.backdrop.kind) ? stored.project.backdrop : undefined;
   return {
     slide: stored.slide,
     usingSamples,
-    project: { ...stored.project, screenshots: usingSamples ? [] : screenshots, images },
+    project: { ...stored.project, backdrop, screenshots: usingSamples ? [] : screenshots, images },
   };
 }
 

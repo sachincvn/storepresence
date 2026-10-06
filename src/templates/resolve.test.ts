@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Project, Screenshot } from "@/types/project";
 import type { Layout, Template } from "@/types/template";
+import { templates } from "./registry";
 import {
   fillPlaceholders,
   getSlideCount,
@@ -227,43 +228,6 @@ describe("headline font choice", () => {
   });
 });
 
-describe("per-slide layout picks", () => {
-  it("offers the template's own layouts first, then other compatible ones", () => {
-    const tall = { ...single, id: "tall", canvas: { width: 1290, height: 2796 } };
-    const extra = { ...single, id: "extra" };
-    const r = resolveTemplate(template, [extra, single, duo, tall]);
-    expect(r.layoutChoices).toEqual(["single", "duo", "extra"]);
-    expect(Object.keys(r.alternates[0])).toEqual(["single", "duo", "extra"]);
-  });
-
-  it("swaps a slide's layout, keeping background, extras and defaults", () => {
-    const p = project({ screenshots: [shot("a"), shot("b")], slideLayouts: { b: "single" } });
-    const spec = resolveSlide(resolved, p, 1);
-    expect(spec.background).toMatchObject({ type: "solid", color: "#FFD43B" }); // slide 2's own background
-    expect(spec.elements.map((e) => e.id)).toEqual(["behind", "headline", "shot", "logo"]);
-    expect(spec.screenshots).toHaveLength(1);
-  });
-
-  it("drops slide overrides on other layouts but keeps template overrides", () => {
-    const p = project({ slideLayouts: { "slide-2": "duo" } });
-    const headless = resolveSlide(resolved, p, 2); // slide 3 normally single with headline size 60
-    expect(headless.elements.find((e) => e.id === "headline")).toBeUndefined();
-    const back = resolveSlide(resolved, project({ slideLayouts: { "slide-1": "single" } }), 1);
-    expect(back.elements.find((e) => e.id === "headline")).toMatchObject({ size: 70 }); // template override
-    expect(back.elements.find((e) => e.id === "shot")).not.toHaveProperty("radius", 10); // slide-2 override not applied
-  });
-
-  it("lists variables of the picked layout", () => {
-    const p = project({ slideLayouts: { "slide-1": "single" } });
-    expect(variablesForSlide(resolved, 1, p).map((v) => v.key)).toEqual(["headline", "appName"]);
-  });
-
-  it("ignores unknown picks", () => {
-    const p = project({ slideLayouts: { "slide-0": "nope" } });
-    expect(resolveSlide(resolved, p, 0).elements.map((e) => e.id)).toEqual(resolveSlide(resolved, project(), 0).elements.map((e) => e.id));
-  });
-});
-
 describe("emphasis defaults", () => {
   it("uses the accent for emphasis and marker unless the template sets them", () => {
     const headline = resolveSlide(resolved, project(), 0).elements.find((e) => e.id === "headline");
@@ -305,18 +269,12 @@ describe("generated backdrops", () => {
       ink: "#FFFFFF",
     });
   });
-  it("collage uses every screenshot as tiles, dimmed with the background", () => {
-    const p = project({ backdrop: { kind: "collage", seed: 2 }, screenshots: [shot("a"), shot("b"), shot("c")] });
-    expect(p.screenshots).toHaveLength(3);
-    const spec = resolveSlide(resolved, p, 0);
-    expect(spec.background).toMatchObject({ type: "collage", color: "#000000", seed: 2 });
-    expect(spec.collage).toEqual(p.screenshots);
-    // Shuffle changes the tilt.
-    const tilt = (seed: number) => {
-      const bg = resolveSlide(resolved, project({ backdrop: { kind: "collage", seed } }), 0).background;
-      return bg.type === "collage" ? bg.tilt : undefined;
-    };
-    expect(tilt(1)).not.toBe(tilt(2));
+  it("a collage background uses every screenshot as tiles", () => {
+    const cinematic = templates.find((t) => t.id === "cinematic")!;
+    const p = { ...project({ screenshots: [shot("a"), shot("b"), shot("c")] }), templateId: "cinematic" };
+    const spec = resolveSlide(cinematic, p, 0);
+    expect(spec.background).toMatchObject({ type: "collage", color: "#000000" });
+    expect(spec.collage.map((s) => s.id)).toEqual(["a", "b", "c"]);
     expect(resolveSlide(resolved, project(), 0).collage).toEqual([]);
   });
 });

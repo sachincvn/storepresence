@@ -1,13 +1,11 @@
 "use client";
 
-import { useRef, type KeyboardEvent } from "react";
-import type { ElementEdit, Project } from "@/types/project";
+import type { KeyboardEvent } from "react";
+import type { Project } from "@/types/project";
 import type { ResolvedTemplate } from "@/types/template";
 import { getSlideCount } from "@/templates/resolve";
 import { OUTPUT_SIZES, type OutputSize, type SizeId } from "@/templates/sizes";
-import { CanvasOverlay } from "./CanvasOverlay";
 import { SlideCanvas } from "./SlideCanvas";
-import { SlideToolbar, type SlideActions } from "./SlideToolbar";
 import { StorePreview } from "./StorePreview";
 import type { LayoutMode } from "./useLayoutMode";
 
@@ -31,15 +29,9 @@ type PreviewAreaProps = {
   onViewChange: (view: View) => void;
   onSlideChange: (index: number) => void;
   onAppNameChange: (name: string) => void;
-  slideActions: SlideActions;
   /** Store size the preview shows. */
   size: OutputSize;
   onSizeChange: (size: SizeId) => void;
-  /** Element picked on the canvas, for move and resize. */
-  selectedElement: string | null;
-  onSelectElement: (id: string | null) => void;
-  onEditElement: (id: string, edit: ElementEdit | null) => void;
-  onRemoveElement: (id: string) => void;
 };
 
 export function PreviewArea(props: PreviewAreaProps) {
@@ -48,9 +40,6 @@ export function PreviewArea(props: PreviewAreaProps) {
   const slides = Array.from({ length: slideCount }, (_, i) => i);
   const desktop = mode === "desktop";
   const { size } = props;
-  const canvasHost = useRef<HTMLDivElement>(null);
-  // Direct editing works on the size templates are designed at.
-  const editable = size.width === template.canvas.width && size.height === template.canvas.height;
   const feature = size.kind === "feature";
   const ratio = size.width / size.height;
 
@@ -100,7 +89,7 @@ export function PreviewArea(props: PreviewAreaProps) {
 
       {view === "slide" && (
         <>
-          <div ref={canvasHost} className="relative flex min-h-0 w-full flex-1 items-center justify-center">
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center">
             <SlideCanvas
               template={template}
               project={project}
@@ -113,18 +102,6 @@ export function PreviewArea(props: PreviewAreaProps) {
               // Off desktop, size by width but cap the height so the slide strip stays in view.
               style={desktop ? undefined : { width: `min(100%, 400px, calc(${mode === "mobile" ? 58 : 66}dvh * ${ratio}))` }}
             />
-            {editable && (
-              <CanvasOverlay
-                template={template}
-                project={project}
-                slide={slide}
-                canvasRef={canvasHost}
-                selected={props.selectedElement}
-                onSelect={props.onSelectElement}
-                onEdit={props.onEditElement}
-                onRemove={props.onRemoveElement}
-              />
-            )}
           </div>
           <div className="flex w-full flex-col items-center gap-2">
             <ol aria-label="Slides, use arrow keys to move" onKeyDown={onStripKey} className="flex max-w-full gap-2 overflow-x-auto p-1">
@@ -143,7 +120,6 @@ export function PreviewArea(props: PreviewAreaProps) {
                 </li>
               ))}
             </ol>
-            <SlideToolbar slide={slide} count={slideCount} {...props.slideActions} />
             <p className="text-xs text-muted tabular-nums">
               {feature ? "Feature graphic, one per set" : `Slide ${slide + 1} of ${slideCount}`}, {size.width} × {size.height} px
             </p>
