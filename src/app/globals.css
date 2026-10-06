@@ -2,12 +2,25 @@
 
 @theme {
   --color-ink: #16131f;
-  --color-canvas: #f6f4fb;
+  --color-canvas: #f4f3f9;
   --color-muted: #5b5668;
-  --color-line: #e4e0ee;
+  --color-line: #e7e4f0;
 
   --color-blue: #3d5afe;
   --color-blue-deep: #2a3fd1;
+  /* Landing brand ramp (violet). */
+  --color-brand-50: #efeafe;
+  --color-brand-100: #e2d9fc;
+  --color-brand-200: #cdbdfb;
+  --color-brand-300: #b39cfd;
+  --color-brand-400: #8b64ff;
+  --color-brand-500: #6d3ff0;
+  --color-brand-600: #6232e0;
+  --color-brand-700: #5024c8;
+  --color-brand-800: #4a1fbf;
+  --color-paper: #f4f3f9;
+  --color-hairline: #e7e4f0;
+  --color-success: #22a55b;
   --color-yellow: #ffd43b;
   --color-pink: #ff6fae;
 
@@ -16,8 +29,12 @@
   --color-peach: #ffe3d3;
   --color-sky: #dce8ff;
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-jakarta), ui-sans-serif, sans-serif;
+  /* UI fonts. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), var(--font-inter), ui-sans-serif, sans-serif;
+  /* Template fonts, for previews of what the canvas draws. */
+  --font-template-display: var(--font-bricolage), var(--font-jakarta), ui-sans-serif, sans-serif;
+  --font-template-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
 
   /* Neo-brutalist accents: used sparingly on CTAs and stickers. */
@@ -25,6 +42,45 @@
   --shadow-pop: 5px 5px 0 var(--color-ink);
 
   --shadow-float: 0 20px 40px -22px rgb(22 19 31 / 0.3);
+
+  /* Landing elevation: soft layered shadows (borders are separate). */
+  --shadow-card: 0 1px 2px rgb(12 21 32 / 0.04), 0 8px 24px -12px rgb(12 21 32 / 0.12);
+  --shadow-card-hover: 0 1px 2px rgb(12 21 32 / 0.04), 0 18px 40px -16px rgb(80 36 200 / 0.22);
+  --shadow-mock: 0 1px 2px rgb(12 21 32 / 0.05), 0 30px 70px -28px rgb(80 36 200 / 0.4);
+  --shadow-inset: inset 0 1px 2px rgb(12 21 32 / 0.05);
+}
+
+/* White focus ring on brand-colored surfaces. */
+.on-brand :focus-visible {
+  outline-color: #fff;
+}
+
+/* Monochrome film grain. Laid over the whole landing page at low opacity. */
+@utility grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.6' intercept='-.3'/%3E%3CfeFuncG type='linear' slope='1.6' intercept='-.3'/%3E%3CfeFuncB type='linear' slope='1.6' intercept='-.3'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Infinite marquee: the track holds the items twice and slides by half. */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.marquee-reverse {
+  animation-direction: reverse;
+}
+
+.marquee-slow {
+  animation-duration: 60s;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Light clay touch: soft top highlight, hairline edge, gentle lift. */
@@ -62,51 +118,307 @@
   }
 
   body {
-    background: var(--color-canvas);
+    background: var(--color-paper);
     color: var(--color-ink);
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-blue);
-    outline-offset: 3px;
+    outline: 3px solid rgb(109 63 240 / 0.45);
+    outline-offset: 2px;
   }
 
   ::selection {
-    background: var(--color-yellow);
+    background: var(--color-brand-100);
     color: var(--color-ink);
   }
 }
 
-/* Hero: one orchestrated entrance, then a slow idle float on clay shapes. */
-@keyframes rise-in {
+/* Landing entrance: fade + short rise. Hero on load, sections as they scroll in. */
+@keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(40px) rotate(var(--r, 0deg));
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) rotate(var(--r, 0deg));
+    translate: 0 14px;
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -10px;
-  }
-}
-
-.rise-in {
-  transform: rotate(var(--r, 0deg));
-  animation: rise-in 900ms cubic-bezier(0.2, 0.85, 0.25, 1.1) both;
+.fade-up {
+  animation: fade-up 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--d, 0ms);
 }
 
-.float {
-  animation: float 6s ease-in-out infinite;
+/*
+ * Scroll reveal: `RevealOnScroll` adds `reveal-ready` to <html> (so content
+ * stays visible without JS) and `is-visible` as each element scrolls in.
+ * Elements that arrive together get staggered delays.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready .reveal {
+    opacity: 0;
+    transform: translate(0, 18px);
+    transition:
+      opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 300ms,
+      box-shadow 300ms;
+  }
+
+  .reveal-ready .reveal.is-visible {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/* Looping micro-demos. Without animation every element sits in its finished state. */
+@keyframes float-y {
+  50% {
+    transform: translate(0, -7px);
+  }
+}
+
+@keyframes drift {
+  50% {
+    transform: translate(28px, 6px);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes nudge-x {
+  50% {
+    transform: translate(5px, 0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-ring {
+  from {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes toast-cycle {
+  0%,
+  6% {
+    opacity: 0;
+    transform: translate(0, 12px) scale(0.96);
+  }
+  14%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translate(0, -6px);
+  }
+}
+
+@keyframes fill-bar {
+  0% {
+    width: 6%;
+  }
+  70%,
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes tile-on {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  8%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  95%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes row-cycle {
+  0%,
+  16% {
+    transform: translate(0, 0);
+  }
+  20%,
+  36% {
+    transform: translate(0, 100%);
+  }
+  40%,
+  56% {
+    transform: translate(0, 200%);
+  }
+  60%,
+  76% {
+    transform: translate(0, 300%);
+  }
+  80%,
+  96% {
+    transform: translate(0, 400%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes key-press {
+  0%,
+  40%,
+  60%,
+  100% {
+    transform: translate(0, 0);
+    box-shadow: 0 2px 0 var(--color-hairline), 0 8px 16px -10px rgb(19 16 31 / 0.3);
+  }
+  48%,
+  54% {
+    transform: translate(0, 2px);
+    box-shadow: 0 0 0 var(--color-hairline), 0 4px 8px -6px rgb(19 16 31 / 0.3);
+  }
+}
+
+@keyframes cursor-pick {
+  0% {
+    transform: translate(70px, 50px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  45%,
+  80% {
+    transform: none;
+  }
+  52% {
+    transform: scale(0.82);
+  }
+  60% {
+    transform: none;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 0;
+  }
+}
+
+@keyframes drop-in {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate(-58px, 46px) rotate(-12deg);
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: translate(-58px, 52px) rotate(-12deg);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-zone {
+  0%,
+  45%,
+  100% {
+    border-color: var(--color-brand-200);
+    background-color: rgb(239 234 254 / 0.5);
+  }
+  55%,
+  68% {
+    border-color: var(--color-brand-400);
+    background-color: rgb(239 234 254 / 1);
+  }
+}
+
+@keyframes pop {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.anim-float {
+  animation: float-y 5s ease-in-out infinite;
+  animation-delay: var(--d, 0ms);
+}
+.anim-drift {
+  animation: drift 20s ease-in-out infinite;
+  animation-delay: var(--d, 0ms);
+}
+.anim-blink {
+  animation: blink 1.1s steps(1) infinite;
+}
+.anim-nudge {
+  animation: nudge-x 1.8s ease-in-out infinite;
+}
+.anim-spin {
+  animation: spin 28s linear infinite;
+}
+.anim-spin-reverse {
+  animation: spin 28s linear infinite reverse;
+}
+.anim-pulse-ring {
+  animation: pulse-ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--d, 0ms);
+}
+.anim-toast {
+  animation: toast-cycle 6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--d, 0ms);
+}
+.anim-fill {
+  animation: fill-bar 4.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.anim-tile {
+  animation: tile-on 4.8s ease-out infinite;
+  animation-delay: var(--d, 0ms);
+}
+.anim-rows {
+  animation: row-cycle 8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.anim-key {
+  animation: key-press 2.4s ease-in-out infinite;
+  animation-delay: var(--d, 0ms);
+}
+.anim-cursor {
+  animation: cursor-pick 4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.anim-drop {
+  animation: drop-in 4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.anim-zone {
+  animation: glow-zone 4s ease-in-out infinite;
+}
+.anim-pop {
+  animation: pop 2.4s ease-in-out infinite;
   animation-delay: var(--d, 0ms);
 }
 
@@ -122,6 +434,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .marquee {
+    animation: none;
+  }
+
   html {
     scroll-behavior: auto;
   }

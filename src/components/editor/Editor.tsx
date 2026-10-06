@@ -192,7 +192,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
             type="button"
             onClick={() => dispatchHistory({ type: "reset", at: Date.now() })}
             disabled={state.usingSamples && !canUndo(history) && Object.keys(project.variables).length === 0}
-            className="shrink-0 rounded-md font-bold text-blue hover:underline disabled:pointer-events-none disabled:opacity-40"
+            className="shrink-0 rounded-md font-medium text-brand-500 hover:underline disabled:pointer-events-none disabled:opacity-40"
           >
             Start over
           </button>
@@ -224,17 +224,17 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
 
   return (
     <div className={`relative flex min-h-dvh flex-col ${mode === "desktop" ? "h-dvh" : ""} ${mode === "mobile" ? "pb-24" : ""}`} {...dropHandlers}>
-      <a href="#preview" className="sr-only z-50 rounded-xl bg-ink px-4 py-2 font-bold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
+      <a href="#preview" className="sr-only z-50 rounded-xl bg-ink px-4 py-2 font-medium text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
         Skip to preview
       </a>
 
       {dragging && (
-        <div aria-hidden="true" className="pointer-events-none fixed inset-3 z-50 grid place-items-center rounded-[28px] border-[3px] border-dashed border-blue bg-blue/10 backdrop-blur-[2px]">
-          <p className="rounded-2xl border-2 border-ink bg-white px-5 py-3 font-display text-xl font-extrabold shadow-pop">Drop to add screenshots</p>
+        <div aria-hidden="true" className="pointer-events-none fixed inset-3 z-50 grid place-items-center rounded-[28px] border-2 border-dashed border-brand-400 bg-brand-500/10 backdrop-blur-[2px]">
+          <p className="rounded-2xl border border-line bg-white px-5 py-3 font-display text-xl font-medium shadow-card-hover">Drop to add screenshots</p>
         </div>
       )}
 
-      <header className="flex items-center justify-between gap-3 border-b border-line bg-white/80 px-4 py-3 backdrop-blur sm:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-line bg-white/80 px-4 backdrop-blur-md backdrop-saturate-150 sm:px-6">
         <Logo compact />
         <div className="flex items-center gap-2 sm:gap-3">
           <div role="group" aria-label="History" className="flex items-center gap-1">
@@ -281,7 +281,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       {exportError && (
         <div role="alert" className="flex items-center justify-between gap-3 border-b border-[#F3B5CC] bg-[#FFF0F5] px-4 py-2.5 text-sm font-semibold text-[#9E1846] sm:px-6">
           {exportError}
-          <button type="button" onClick={() => setExportError(null)} className="rounded text-xs font-bold underline">
+          <button type="button" onClick={() => setExportError(null)} className="rounded text-xs font-medium underline">
             Dismiss
           </button>
         </div>
@@ -289,11 +289,11 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
 
       {mode === "desktop" && (
         <div className="grid min-h-0 flex-1 grid-cols-[288px_minmax(0,1fr)_320px]">
-          <div className="relative overflow-y-auto border-r border-line p-5">{picker}</div>
-          <main id="preview" tabIndex={-1} className="flex min-h-0 min-w-0 flex-col items-center gap-4 p-6 outline-none">
+          <div className="relative overflow-y-auto border-r border-line bg-white p-5">{picker}</div>
+          <main id="preview" tabIndex={-1} className="flex min-h-0 min-w-0 flex-col items-center gap-4 bg-[radial-gradient(rgb(19_16_31/0.07)_1px,transparent_1px)] [background-size:18px_18px] p-6 outline-none">
             {preview}
           </main>
-          <aside aria-label="Customize" className="relative overflow-y-auto border-l border-line bg-white/60 p-6">
+          <aside aria-label="Customize" className="relative overflow-y-auto border-l border-line bg-white p-6">
             {inspector()}
           </aside>
         </div>
@@ -305,7 +305,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
           <main id="preview" tabIndex={-1} className="flex flex-col items-center gap-4 px-6 py-6 outline-none">
             {preview}
           </main>
-          <section aria-label="Customize" className="grid grid-cols-2 gap-8 border-t border-line bg-white/60 p-6">
+          <section aria-label="Customize" className="grid grid-cols-2 gap-8 border-t border-line bg-white p-6">
             {inspector(["screenshots", "text"])}
             {inspector(["style"])}
           </section>
@@ -330,7 +330,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
                       sheetTrigger.current = e.currentTarget;
                       setSheet(key);
                     }}
-                    className="flex w-full flex-col items-center gap-0.5 rounded-xl py-2 text-xs font-bold text-ink hover:bg-canvas"
+                    className="flex w-full flex-col items-center gap-0.5 rounded-xl py-2 text-xs font-medium text-ink/80 hover:bg-brand-50 hover:text-brand-700"
                   >
                     <SheetIcon section={key} />
                     {key === "screenshots" && !state.usingSamples ? `${SHEET_TITLES[key]} (${project.screenshots.length})` : SHEET_TITLES[key]}
@@ -370,7 +370,7 @@ function HistoryButton({ label, shortcut, path, ...props }: { label: string; sho
       aria-label={label}
       aria-keyshortcuts={shortcut.replace("Ctrl", "Control")}
       title={`${label} (${shortcut})`}
-      className="grid size-9 place-items-center rounded-xl text-ink hover:bg-canvas disabled:pointer-events-none disabled:opacity-35"
+      className="grid size-9 place-items-center rounded-[10px] text-ink/70 hover:bg-canvas hover:text-ink disabled:pointer-events-none disabled:opacity-35"
       {...props}
     >
       <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

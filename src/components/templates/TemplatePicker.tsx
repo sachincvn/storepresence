@@ -22,7 +22,7 @@ export function TemplatePicker({ project, selectedId, onSelect, layout }: Templa
 
   return (
     <nav aria-labelledby="templates-heading">
-      <h2 id="templates-heading" className="font-display text-lg font-extrabold tracking-[-0.02em]">
+      <h2 id="templates-heading" className="font-display text-[15px] font-medium tracking-[-0.01em]">
         Templates
       </h2>
       <ul className={layout === "list" ? "mt-3 flex flex-col gap-3" : "-mx-1 mt-3 flex snap-x gap-3 overflow-x-auto px-1 pb-3"}>
@@ -35,7 +35,7 @@ export function TemplatePicker({ project, selectedId, onSelect, layout }: Templa
                 aria-pressed={selected}
                 onClick={() => onSelect(t.id)}
                 className={`w-full rounded-2xl p-2 text-left transition-colors ${
-                  selected ? "bg-white ring-2 ring-blue" : "ring-1 ring-line hover:bg-white"
+                  selected ? "bg-brand-50 ring-2 ring-brand-500" : "bg-white ring-1 ring-line hover:ring-brand-200 hover:shadow-card"
                 }`}
               >
                 <span className="flex gap-0.5 overflow-hidden rounded-[10px]">
@@ -44,7 +44,7 @@ export function TemplatePicker({ project, selectedId, onSelect, layout }: Templa
                   ))}
                 </span>
                 <span className="mt-2 flex items-baseline justify-between gap-2 px-0.5">
-                  <span className="truncate text-sm font-bold">{t.name}</span>
+                  <span className="truncate text-sm font-medium">{t.name}</span>
                   <span className="shrink-0 text-xs text-muted">{t.category}</span>
                 </span>
               </button>

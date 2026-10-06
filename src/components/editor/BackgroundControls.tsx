@@ -22,8 +22,8 @@ export function BackgroundControls({ project, dispatch }: { project: Project; di
         {KINDS.map((k) => (
           <label
             key={k.label}
-            className={`cursor-pointer rounded-xl border bg-white px-3 py-1.5 text-sm font-bold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue ${
-              current === k.id ? "border-blue ring-1 ring-blue" : "border-line hover:border-ink/30"
+            className={`cursor-pointer rounded-xl border bg-white px-3 py-1.5 text-sm font-medium has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-500 ${
+              current === k.id ? "border-brand-500 ring-1 ring-brand-500" : "border-line hover:border-ink/30"
             }`}
           >
             <input type="radio" name="backdrop" checked={current === k.id} onChange={() => dispatch({ type: "backdrop", kind: k.id })} className="sr-only" />
@@ -35,7 +35,7 @@ export function BackgroundControls({ project, dispatch }: { project: Project; di
         type="button"
         disabled={!current}
         onClick={() => dispatch({ type: "backdrop", shuffle: true })}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-1.5 text-sm font-bold disabled:opacity-40"
+        className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-1.5 text-sm font-medium disabled:opacity-40"
       >
         <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M2 4h3l6 8h3M2 12h3l1.5-2M9.5 6 11 4h3M12 2l2 2-2 2M12 10l2 2-2 2" />

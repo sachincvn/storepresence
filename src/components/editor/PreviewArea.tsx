@@ -60,23 +60,23 @@ export function PreviewArea(props: PreviewAreaProps) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-center gap-2">
-      <div role="group" aria-label="Preview mode" className="flex rounded-2xl border border-line bg-white p-1">
+      <div role="group" aria-label="Preview mode" className="flex rounded-xl border border-line bg-canvas p-1">
         {VIEWS.map((v) => (
           <button
             key={v.id}
             type="button"
             aria-pressed={view === v.id}
             onClick={() => props.onViewChange(v.id)}
-            className={`rounded-xl px-3 py-1.5 text-sm font-bold whitespace-nowrap transition-colors sm:px-3.5 ${view === v.id ? "bg-ink text-white" : "text-muted hover:text-ink"}`}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-[color,background-color,box-shadow] sm:px-3.5 ${view === v.id ? "bg-white text-ink shadow-[0_0_0_1px_var(--color-line),0_1px_3px_rgb(19_16_31/0.08)]" : "text-muted hover:text-ink"}`}
           >
             {v.label}
           </button>
         ))}
       </div>
       {view !== "store" && (
-        <label className="flex items-center gap-2 rounded-2xl border border-line bg-white py-1 pr-1 pl-3 text-sm font-bold">
+        <label className="flex items-center gap-2 rounded-xl border border-line bg-white py-1 pr-1 pl-3 text-sm font-medium shadow-[0_1px_2px_rgb(19_16_31/0.04)]">
           <span className="text-muted">Size</span>
-          <select value={size.id} onChange={(e) => props.onSizeChange(e.target.value as SizeId)} className="rounded-xl bg-canvas px-2 py-1.5 text-sm font-bold">
+          <select value={size.id} onChange={(e) => props.onSizeChange(e.target.value as SizeId)} className="rounded-lg bg-canvas px-2 py-1.5 text-sm font-medium">
             {OUTPUT_SIZES.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.store === "App Store" ? "App Store" : "Play"} {s.label}
@@ -98,7 +98,7 @@ export function PreviewArea(props: PreviewAreaProps) {
               delay={80}
               size={size}
               label={feature ? `Preview of the feature graphic, ${template.name} template` : `Preview of slide ${slide + 1} of ${slideCount}, ${size.width} × ${size.height}, ${template.name} template`}
-              className={`rounded-[20px] shadow-[0_24px_60px_-28px_rgb(22_19_31/0.45)] ${desktop ? "h-full max-h-full w-auto max-w-full" : "h-auto"}`}
+              className={`rounded-[20px] shadow-[0_0_0_1px_rgb(19_16_31/0.04),0_30px_70px_-30px_rgb(80_36_200/0.45)] ${desktop ? "h-full max-h-full w-auto max-w-full" : "h-auto"}`}
               // Off desktop, size by width but cap the height so the slide strip stays in view.
               style={desktop ? undefined : { width: `min(100%, 400px, calc(${mode === "mobile" ? 58 : 66}dvh * ${ratio}))` }}
             />
@@ -113,7 +113,7 @@ export function PreviewArea(props: PreviewAreaProps) {
                     aria-current={i === slide ? "true" : undefined}
                     tabIndex={i === slide ? 0 : -1}
                     onClick={() => props.onSlideChange(i)}
-                    className={`block rounded-lg p-0.5 ${i === slide ? "ring-2 ring-blue" : "ring-1 ring-line hover:ring-ink/30"}`}
+                    className={`block rounded-lg p-0.5 ${i === slide ? "ring-2 ring-brand-500" : "ring-1 ring-line hover:ring-brand-200"}`}
                   >
                     <SlideCanvas template={template} project={project} slideIndex={i} scale={0.06} delay={200} lazy className="w-11 rounded-md" />
                   </button>

@@ -1,114 +1,85 @@
-import type { ReactNode } from "react";
-import { SectionHeading } from "./SectionHeading";
-import { StorePoster } from "./StorePoster";
-import { getPoster } from "./posters";
-
-const steps: { title: string; body: string; tile: string; art: ReactNode }[] = [
-  {
-    title: "Pick a template",
-    body: "Bold, soft, dark or minimal. Every layout is already sized for the store.",
-    tile: "bg-peach",
-    art: <PickArt />,
-  },
-  {
-    title: "Drop your screenshots",
-    body: "Drag in PNG, JPG or WEBP files. Each one fits its slot without stretching.",
-    tile: "bg-sky",
-    art: <DropArt />,
-  },
-  {
-    title: "Export the set",
-    body: "Download one PNG, or the whole set as a ZIP named 01.png, 02.png and on.",
-    tile: "bg-mint",
-    art: <ExportArt />,
-  },
-];
+import { templates } from "@/templates/registry";
+import { Card, CheckIcon, container, Icon, SectionHeader } from "./Section";
 
 export function HowItWorks() {
   return (
-    <section id="how" aria-labelledby="how-title" className="scroll-mt-24 px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
-      <div className="mx-auto max-w-[1200px]">
-        <SectionHeading id="how-title">Three moves. Zero design work.</SectionHeading>
-        <ol className="mt-12 grid gap-6 md:grid-cols-3">
-          {steps.map((step, i) => (
-            <li key={step.title} className={`clay flex flex-col rounded-[32px] p-3 ${step.tile}`}>
-              <div aria-hidden="true" className="relative h-52 overflow-hidden rounded-[24px] bg-white/45">
-                {step.art}
-              </div>
-              <div className="px-4 pt-6 pb-5">
-                <p aria-hidden="true" className="flex items-center gap-3">
-                  <span className="grid size-8 place-items-center rounded-lg border-2 border-ink bg-white font-display text-base font-extrabold shadow-pop-sm">
-                    {i + 1}
-                  </span>
-                </p>
-                <h3 className="mt-4 font-display text-2xl font-extrabold tracking-[-0.03em]">{step.title}</h3>
-                <p className="mt-2 leading-relaxed text-muted">{step.body}</p>
-              </div>
-            </li>
-          ))}
+    <section id="how" aria-labelledby="how-title" className="scroll-mt-24 pt-8 pb-24 lg:pb-32">
+      <div className={container}>
+        <SectionHeader
+          id="how-title"
+          eyebrow="How it works"
+          icon={<Icon name="bolt" />}
+          title="From raw screenshots"
+          accent="to a store listing."
+          lede="Pick a template. Drop your screenshots. Export. That's it."
+        />
+        <ol className="mt-12 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+          <li className="flex">
+            <Card className="w-full" number="01" visual={<PickVisual />} title="Pick a template" body="Every layout is already sized and styled for the store." />
+          </li>
+          <li className="flex">
+            <Card className="w-full" number="02" visual={<DropVisual />} title="Drop your screenshots" body="Drag in PNG, JPG or WEBP. Each one fits its slot." />
+          </li>
+          <li className="flex">
+            <Card className="w-full" number="03" visual={<ExportVisual />} title="Export the set" body="One PNG, or the whole set as a ZIP. Done." />
+          </li>
         </ol>
       </div>
     </section>
   );
 }
 
-function PickArt() {
-  const ids = ["mint", "lilac", "studio-blue"];
+function PickVisual() {
+  const picks = templates.slice(0, 3);
   return (
-    <>
-      {ids.map((id, i) => (
-        <StorePoster
-          key={id}
-          poster={getPoster(id)}
-          className="absolute! top-6 w-[28%] ring-2 ring-ink shadow-float"
-          style={{ left: `${14 + i * 22}%`, transform: `rotate(${(i - 1) * 10}deg) translateY(${i === 1 ? -6 : 8}px)`, zIndex: i === 2 ? 3 : i }}
-        />
+    <div className="absolute inset-0 flex items-center justify-center gap-4">
+      {picks.map((t, i) => (
+        <div key={t.id} className="flex flex-col items-center gap-2">
+          <span
+            className={`block aspect-[9/16] rounded-lg ring-1 ring-black/10 ${i === 1 ? "w-[68px] shadow-card-hover ring-2 ring-brand-500 ring-offset-2 ring-offset-paper" : "w-14 opacity-80"}`}
+            style={{ background: t.theme.background }}
+          />
+          <span className={`rounded-md px-1.5 py-0.5 text-[11px] ${i === 1 ? "bg-brand-500 text-white" : "text-ink/60"}`}>{t.name}</span>
+        </div>
       ))}
-    </>
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="anim-cursor absolute top-[48%] left-[54%] size-6 drop-shadow-[0_2px_3px_rgb(19_16_31/0.3)]">
+        <path d="M5 3l14 8-6 1.5L10 19z" fill="#fff" stroke="#13101f" strokeWidth="1.6" strokeLinejoin="round" />
+      </svg>
+    </div>
   );
 }
 
-function DropArt() {
+function DropVisual() {
   return (
-    <>
-      <div className="absolute inset-x-8 top-[38%] bottom-6 rounded-2xl border-2 border-dashed border-ink/40 bg-white/60" />
-      <p className="absolute inset-x-0 bottom-10 text-center text-xs font-bold text-muted">Drop PNG, JPG or WEBP</p>
-      <div className="absolute top-5 left-1/2 w-[22%] -translate-x-1/2 rotate-[8deg]">
-        <div className="aspect-[9/19] rounded-xl border-2 border-ink bg-white p-1.5 shadow-float">
-          <div className="h-2 rounded-full bg-blue" />
-          <div className="mt-1.5 h-1.5 w-3/4 rounded-full bg-ink/15" />
-          <div className="mt-1 h-1.5 w-1/2 rounded-full bg-ink/15" />
-          <div className="mt-2 aspect-square rounded-md bg-lilac" />
+    <div className="absolute inset-0 grid place-items-center">
+      <div className="w-[72%] rounded-2xl border border-hairline bg-white p-2 shadow-card">
+        <div className="anim-zone flex flex-col items-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-brand-200 bg-brand-50/50 py-5">
+          <Icon name="upload" className="size-5 text-brand-500" />
+          <span className="text-xs font-medium">Drop screenshots here</span>
+          <span className="text-[11px] text-ink/50">PNG · JPG · WEBP</span>
         </div>
       </div>
-      <svg viewBox="0 0 24 24" className="absolute top-[48%] left-[60%] size-7 drop-shadow-[2px_2px_0_#16131F]">
-        <path d="M5 3l14 8-6 1.5L10 19z" fill="#fff" stroke="#16131F" strokeWidth="1.8" strokeLinejoin="round" />
-      </svg>
-    </>
+      <span className="anim-drop absolute top-[18%] right-[14%] flex rotate-6 items-center gap-1.5 rounded-lg bg-white px-2 py-1 text-[11px] shadow-card-hover">
+        <span className="h-4 w-2.5 rounded-[2px] bg-brand-500" />
+        home.png
+      </span>
+    </div>
   );
 }
 
-function ExportArt() {
+function ExportVisual() {
   return (
-    <>
-      <div className="absolute top-1/2 left-1/2 grid h-28 w-24 -translate-x-1/2 -translate-y-1/2 -rotate-6 place-items-center rounded-[22px] border-2 border-ink bg-white shadow-pop-sm">
-        <span className="font-display text-lg font-extrabold">ZIP</span>
-        <span className="absolute top-3 left-1/2 h-10 w-2 -translate-x-1/2 bg-[repeating-linear-gradient(#16131F_0_4px,transparent_4px_8px)]" />
-      </div>
-      <span className="absolute top-[22%] left-[60%] grid size-10 rotate-6 place-items-center rounded-xl border-2 border-ink bg-blue shadow-pop-sm">
-        <svg viewBox="0 0 16 16" className="size-5">
-          <path d="M3 8.5 L6.5 12 L13 4.5" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </span>
-      {["01.png", "02.png", "03.png"].map((name, i) => (
-        <span
-          key={name}
-          className="absolute rounded-lg bg-white px-2 py-1 text-[11px] font-bold shadow-float"
-          style={{ left: i === 1 ? "10%" : i === 0 ? "14%" : "64%", top: i === 0 ? "18%" : i === 1 ? "62%" : "70%" }}
-        >
-          {name}
+    <div className="absolute inset-0 grid place-items-center">
+      <div className="anim-toast flex items-center gap-3 rounded-2xl border border-hairline bg-white py-3 pr-5 pl-3 shadow-card-hover [--d:-1s]">
+        <span className="relative grid size-9 place-items-center rounded-full bg-success text-white">
+          <span className="anim-pulse-ring absolute inset-0 rounded-full bg-success/40" />
+          <CheckIcon className="relative" />
         </span>
-      ))}
-    </>
+        <span>
+          <span className="block text-sm font-medium">Export complete</span>
+          <span className="block text-xs text-muted">4 PNGs · zipped in order</span>
+        </span>
+      </div>
+    </div>
   );
 }

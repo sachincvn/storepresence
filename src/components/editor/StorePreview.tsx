@@ -25,7 +25,7 @@ export function StorePreview({ template, project, appName, onAppNameChange, onSe
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      <label className="flex items-center gap-2 text-sm font-bold">
+      <label className="flex items-center gap-2 text-sm font-medium">
         App name
         <input
           type="text"
@@ -38,7 +38,7 @@ export function StorePreview({ template, project, appName, onAppNameChange, onSe
 
       <div className="w-full max-w-[400px] overflow-hidden rounded-[40px] border border-line bg-white shadow-[0_30px_70px_-40px_rgb(22_19_31/0.5)]">
         {/* Status + app bar */}
-        <div className="flex items-center justify-between px-6 pt-4 text-xs font-bold">
+        <div className="flex items-center justify-between px-6 pt-4 text-xs font-medium">
           <span>9:41</span>
           <span aria-hidden="true" className="flex gap-1">
             <span className="h-2.5 w-4 rounded-sm bg-ink" />
@@ -61,14 +61,14 @@ export function StorePreview({ template, project, appName, onAppNameChange, onSe
           ) : (
             <span
               aria-hidden="true"
-              className="grid size-[72px] shrink-0 place-items-center rounded-[20px] font-display text-3xl font-extrabold text-white shadow-[0_6px_16px_-8px_rgb(22_19_31/0.5)]"
+              className="grid size-[72px] shrink-0 place-items-center rounded-[20px] font-display text-3xl font-semibold text-white shadow-[0_6px_16px_-8px_rgb(22_19_31/0.5)]"
               style={{ background: `linear-gradient(135deg, ${theme.accent ?? "#3D5AFE"}, ${theme.primary ?? theme.background ?? "#16131F"})` }}
             >
               {name.charAt(0).toUpperCase()}
             </span>
           )}
           <div className="min-w-0">
-            <p className="truncate text-xl font-bold">{name}</p>
+            <p className="truncate text-xl font-medium">{name}</p>
             <p className="text-sm font-semibold text-[#1A7F5A]">Your Studio</p>
             <p className="text-xs text-muted">In-app purchases</p>
           </div>
@@ -82,14 +82,14 @@ export function StorePreview({ template, project, appName, onAppNameChange, onSe
           ].map(([value, label], i) => (
             <div key={label} className={i > 0 ? "border-l border-line" : ""}>
               <dt className="sr-only">{label}</dt>
-              <dd className="text-sm font-bold">{value}</dd>
+              <dd className="text-sm font-medium">{value}</dd>
               <dd className="text-xs text-muted">{label}</dd>
             </div>
           ))}
         </dl>
 
         <div className="px-6 pt-5">
-          <span aria-hidden="true" className="block rounded-full bg-[#1A7F5A] py-2.5 text-center text-sm font-bold text-white">
+          <span aria-hidden="true" className="block rounded-full bg-[#1A7F5A] py-2.5 text-center text-sm font-medium text-white">
             Install
           </span>
         </div>
@@ -106,7 +106,7 @@ export function StorePreview({ template, project, appName, onAppNameChange, onSe
         </ul>
 
         <div className="px-6 pt-5 pb-8">
-          <p className="flex items-center justify-between text-base font-bold">
+          <p className="flex items-center justify-between text-base font-medium">
             About this app
             <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </p>

@@ -46,7 +46,7 @@ export function ScreenshotPanel(props: ScreenshotPanelProps) {
         }}
         onDragLeave={() => setOver(false)}
         onDrop={onDrop}
-        className={`rounded-2xl border-2 border-dashed p-4 text-center transition-colors ${over ? "border-blue bg-sky" : "border-line bg-white"}`}
+        className={`rounded-2xl border-2 border-dashed p-4 text-center transition-colors ${over ? "border-brand-500 bg-brand-50" : "border-line bg-white"}`}
       >
         <input
           ref={inputRef}
@@ -65,7 +65,7 @@ export function ScreenshotPanel(props: ScreenshotPanelProps) {
           type="button"
           disabled={full || pending > 0}
           onClick={() => inputRef.current?.click()}
-          className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-blue px-4 py-2 text-sm font-bold text-white shadow-pop-sm transition-[translate,box-shadow] hover:-translate-x-px hover:-translate-y-px hover:shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-line bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-card transition-[translate,box-shadow] hover:-translate-x-px hover:-translate-y-px hover:shadow-card-hover active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:pointer-events-none disabled:opacity-50"
         >
           <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
             <path d="M8 13V5m0 0L5 8m3-3 3 3M3 3h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -84,7 +84,7 @@ export function ScreenshotPanel(props: ScreenshotPanelProps) {
               <li key={error}>{error}</li>
             ))}
           </ul>
-          <button type="button" onClick={props.onDismissErrors} className="mt-2 rounded text-xs font-bold underline">
+          <button type="button" onClick={props.onDismissErrors} className="mt-2 rounded text-xs font-medium underline">
             Dismiss
           </button>
         </div>
@@ -97,7 +97,7 @@ export function ScreenshotPanel(props: ScreenshotPanelProps) {
           {screenshots.map((s, i) => (
             <li
               key={s.id}
-              className={`flex items-center gap-3 rounded-xl border bg-white p-2 ${i === selected ? "border-blue ring-1 ring-blue" : "border-line"}`}
+              className={`flex items-center gap-3 rounded-xl border bg-white p-2 ${i === selected ? "border-brand-500 ring-1 ring-brand-500" : "border-line"}`}
             >
               <button
                 type="button"
@@ -111,7 +111,7 @@ export function ScreenshotPanel(props: ScreenshotPanelProps) {
                 <img src={s.url} alt="" className="h-14 w-8 rounded-md object-cover ring-1 ring-line" />
               </button>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">
+                <p className="truncate text-sm font-medium">
                   <span className="text-muted tabular-nums">{i + 1}.</span> {s.name}
                 </p>
                 <p className="text-xs text-muted tabular-nums">
