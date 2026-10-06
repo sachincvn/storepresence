@@ -12,14 +12,12 @@ import { createSampleScreenshots } from "@/lib/sampleShots";
 import { buildZip, zipName } from "@/lib/zip";
 import { exportSet, exportSlide } from "@/renderer/exportRenderer";
 import { getTemplate, templates } from "@/templates/registry";
-import { designFor, getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
-import { blockOptions } from "@/templates/blocks";
-import type { BlockKind, ElementEdit, Screenshot } from "@/types/project";
+import { getSlideCount, getSlides, slideIndexForShot, usedImageSlots } from "@/templates/resolve";
+import type { Screenshot } from "@/types/project";
 import { BrandImages } from "@/components/upload/BrandImages";
-import { BrandColors } from "./BrandColors";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { chosenSizes, getSize, type SizeId } from "@/templates/sizes";
-import { canAddTextSlide, type EditorAction } from "./editorState";
+import type { EditorAction } from "./editorState";
 import { canRedo, canUndo, historyReducer, initialHistory, referencedImages } from "./history";
 import { useAutosave } from "./useAutosave";
 import { Inspector, type InspectorSection } from "./Inspector";
@@ -28,15 +26,9 @@ import { useLayoutMode } from "./useLayoutMode";
 
 const SHEET_TITLES: Record<InspectorSection, string> = {
   screenshots: "Screenshots",
-  layout: "Layout",
   text: "Text",
   style: "Style",
 };
-
-/** New slides need ids; made outside the reducer so it stays pure. */
-function newSlideKey(): string {
-  return `slide-${typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now().toString(36)}`;
-}
 
 type EditorProps = {
   initialTemplateId: string;
@@ -64,16 +56,10 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
   /** Store size shown in the preview (and used by "Export slide"). */
   const [previewSize, setPreviewSize] = useState<SizeId>("play-phone");
   const [exportOpen, setExportOpen] = useState(false);
-  /** Element selected for move/resize, remembered per slide key so it clears when the slide changes. */
-  const [selection, setSelection] = useState<{ key: string; id: string } | null>(null);
 
   const { project, slide } = state;
   const template = getTemplate(project.templateId) ?? templates[0];
   const slideCount = getSlideCount(template, project);
-  const slideKey = getSlides(template, project)[slide]?.key ?? "";
-  const selectedElement = selection?.key === slideKey ? selection.id : null;
-  const selectElement = (id: string | null) => setSelection(id ? { key: slideKey, id } : null);
-  const editElement = (id: string, edit: ElementEdit | null) => dispatch({ type: "elementEdit", id, edit });
   const upload = useScreenshotUpload({ dispatch, uploadedCount: state.usingSamples ? 0 : project.screenshots.length });
   // One app name for templates, the store preview and the ZIP file name.
   const appName = project.variables.appName ?? "Taskly";
@@ -168,20 +154,6 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
     },
   };
 
-  const slideActions = {
-    canAddText: canAddTextSlide(template, project, slide),
-    blocks: blockOptions(template, designFor(template, slide, project)),
-    onAddBlock: (kind: BlockKind) => {
-      const id = `block-${kind}-${newSlideKey().slice(-6)}`;
-      dispatch({ type: "addBlock", kind, id });
-      setSelection({ key: slideKey, id });
-    },
-    onDuplicate: () => dispatch({ type: "duplicateSlide", key: newSlideKey() }),
-    onAddText: () => dispatch({ type: "addTextSlide", key: newSlideKey() }),
-    onMove: (offset: -1 | 1) => dispatch({ type: "moveSlide", offset }),
-    onRemove: () => dispatch({ type: "removeSlide" }),
-  };
-
   const selectTemplate = (id: string) => dispatch({ type: "template", id });
   const selectSlide = (index: number) => dispatch({ type: "slide", index });
 
@@ -192,17 +164,6 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       dispatch={dispatch}
       sections={sections}
       bare={bare}
-      selectedElement={selectedElement}
-      onSelectElement={selectElement}
-      brandColors={
-        <BrandColors
-          template={template}
-          theme={project.theme}
-          icon={project.images?.appIcon}
-          onUpload={(file) => upload.setImage("appIcon", file)}
-          onApply={(theme) => dispatch({ type: "theme", theme })}
-        />
-      }
       brandPanel={imageSlots.length > 0 ? <BrandImages keys={imageSlots} images={project.images ?? {}} onChange={upload.setImage} /> : undefined}
       screenshotPanel={
         <ScreenshotPanel
@@ -253,13 +214,8 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
       onViewChange={setView}
       onSlideChange={selectSlide}
       onAppNameChange={setAppName}
-      slideActions={slideActions}
       size={getSize(previewSize)}
       onSizeChange={setPreviewSize}
-      selectedElement={selectedElement}
-      onSelectElement={selectElement}
-      onEditElement={editElement}
-      onRemoveElement={(id) => dispatch({ type: "removeBlock", id })}
       />
     </>
   );
@@ -350,8 +306,8 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
             {preview}
           </main>
           <section aria-label="Customize" className="grid grid-cols-2 gap-8 border-t border-line bg-white/60 p-6">
-            {inspector(["screenshots", "layout"])}
-            {inspector(["text", "style"])}
+            {inspector(["screenshots", "text"])}
+            {inspector(["style"])}
           </section>
         </>
       )}
@@ -364,7 +320,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
           <div className="border-t border-line px-4 pt-4">{picker}</div>
 
           <nav aria-label="Edit" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
-            <ul className="grid grid-cols-4 gap-1">
+            <ul className="grid grid-cols-3 gap-1">
               {(Object.keys(SHEET_TITLES) as InspectorSection[]).map((key) => (
                 <li key={key}>
                   <button
@@ -386,7 +342,7 @@ export function Editor({ initialTemplateId, templateFromUrl = false }: EditorPro
 
           <Sheet
             open={sheet !== null}
-            title={sheet === "text" || sheet === "layout" ? `${SHEET_TITLES[sheet]}, slide ${slide + 1}` : sheet ? SHEET_TITLES[sheet] : ""}
+            title={sheet === "text" ? `${SHEET_TITLES[sheet]}, slide ${slide + 1}` : sheet ? SHEET_TITLES[sheet] : ""}
             onClose={() => {
               setSheet(null);
               sheetTrigger.current?.focus();
@@ -427,7 +383,6 @@ function HistoryButton({ label, shortcut, path, ...props }: { label: string; sho
 function SheetIcon({ section }: { section: InspectorSection }) {
   const paths: Record<InspectorSection, string> = {
     screenshots: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 15h4",
-    layout: "M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z",
     text: "M5 6V4h14v2M12 4v16m-3 0h6",
     style: "M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15.5 15H18a3 3 0 0 0 3-3 9 9 0 0 0-9-9zM7.5 11.5h.01M10 7.5h.01M15 7.5h.01",
   };

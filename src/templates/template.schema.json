@@ -222,10 +222,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "shadow": {
           "$ref": "#/definitions/Shadow"
         },
@@ -537,10 +533,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "score": {
           "type": "string"
         },
@@ -763,10 +755,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "src": {
           "description": "URL of a static asset, e.g. `/templates/<id>/logo.png` (file in `public/`).",
           "type": "string"
@@ -853,10 +841,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "shadow": {
           "$ref": "#/definitions/Shadow"
         },
@@ -924,10 +908,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "starColor": {
@@ -1071,10 +1051,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "score": {
           "type": "string"
         },
@@ -1148,10 +1124,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "shadow": {
@@ -1241,10 +1213,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "shadow": {
@@ -1340,10 +1308,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "shadow": {
@@ -1487,10 +1451,6 @@
           "description": "Degrees, clockwise, around the box center.",
           "type": "number"
         },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
-          "type": "number"
-        },
         "type": {
           "const": "stat",
           "type": "string"
@@ -1557,13 +1517,6 @@
         },
         "id": {
           "type": "string"
-        },
-        "layoutChoices": {
-          "description": "Layouts users may switch a slide to. Defaults to every registered layout with the same canvas size.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
         },
         "name": {
           "type": "string"
@@ -1762,10 +1715,6 @@
         },
         "rotation": {
           "description": "Degrees, clockwise, around the box center.",
-          "type": "number"
-        },
-        "scale": {
-          "description": "Uniform scale around the box center (text, devices and shadows scale together).",
           "type": "number"
         },
         "size": {

@@ -1,5 +1,7 @@
 # Premium Plan — StorePresence
 
+> **Simplified (2026-10-06):** the editor is back to the brief's minimal controls. Removed from the UI and code: canvas drag/resize and the Elements list, the blocks menu, slide arranging (duplicate, text slide, move, delete, per-slide screenshot), the per-slide layout and pop-out pickers, the device angle control, the collage backdrop option and brand match. Template-side features stay (pop-outs, angled phones, panorama phones, collage backgrounds, store sizes). Items below marked ☑ for those removed controls are historical.
+
 How to get from "good templates" to screenshots that look like top-chart apps (Duolingo, Netflix, X, Revolut, Headspace…), while staying easy: no Figma, no Canva, no design skills.
 
 Status of the MVP: `editor-plan.md` (all 13 steps done).

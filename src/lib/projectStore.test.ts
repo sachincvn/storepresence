@@ -12,7 +12,6 @@ const project: Project = {
   theme: { primary: "#3D5AFE" },
   deviceFrame: true,
   images: { appIcon: shot("icon") },
-  slideLayouts: { b: "duo" },
 };
 
 describe("projectStore serialization", () => {
@@ -25,7 +24,6 @@ describe("projectStore serialization", () => {
     expect(session.project.screenshots.map((s) => s.url)).toEqual(["blob:new-a", "blob:new-b"]);
     expect(session.project.images?.appIcon?.url).toBe("blob:new-icon");
     expect(session.project.slideVariables).toEqual(project.slideVariables);
-    expect(session.project.slideLayouts).toEqual(project.slideLayouts);
   });
 
   it("never stores sample screenshots", () => {
@@ -46,5 +44,13 @@ describe("projectStore serialization", () => {
 
   it("ignores saves in an unknown format", () => {
     expect(fromStored({ ...toStored({ project, slide: 0, usingSamples: false }, 0), format: 99 }, () => "blob:x")).toBeNull();
+  });
+});
+
+describe("older saves", () => {
+  it("drop backdrop kinds that no longer exist", () => {
+    const stored = toStored({ project, slide: 0, usingSamples: false }, 0);
+    const old = { ...stored, project: { ...stored.project, backdrop: { kind: "collage", seed: 2 } } } as unknown as typeof stored;
+    expect(fromStored(old, (id) => `blob:${id}`)?.project.backdrop).toBeUndefined();
   });
 });

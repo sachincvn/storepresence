@@ -10,11 +10,11 @@ const BORROWED: Partial<Record<TemplateElement["type"], string[]>> = {
   imageSlot: ["monogram"],
 };
 
-/** The template's styled version of an element id (fonts, colors, device), from any slide or layout choice. */
+/** The template's styled version of an element id (fonts, colors, device), from any slide. */
 function templateStyle(template: ResolvedTemplate, el: TemplateElement): TemplateElement {
   const keys = BORROWED[el.type];
   if (!keys) return el;
-  const pool = [...template.designs, ...template.alternates.flatMap((a) => Object.values(a))].flatMap((d) => d.elements);
+  const pool = template.designs.flatMap((d) => d.elements);
   const source = pool.find((e) => e.id === el.id && e.type === el.type) as Record<string, unknown> | undefined;
   if (!source) return el;
   const picked = Object.fromEntries(keys.filter((k) => source[k] !== undefined).map((k) => [k, source[k]]));

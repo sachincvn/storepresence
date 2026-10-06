@@ -23,21 +23,16 @@ describe("perspectivePoint", () => {
   });
 });
 
-describe("device angle and panorama phones", () => {
+describe("angled and panorama phones", () => {
   const shot = (id: string): Screenshot => ({ id, name: `${id}.png`, url: `blob:${id}`, width: 720, height: 1560 });
   const project = (templateId: string, changes: Partial<Project> = {}): Project => ({
     templateId, screenshots: ["a", "b", "c"].map(shot), variables: {}, slideVariables: {}, theme: {}, deviceFrame: true, ...changes,
   });
 
-  it("the set-wide angle applies to device phones; straight removes a template angle", () => {
-    const studio = templates.find((t) => t.id === "studio-blue")!;
-    const phone = (p: Project) => resolveSlide(studio, p, 0).elements.find((el) => el.type === "screenshot") as ScreenshotElement;
-    expect(phone(project("studio-blue")).perspective).toBeUndefined();
-    expect(phone(project("studio-blue", { deviceAngle: "left" })).perspective).toBe("left");
-
+  it("templates can angle their phones", () => {
     const panorama = templates.find((t) => t.id === "panorama")!;
-    const angled = () => resolveSlide(panorama, project("panorama", { deviceAngle: "straight" }), 0).panorama.filter((el) => el.type === "screenshot");
-    expect(angled().every((el) => (el as ScreenshotElement).perspective === undefined)).toBe(true);
+    const phones = resolveSlide(panorama, project("panorama"), 0).panorama.filter((el): el is ScreenshotElement => el.type === "screenshot");
+    expect(phones.map((el) => el.perspective)).toEqual(["left", undefined, undefined, undefined, "right"]);
   });
 
   it("panorama phones show screenshots by upload position, wrapping", () => {

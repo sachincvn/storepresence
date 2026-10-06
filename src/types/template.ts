@@ -73,8 +73,6 @@ type Box = {
   height: number;
   /** Degrees, clockwise, around the box center. */
   rotation?: number;
-  /** Uniform scale around the box center (text, devices and shadows scale together). */
-  scale?: number;
   /** 0–1 */
   opacity?: number;
   /** Extra elements default to "back" (behind layout elements). */
@@ -333,11 +331,6 @@ export type Template = {
    */
   panorama?: TemplateElement[];
   slides: SlideDesign[];
-  /**
-   * Layouts users may switch a slide to. Defaults to every registered layout
-   * with the same canvas size.
-   */
-  layoutChoices?: string[];
 };
 
 export type ResolvedSlideDesign = {
@@ -363,10 +356,6 @@ export type ResolvedTemplate = {
   grain: number;
   panorama: TemplateElement[];
   designs: ResolvedSlideDesign[];
-  /** Layouts a slide can switch to, in picker order. */
-  layoutChoices: string[];
-  /** Per design index: the same slide rebuilt on each layout choice. */
-  alternates: Record<string, ResolvedSlideDesign>[];
 };
 
 /**

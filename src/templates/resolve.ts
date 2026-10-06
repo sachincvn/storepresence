@@ -1,8 +1,6 @@
 import { mixHex } from "@/lib/color";
-import type { Project, Screenshot, SlideEntry } from "@/types/project";
+import type { Project, Screenshot } from "@/types/project";
 import { regionCenterY } from "@/renderer/calloutRenderer";
-import { applyEdit, clampEdit } from "./edits";
-import { blockElement } from "./blocks";
 import { getHeadlineFont, HEADLINE_FONT_KEYS, type HeadlineFont } from "./headlineFonts";
 import type {
   Background,
@@ -11,7 +9,6 @@ import type {
   ElementOverride,
   ImageSlotKey,
   Layout,
-  NormRect,
   ResolvedSlideDesign,
   ResolvedTemplate,
   ScreenshotElement,
@@ -42,23 +39,8 @@ export function resolveTemplate(template: Template, layouts: readonly Layout[]):
     return layout;
   };
 
-  const designs = template.slides.map((design, i) =>
-    buildDesign(template, design, design.layout ? find(design.layout, `slide ${i + 1}`) : undefined, true),
-  );
-
-  // Picker order: layouts the template itself uses, then any other compatible ones.
-  const own = [...new Set(template.slides.flatMap((d) => (d.layout ? [d.layout] : [])))];
-  const compatible = layouts
-    .filter((l) => l.canvas.width === template.canvas.width && l.canvas.height === template.canvas.height)
-    .map((l) => l.id);
-  const layoutChoices = template.layoutChoices ?? [...own, ...compatible.filter((id) => !own.includes(id))];
-  const choiceLayouts = layoutChoices.map((id) => find(id, "layoutChoices"));
-
-  const alternates = template.slides.map((design) =>
-    Object.fromEntries(choiceLayouts.map((l) => [l.id, buildDesign(template, design, l, l.id === design.layout)])),
-  );
-
-  const usedLayouts = [...new Set([...own.map((id) => find(id, "slides")), ...choiceLayouts])];
+  const designs = template.slides.map((design, i) => buildDesign(template, design, design.layout ? find(design.layout, `slide ${i + 1}`) : undefined));
+  const usedLayouts = [...new Set(template.slides.flatMap((d) => (d.layout ? [find(d.layout, "slides")] : [])))];
 
   return {
     id: template.id,
@@ -66,29 +48,26 @@ export function resolveTemplate(template: Template, layouts: readonly Layout[]):
     category: template.category,
     description: template.description,
     canvas: template.canvas,
-    variables: mergeVariables([...usedLayouts.flatMap((l) => l.variables), ...(template.variables ?? [])]),
+    // The app name is always available: the store preview, feature graphic and ZIP name use it.
+    variables: withAppName(mergeVariables([...usedLayouts.flatMap((l) => l.variables), ...(template.variables ?? [])])),
     theme: template.theme,
     editableColors: template.editableColors ?? [],
     grain: template.grain ?? 0,
     panorama: template.panorama ?? [],
     designs,
-    layoutChoices,
-    alternates,
   };
 }
 
+const APP_NAME: TemplateVariable = { key: "appName", label: "App name", default: "Taskly", maxLength: 30 };
+const withAppName = (list: TemplateVariable[]) => (list.some((v) => v.key === APP_NAME.key) ? list : [...list, APP_NAME]);
+
 /**
- * One slide on one layout. Draw order:
+ * One slide on its layout. Draw order:
  * template back → slide back → layout (with overrides) → slide front → template front.
- * Slide-level overrides were written for the slide's own layout, so they only
- * apply when `ownLayout` is true.
  */
-function buildDesign(template: Template, design: SlideDesign, layout: Layout | undefined, ownLayout: boolean): ResolvedSlideDesign {
+function buildDesign(template: Template, design: SlideDesign, layout: Layout | undefined): ResolvedSlideDesign {
   const shared = template.elements ?? [];
-  const base = (layout?.elements ?? []).map((el) => {
-    const withTemplate = applyOverride(el, template.overrides?.[el.id]);
-    return ownLayout ? applyOverride(withTemplate, design.overrides?.[el.id]) : withTemplate;
-  });
+  const base = (layout?.elements ?? []).map((el) => applyOverride(applyOverride(el, template.overrides?.[el.id]), design.overrides?.[el.id]));
   const extra = design.elements ?? [];
   const elements = [...shared.filter(isBack), ...extra.filter(isBack), ...base, ...extra.filter(isFront), ...shared.filter(isFront)];
 
@@ -141,7 +120,7 @@ export function fillPlaceholders(text: string, values: Record<string, string>): 
 }
 
 /** What slide lookups need from a project. */
-export type SlideSource = Pick<Project, "screenshots" | "slideLayouts" | "slides" | "slideBlocks">;
+export type SlideSource = Pick<Project, "screenshots">;
 
 /** One output image: which design it uses, its key for user choices, and its main screenshot. */
 export type SlidePlan = { key: string; design: number; shot: Screenshot | null };
@@ -149,18 +128,13 @@ export type SlidePlan = { key: string; design: number; shot: Screenshot | null }
 /**
  * The set's slides, in order.
  *
- * Without user-arranged slides, every screenshot gets one slide and designs
- * follow the template order. Text-only designs (no screenshot) appear once,
+ * Every screenshot gets one slide and designs follow the template order. Text-only designs (no screenshot) appear once,
  * in place, without using up a screenshot; text designs after the last phone
  * design close the set. Before any upload the template's own set is shown.
  */
 export function getSlides(template: ResolvedTemplate, project: SlideSource): SlidePlan[] {
   const shots = project.screenshots;
   const count = template.designs.length;
-  if (project.slides && project.slides.length > 0) {
-    const byId = new Map(shots.map((s) => [s.id, s]));
-    return project.slides.map((entry) => ({ key: entry.key, design: entry.design % count, shot: entry.shot ? (byId.get(entry.shot) ?? null) : null }));
-  }
 
   const phone = template.designs.flatMap((d, i) => (d.slots > 0 ? [i] : []));
   const text = (i: number): SlidePlan => ({ key: `text-${i}`, design: i, shot: null });
@@ -182,11 +156,6 @@ export function getSlides(template: ResolvedTemplate, project: SlideSource): Sli
   return plans;
 }
 
-/** Turns the current slides into an editable list (before the first slide edit). */
-export function slideEntries(template: ResolvedTemplate, project: SlideSource): SlideEntry[] {
-  return getSlides(template, project).map((p) => ({ key: p.key, design: p.design, shot: p.shot?.id ?? null }));
-}
-
 /** Index of the first slide showing a screenshot, or -1. */
 export function slideIndexForShot(template: ResolvedTemplate, project: SlideSource, shotId: string): number {
   return getSlides(template, project).findIndex((p) => p.shot?.id === shotId);
@@ -201,39 +170,15 @@ export function slotScreenshots(template: ResolvedTemplate, project: SlideSource
   return Array.from({ length: slots }, (_, slot) => (start >= 0 ? shots[(start + slot) % shots.length] : null));
 }
 
-/** A layout without screenshots this design can switch to, for new text slides. */
-export function textLayoutFor(template: ResolvedTemplate, design: number, preferred = "statement"): string | null {
-  if (template.designs[design]?.slots === 0) return null;
-  const options = Object.entries(template.alternates[design] ?? {}).filter(([, d]) => d.slots === 0);
-  return (options.find(([id]) => id === preferred) ?? options[0])?.[0] ?? null;
-}
-
-/** The slide's design, honouring a user layout pick when a project is given. */
+/** The slide's design (with a project, text-only designs are placed as in `getSlides`). */
 export function designFor(template: ResolvedTemplate, slideIndex: number, project?: SlideSource): ResolvedSlideDesign {
   const plan = project ? getSlides(template, project)[slideIndex] : undefined;
-  const index = plan ? plan.design : slideIndex % template.designs.length;
-  const picked = plan && project?.slideLayouts?.[plan.key];
-  const design = (picked && template.alternates[index]?.[picked]) || template.designs[index];
-  // Blocks the user added sit on top of the layout.
-  const blocks = plan ? (project?.slideBlocks?.[plan.key] ?? []) : [];
-  const extra = blocks.flatMap((b) => blockElement(template, b) ?? []).filter((el) => el.type !== "callout" || design.slots > 0);
-  return extra.length > 0 ? { ...design, elements: [...design.elements, ...extra] } : design;
-}
-
-/** The slide's template design, ignoring any layout the user picked. */
-export function ownDesign(template: ResolvedTemplate, slideIndex: number, project: SlideSource): ResolvedSlideDesign {
-  const plan = getSlides(template, project)[slideIndex];
   return template.designs[plan ? plan.design : slideIndex % template.designs.length];
 }
 
-/** Callout elements on a slide (respecting the user's layout pick). */
-export function slideCallouts(template: ResolvedTemplate, slideIndex: number, project?: SlideSource) {
-  return designFor(template, slideIndex, project).elements.filter((el): el is CalloutElement => el.type === "callout");
-}
-
-/** Image slot keys used anywhere in the template, including layouts users can switch to. */
+/** Image slot keys the template uses. */
 export function usedImageSlots(template: ResolvedTemplate): ImageSlotKey[] {
-  const all = [...template.panorama, ...template.designs.flatMap((d) => d.elements), ...template.alternates.flatMap((a) => Object.values(a).flatMap((d) => d.elements))];
+  const all = [...template.panorama, ...template.designs.flatMap((d) => d.elements)];
   const keys = new Set(all.flatMap((el) => (el.type === "imageSlot" ? [el.key] : [])));
   return (["appIcon", "logo", "mascot"] as const).filter((k) => keys.has(k));
 }
@@ -297,29 +242,25 @@ export function getSlideValues(template: ResolvedTemplate, project: Project, sli
 export function slideContext(template: ResolvedTemplate, project: Project, slideIndex: number) {
   const theme = themeFor(template, project);
   const design = designFor(template, slideIndex, project);
-  const regions = project.calloutRegions?.[getSlideKey(template, project, slideIndex)] ?? {};
   const color = (c: Color) => resolveColor(c, theme);
   const ctx: ResolveContext = {
-    regions,
     color,
     values: getSlideValues(template, project, slideIndex),
     deviceFrame: project.deviceFrame,
     deviceModel: project.deviceModel,
     deviceColor: project.deviceColor,
-    deviceAngle: project.deviceAngle,
     headlineFont: getHeadlineFont(project.headlineFont),
     accent: theme.accent ?? theme.foreground ?? "#000000",
   };
   return {
     design,
-    regions,
     resolve: (el: TemplateElement) => resolveElement(el, ctx),
     background: resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, color),
   };
 }
 
 export function resolveSlide(template: ResolvedTemplate, project: Project, slideIndex: number): SlideSpec {
-  const { design, regions, resolve, background } = slideContext(template, project, slideIndex);
+  const { design, resolve, background } = slideContext(template, project, slideIndex);
   const plan = getSlides(template, project)[slideIndex];
   const slotShots = slotScreenshots(template, project, slideIndex);
   // Phones in the panorama show screenshots by their place in the upload list.
@@ -331,11 +272,7 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     return { ...el, slot: slotShots.length + panoramaShots.length - 1 };
   });
   const screenshots = [...slotShots, ...panoramaShots];
-  const edits = project.elementEdits?.[getSlideKey(template, project, slideIndex)] ?? {};
-  // A callout set to null is hidden on this slide; any element can be hidden with an edit.
-  const elements = design.elements
-    .filter((el) => !(el.type === "callout" && regions[el.id] === null) && !edits[el.id]?.hidden)
-    .map((el) => resolve(edits[el.id] ? applyEdit(el, clampEdit(el, edits[el.id], template.canvas)) : el));
+  const elements = design.elements.map(resolve);
 
   return {
     canvas: template.canvas,
@@ -381,11 +318,6 @@ function resolveBackground(bg: Background, color: ColorFn): Background {
 
 /** The user's generated background, built from the template's own theme colors. */
 export function backdropBackground(backdrop: NonNullable<Project["backdrop"]>, theme: ThemeTokens): Background {
-  if (backdrop.kind === "collage") {
-    // Tilt direction and tile order change with Shuffle.
-    const tilts = [-12, 10, -7, 14];
-    return { type: "collage", color: "$background", dim: 0.78, blur: 4, tilt: tilts[backdrop.seed % tilts.length], seed: backdrop.seed };
-  }
   if (backdrop.kind === "mesh") {
     // Harmonious blobs: the background mixed towards the accent, white and black.
     const bg = theme.background ?? "#FFFFFF";
@@ -414,19 +346,16 @@ function resolveShadow(shadow: Shadow | undefined, color: ColorFn): Shadow | und
 
 type ResolveContext = {
   color: ColorFn;
-  /** User callout areas for this slide, by element id. */
-  regions: Record<string, NormRect | null>;
   values: Record<string, string>;
   deviceFrame: boolean;
   deviceModel: Project["deviceModel"];
   deviceColor: string | undefined;
-  deviceAngle: Project["deviceAngle"];
   headlineFont: HeadlineFont | undefined;
   /** Literal accent color, the default for emphasis and markers. */
   accent: string;
 };
 
-function resolveElement(el: TemplateElement, { color, values, regions, deviceFrame, deviceModel, deviceColor, deviceAngle, headlineFont, accent }: ResolveContext): TemplateElement {
+function resolveElement(el: TemplateElement, { color, values, deviceFrame, deviceModel, deviceColor, headlineFont, accent }: ResolveContext): TemplateElement {
   const fill = (text: string) => fillPlaceholders(text, values);
   switch (el.type) {
     case "text":
@@ -454,8 +383,6 @@ function resolveElement(el: TemplateElement, { color, values, regions, deviceFra
         placeholderColor: el.placeholderColor && color(el.placeholderColor),
         // User model choice applies only where the template shows a device.
         device: deviceFrame && el.device ? (deviceModel ?? el.device) : undefined,
-        // So does the angle; "straight" removes the template's own.
-        perspective: el.device && deviceAngle ? (deviceAngle === "straight" ? undefined : deviceAngle) : el.perspective,
       };
     case "shape":
       return {
@@ -470,7 +397,6 @@ function resolveElement(el: TemplateElement, { color, values, regions, deviceFra
     case "callout":
       return {
         ...el,
-        region: regions[el.id] ?? el.region,
         fill: el.fill && color(el.fill),
         stroke: el.stroke && { ...el.stroke, color: color(el.stroke.color) },
         shadow: resolveShadow(el.shadow, color),

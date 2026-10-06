@@ -2,9 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { CalloutElement, Layout, ScreenshotElement, Template } from "@/types/template";
 import type { Project, Screenshot } from "@/types/project";
 import { calloutGeometry, clampRegion, MIN_REGION, regionCenterY } from "@/renderer/calloutRenderer";
-import { editorReducer, initialEditorState } from "@/components/editor/editorState";
 import { templates } from "./registry";
-import { resolveSlide, resolveTemplate, slideCallouts } from "./resolve";
+import { resolveSlide, resolveTemplate } from "./resolve";
 import { validateLayout, validateTemplate } from "./validate";
 
 const shotEl: ScreenshotElement = { type: "screenshot", id: "shot", slot: 0, x: 200, y: 400, width: 680, height: 1400, fit: "cover", align: "top" };
@@ -61,39 +60,15 @@ describe("callout resolve", () => {
     expect(el.region).toEqual(callout.region);
   });
 
-  it("user regions apply per slide and follow the screenshot id", () => {
-    const region = { x: 0, y: 0, w: 0.5, h: 0.2 };
-    const p = project({ calloutRegions: { b: { callout: region } } });
-    expect(calloutOf(p, 1)!.region).toEqual(region);
-    expect(calloutOf(p, 0)!.region).toEqual(callout.region);
-    expect(calloutOf({ ...p, screenshots: [shot("b"), shot("a")] }, 0)!.region).toEqual(region);
-  });
-
-  it("null hides the callout on that slide", () => {
-    expect(calloutOf(project({ calloutRegions: { a: { callout: null } } }))).toBeUndefined();
-  });
-
   it("follow moves the box over its area", () => {
     const followed = resolveTemplate({ ...template, overrides: { callout: { follow: "y" } } }, [layout]);
     const el = resolveSlide(followed, project(), 0).elements.find((e) => e.type === "callout") as CalloutElement;
     expect(el.y + el.height / 2).toBeCloseTo(400 + 0.55 * 1400);
   });
 
-  it("the reducer stores, hides and resets areas for the current slide", () => {
-    const start = { ...initialEditorState(templates[0].id), project: { ...initialEditorState(templates[0].id).project, screenshots: [shot("a")] } };
-    const region = { x: 0.1, y: 0.1, w: 0.3, h: 0.1 };
-    const set = editorReducer(start, { type: "calloutRegion", id: "callout", region });
-    expect(set.project.calloutRegions).toEqual({ a: { callout: region } });
-    const hidden = editorReducer(set, { type: "calloutRegion", id: "callout", region: null });
-    expect(hidden.project.calloutRegions?.a.callout).toBeNull();
-    const reset = editorReducer(hidden, { type: "calloutRegion", id: "callout", region: undefined });
-    expect(reset.project.calloutRegions).toEqual({ a: {} });
-  });
-
-  it("shipped pop-out layouts are offered and listed per slide", () => {
+  it("Studio Blue's pop-out slide has its callout", () => {
     const studio = templates.find((t) => t.id === "studio-blue")!;
-    expect(studio.layoutChoices).toEqual(expect.arrayContaining(["pop-out", "pop-duo"]));
-    expect(slideCallouts(studio, 3).map((el) => el.id)).toEqual(["callout"]);
+    expect(studio.designs[3].elements.filter((el) => el.type === "callout").map((el) => el.id)).toEqual(["callout"]);
   });
 });
 

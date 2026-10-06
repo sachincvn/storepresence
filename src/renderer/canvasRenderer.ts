@@ -67,12 +67,11 @@ function drawGrain(ctx: CanvasRenderingContext2D, amount: number, { width, heigh
 function drawElement(ctx: CanvasRenderingContext2D, el: TemplateElement, spec: SlideSpec, images: LoadedImages, scale: number): void {
     ctx.save();
     ctx.globalAlpha = el.opacity ?? 1;
-    if (el.rotation || (el.scale && el.scale !== 1)) {
+    if (el.rotation) {
       const cx = el.x + el.width / 2;
       const cy = el.y + el.height / 2;
       ctx.translate(cx, cy);
-      if (el.rotation) ctx.rotate((el.rotation * Math.PI) / 180);
-      if (el.scale) ctx.scale(el.scale, el.scale);
+      ctx.rotate((el.rotation * Math.PI) / 180);
       ctx.translate(-cx, -cy);
     }
 
@@ -294,7 +293,7 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, el: ScreenshotElement, im
   if (el.perspective && typeof document !== "undefined") {
     // Draw the device flat, warp it into perspective, then cast its shadow from the warped shape.
     const box = deviceBox(el);
-    const res = scale * (el.scale ?? 1);
+    const res = scale;
     // The angled device can reach past its box; the warp canvas covers its projected outline.
     const corners = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([u, v]) => perspectivePoint(box, el.perspective!, box.x + u * box.width, box.y + v * box.height));
     const out = {

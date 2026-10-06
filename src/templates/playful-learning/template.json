@@ -50,15 +50,6 @@
         "color": "rgba(14, 64, 32, 0.55)"
       }
     },
-    "shot-back": {
-      "device": "phone-island",
-      "frameColor": "#15402A",
-      "shadow": {
-        "y": 26,
-        "blur": 0,
-        "color": "rgba(14, 64, 32, 0.55)"
-      }
-    },
     "callout": {
       "style": "bubble",
       "radius": 52,

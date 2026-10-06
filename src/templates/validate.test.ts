@@ -193,14 +193,6 @@ describe("validateTemplate: blocks, emphasis and layout choices", () => {
     expect(errors).toMatch(/headline.marker: unknown theme token "\$nope"/);
   });
 
-  it("checks layoutChoices and validates each alternate layout", () => {
-    expect(validateTemplate(withChanges({ layoutChoices: ["phone", "nope"] }), [layout]).join("\n")).toMatch(/layoutChoices: unknown layout "nope"/);
-
-    const fixed = { ...proofLayout, variables: [...proofLayout.variables, { key: "count", label: "Count", default: "" }] };
-    // A template override that is fine on its own layout but breaks the alternate.
-    const errors = validateTemplate(withChanges({ overrides: { rating: { color: "$accent" } } }), [layout, fixed]).join("\n");
-    expect(errors).toMatch(/slides\[0\] › as proof › rating.color: unknown theme token "\$accent"/);
-  });
 });
 
 describe("validateTemplate: generated backgrounds", () => {

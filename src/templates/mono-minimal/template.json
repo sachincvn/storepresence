@@ -40,15 +40,6 @@
         "blur": 60,
         "color": "rgba(0, 0, 0, 0.14)"
       }
-    },
-    "shot-back": {
-      "device": "phone-island",
-      "frameColor": "#0A0A0A",
-      "shadow": {
-        "y": 24,
-        "blur": 50,
-        "color": "rgba(0, 0, 0, 0.12)"
-      }
     }
   },
   "slides": [

@@ -91,24 +91,6 @@ describe("editorReducer screenshots", () => {
   });
 });
 
-describe("editorReducer slide layouts", () => {
-  it("stores a pick per slide and clears it when the slide's own layout is chosen again", () => {
-    const tpl = templates[0];
-    const own = tpl.designs[1].layout!;
-    const other = tpl.layoutChoices.find((id) => id !== own)!;
-    let s = run({ type: "samplesReady", samples }, { type: "slide", index: 1 }, { type: "slideLayout", layout: other });
-    expect(s.project.slideLayouts).toEqual({ s2: other });
-    s = editorReducer(s, { type: "slideLayout", layout: own });
-    expect(s.project.slideLayouts).toEqual({});
-  });
-
-  it("moves layout picks from samples to uploads", () => {
-    const other = templates[0].layoutChoices.find((id) => id !== templates[0].designs[0].layout)!;
-    const s = run({ type: "samplesReady", samples }, { type: "slideLayout", layout: other }, { type: "addScreenshots", screenshots: [shot("a")] });
-    expect(s.project.slideLayouts?.a).toBe(other);
-  });
-});
-
 describe("editorReducer backdrop and device", () => {
   it("sets, shuffles and clears a generated backdrop", () => {
     let s = run({ type: "backdrop", kind: "mesh" });
