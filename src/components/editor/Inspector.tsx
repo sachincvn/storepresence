@@ -21,7 +21,7 @@ export type InspectorSection = "screenshots" | "text" | "style";
 const ALL_SECTIONS: InspectorSection[] = ["screenshots", "text", "style"];
 
 /** Preview class per font key, so each option shows itself. */
-const FONT_PREVIEW = { display: "font-display", sans: "font-sans", serif: "font-serif" } as const;
+const FONT_PREVIEW = { display: "font-template-display", sans: "font-template-sans", serif: "font-serif" } as const;
 
 type InspectorProps = {
   template: ResolvedTemplate;
@@ -75,19 +75,19 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
       {sections.includes("text") && variables.length > 0 && (
         <Section title={bare ? null : `Text, slide ${slide + 1}`}>
           <p className="mb-4 text-xs leading-relaxed text-muted">
-            Tip: <code className="rounded bg-canvas px-1 font-bold text-ink">**word**</code> emphasizes,{" "}
-            <code className="rounded bg-canvas px-1 font-bold text-ink">==word==</code> highlights.
+            Tip: <code className="rounded bg-canvas px-1 font-medium text-ink">**word**</code> emphasizes,{" "}
+            <code className="rounded bg-canvas px-1 font-medium text-ink">==word==</code> highlights.
           </p>
           <div className="flex flex-col gap-4">
             {variables.map((v) => {
               const id = `var-${v.key}`;
               const value = values[v.key] ?? "";
               const onChange = (next: string) => dispatch({ type: "variable", key: v.key, value: next, perSlide: !!v.perSlide });
-              const field = "w-full rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] leading-snug";
+              const field = "w-full rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] leading-snug shadow-[0_1px_2px_rgb(19_16_31/0.04)] transition-[border-color,box-shadow] focus:border-brand-300 focus:shadow-[0_0_0_3px_rgb(109_63_240/0.14)] focus:outline-none";
               return (
                 <div key={v.key}>
                   <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                    <label htmlFor={id} className="text-sm font-bold">
+                    <label htmlFor={id} className="text-sm font-medium">
                       {v.label}
                     </label>
                     {!v.perSlide && <span className="text-xs text-muted">All slides</span>}
@@ -123,7 +123,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
                   return (
                     <label
                       key={option.label}
-                      className={`flex cursor-pointer items-center gap-2.5 rounded-xl border bg-white p-2.5 text-sm font-bold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue ${checked ? "border-blue ring-1 ring-blue" : "border-line"}`}
+                      className={`flex cursor-pointer items-center gap-2.5 rounded-xl border bg-white p-2.5 text-sm font-medium has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-500 ${checked ? "border-brand-500 ring-1 ring-brand-500" : "border-line"}`}
                     >
                       <input
                         type="radio"
@@ -158,7 +158,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
           title="Colors"
           action={
             hasColorChanges && (
-              <button type="button" onClick={() => dispatch({ type: "resetColors" })} className="rounded-md text-xs font-bold text-blue hover:underline">
+              <button type="button" onClick={() => dispatch({ type: "resetColors" })} className="rounded-md text-xs font-medium text-brand-500 hover:underline">
                 Reset
               </button>
             )
@@ -173,7 +173,7 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
                   onChange={(e) => dispatch({ type: "color", key, value: e.target.value.toUpperCase() })}
                   className="size-9 cursor-pointer rounded-lg border-0 bg-transparent p-0"
                 />
-                <span className="text-sm font-bold">{COLOR_LABELS[key]}</span>
+                <span className="text-sm font-medium">{COLOR_LABELS[key]}</span>
                 <span className="ml-auto text-xs text-muted uppercase tabular-nums">{theme[key]}</span>
               </label>
             ))}
@@ -195,7 +195,7 @@ function Section({ title, action, children }: { title: string | null; action?: R
     <section>
       {title && (
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-extrabold tracking-[-0.02em]">{title}</h2>
+          <h2 className="font-display text-[15px] font-medium tracking-[-0.01em]">{title}</h2>
           {action}
         </div>
       )}

@@ -1,135 +1,105 @@
 import type { CSSProperties } from "react";
-import { ButtonLink } from "@/components/ui/ButtonLink";
 import { site } from "@/lib/site";
-import { ClayPill, ClaySphere, Starburst, Sticker } from "./Decor";
-import { StorePoster } from "./StorePoster";
-import { getPoster } from "./posters";
+import { templates } from "@/templates/registry";
+import { CtaLink, PlayLink } from "./Cta";
+import { HeroMock } from "./HeroMock";
+import { container, Icon, type IconName, TornEdge } from "./Section";
 
-const promises = ["No account needed", "Nothing uploaded", "PNG + ZIP export"];
-
-const fan = [
-  { id: "sunny", className: "left-[4%] top-[20%] w-[35%] z-10", r: -9, d: 200 },
-  { id: "midnight", className: "right-[4%] top-[22%] w-[35%] z-10", r: 8, d: 350 },
-  { id: "studio-blue", className: "left-1/2 top-[9%] w-[41%] -translate-x-1/2 z-20", r: 0, d: 0 },
+const exportsFor: { icon: IconName; label: string }[] = [
+  { icon: "phone", label: "Google Play" },
+  { icon: "phone", label: "iPhone" },
+  { icon: "tablet", label: "iPad" },
+  { icon: "banner", label: "Feature graphic" },
 ];
 
-function vars(v: Record<string, string>) {
-  return v as CSSProperties;
+function delay(ms: number) {
+  return { "--d": `${ms}ms` } as CSSProperties;
 }
 
 export function Hero() {
   return (
-    <section aria-labelledby="hero-title" className="relative px-4 pt-12 pb-20 sm:px-6 sm:pt-16 lg:px-10 lg:pt-20 lg:pb-28">
-      {/* Soft clay glow behind the hero */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[720px] bg-[radial-gradient(60%_50%_at_75%_30%,#e6deff_0%,transparent_70%),radial-gradient(40%_40%_at_10%_20%,#dce8ff_0%,transparent_70%)]" />
+    <section aria-labelledby="hero-title" className="on-brand relative isolate overflow-hidden pt-32 pb-20 text-white sm:pt-40 sm:pb-28">
+      <HeroSky />
 
-      <div className="mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-6">
-          <h1
-            id="hero-title"
-            className="font-display text-[clamp(2.6rem,5.2vw,4.5rem)] leading-[1.02] font-extrabold tracking-[-0.045em]"
-          >
-            Turn app <ShotsChip /> screenshots into store&#8209;ready graphics <ExportChip />
-          </h1>
-          <p className="mt-6 max-w-[30rem] text-lg leading-relaxed text-muted">
-            Pick a template, drop in your screenshots and export your entire
-            Play Store set in seconds. No design skills, no design tools.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-4">
-            <ButtonLink href={site.editorPath}>Create screenshots</ButtonLink>
-            <ButtonLink href="#templates" variant="secondary">
-              Explore templates
-            </ButtonLink>
-          </div>
-          <ul className="mt-10 flex flex-wrap gap-2.5">
-            {promises.map((item) => (
-              <li
-                key={item}
-                className="clay-hero flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-sm font-semibold"
-              >
-                <Check />
-                {item}
-              </li>
-            ))}
-          </ul>
+      <div className={`${container} text-center`}>
+        <p
+          className="fade-up inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[13px] font-medium backdrop-blur-md"
+          style={delay(0)}
+        >
+          <Icon name="sparkle" className="size-3.5 text-brand-100" />
+          {templates.length} store-ready templates<span className="hidden sm:inline"> · Google Play &amp; App Store</span>
+        </p>
+
+        <h1
+          id="hero-title"
+          className="fade-up mx-auto mt-6 font-display text-[clamp(2.5rem,5.2vw,3.85rem)] leading-[1.04] font-medium tracking-[-0.035em] text-balance"
+          style={delay(60)}
+        >
+          Your app screenshots.
+          <br />
+          Store-ready in a minute.
+        </h1>
+
+        <p className="fade-up mx-auto mt-5 max-w-[38rem] text-lg leading-[1.6] text-white/85" style={delay(120)}>
+          Stop wrestling with design tools to make Play Store and App Store graphics.
+          Pick a template, drop in your screenshots and export the whole set.
+        </p>
+
+        <div className="fade-up mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-4" style={delay(180)}>
+          <CtaLink href={site.editorPath} variant="light">
+            Create screenshots
+          </CtaLink>
+          <PlayLink href="#how">See how it works</PlayLink>
         </div>
 
-        <figure className="relative lg:col-span-6" aria-label="Example store screenshots made from three templates">
-          <div className="relative mx-auto aspect-[1/0.95] max-w-[600px]">
-            {/* Clay stage */}
-            <div className="clay-hero absolute inset-x-0 top-[6%] bottom-0 overflow-hidden rounded-[44px] bg-lilac">
-              <div className="halftone absolute -right-10 -bottom-10 h-2/3 w-2/3 text-blue opacity-30 [mask-image:radial-gradient(circle_at_80%_80%,black_15%,transparent_65%)]" />
-              <div className="halftone absolute -top-6 -left-6 h-1/3 w-1/3 text-pink opacity-30 [mask-image:radial-gradient(circle_at_20%_20%,black_10%,transparent_65%)]" />
-            </div>
+        <p className="fade-up mt-6 text-[13px] font-medium text-white/75" style={delay(220)}>
+          100% in your browser · No account · Nothing uploaded
+        </p>
 
-            {fan.map(({ id, className, r, d }) => (
-              <StorePoster
-                key={id}
-                poster={getPoster(id)}
-                className={`rise-in absolute! shadow-float ring-2 ring-ink ${className}`}
-                style={vars({ "--r": `${r}deg`, "--d": `${d}ms` })}
-              />
-            ))}
-
-            <ClaySphere rich color="#FFD43B" className="float absolute top-[2%] left-[6%] z-30 w-[13%]" />
-            <ClaySphere rich color="#FF6FAE" className="float absolute top-[58%] -right-[2%] z-30 w-[8%]" style={vars({ "--d": "1.5s" })} />
-            <ClayPill rich color="#3D5AFE" className="float absolute bottom-[5%] left-[44%] z-30 h-[6%] w-[19%] -rotate-12" style={vars({ "--d": "3s" })} />
-
-            <Starburst className="absolute top-[0%] right-[3%] z-30 w-[22%] rotate-12 text-[clamp(0.7rem,1.4vw,0.95rem)]">
-              No
-              <br />
-              sign-up
-            </Starburst>
-
-            <Sticker className="absolute bottom-[5%] left-[4%] z-30 -rotate-3 bg-white text-xs sm:text-sm">
-              1080 × 1920 px
-            </Sticker>
-          </div>
-        </figure>
+        <ul className="fade-up mt-5 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[13px] font-medium text-white/85" style={delay(260)}>
+          <li className="mr-2 text-[11px] tracking-[0.12em] text-white/60 uppercase">Exports for</li>
+          {exportsFor.map((item, i) => (
+            <li key={item.label} className="flex items-center gap-1">
+              {i > 0 && <span aria-hidden="true" className="mr-1 text-white/35">·</span>}
+              <span className="grid size-6 place-items-center rounded-full bg-white/90 text-brand-600">
+                <Icon name={item.icon} className="size-3.5" />
+              </span>
+              {item.label}
+            </li>
+          ))}
+        </ul>
       </div>
+
+      <div className={`${container} fade-up mt-14 sm:mt-16`} style={delay(320)}>
+        <HeroMock />
+      </div>
+
+      <TornEdge position="bottom" seed={3} />
     </section>
   );
 }
 
-/** Inline headline chip: a tiny fan of finished screenshots. */
-function ShotsChip() {
+/** Violet gradient sky with soft, blurred clouds and film grain. */
+function HeroSky() {
   return (
-    <span
-      aria-hidden="true"
-      className="clay-hero relative mx-[0.05em] inline-block h-[0.82em] w-[1.55em] -rotate-3 overflow-hidden rounded-[0.28em] bg-yellow align-[-0.1em]"
-    >
-      {(["lilac", "studio-blue", "mint"] as const).map((id, i) => (
-        <StorePoster
-          key={id}
-          poster={getPoster(id)}
-          className="absolute! top-[16%] w-[0.4em] rounded-[0.06em]! ring-1 ring-ink"
-          style={{ left: `${12 + i * 26}%`, transform: `rotate(${(i - 1) * 9}deg)` }}
-        />
-      ))}
-    </span>
+    <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,#5530d6_0%,#7c5cee_55%,#e2d9fc_100%)]">
+      <Cloud className="anim-drift -top-10 -left-24 hidden w-[520px] opacity-60 sm:block" />
+      <Cloud className="anim-drift -right-32 top-6 hidden w-[560px] opacity-50 [--d:-7s] sm:block" />
+      <Cloud className="anim-drift top-[46%] -left-40 w-[640px] opacity-45 [--d:-12s] max-sm:top-[62%]" />
+      <Cloud className="anim-drift top-[58%] -right-24 w-[600px] opacity-55 [--d:-4s]" />
+      <Cloud className="-bottom-24 left-[30%] w-[760px] opacity-70" />
+      <div className="grain absolute inset-0 opacity-[0.1]" />
+    </div>
   );
 }
 
-/** Inline headline chip: neo-brutalist export button. */
-function ExportChip() {
+/** A cloud: a few overlapping white blobs, heavily blurred. */
+function Cloud({ className }: { className: string }) {
   return (
-    <span
-      aria-hidden="true"
-      className="relative ml-[0.05em] inline-grid size-[0.78em] rotate-6 place-items-center rounded-[0.24em] border-[0.045em] border-ink bg-blue align-[-0.08em] shadow-[0.06em_0.06em_0_#16131F]"
-    >
-      <svg viewBox="0 0 24 24" className="size-[0.48em]">
-        <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </span>
-  );
-}
-
-function Check() {
-  return (
-    <span aria-hidden="true" className="grid size-5 place-items-center rounded-md bg-blue">
-      <svg viewBox="0 0 16 16" className="size-3">
-        <path d="M3 8.5 L6.5 12 L13 4.5" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </span>
+    <div className={`absolute aspect-[2.4/1] blur-2xl ${className}`}>
+      <span className="absolute bottom-0 left-0 h-[55%] w-full rounded-full bg-white/80" />
+      <span className="absolute bottom-[25%] left-[18%] h-[70%] w-[38%] rounded-full bg-white/80" />
+      <span className="absolute bottom-[20%] left-[45%] h-[90%] w-[34%] rounded-full bg-white/80" />
+    </div>
   );
 }

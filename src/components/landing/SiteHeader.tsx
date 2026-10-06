@@ -1,39 +1,60 @@
-import { ButtonLink } from "@/components/ui/ButtonLink";
+"use client";
+
+import { useEffect, useState } from "react";
 import { site } from "@/lib/site";
+import { CtaLink } from "./Cta";
 import { Logo } from "./Logo";
 
 const links = [
-  { href: "#how", label: "How it works" },
   { href: "#features", label: "Features" },
+  { href: "#how", label: "How it works" },
   { href: "#templates", label: "Templates" },
+  { href: "#faq", label: "FAQ" },
 ];
 
+/** Floating glass bar: clear over the violet hero, frosted white once scrolled. */
 export function SiteHeader() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 24);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-6 lg:px-10">
-      <nav
-        aria-label="Main"
-        className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 rounded-2xl border border-line bg-white/90 pr-3 pl-4 shadow-[0_8px_24px_-18px_rgb(22_19_31/0.3)] backdrop-blur-md sm:pl-5"
-      >
-        <Logo />
-        <ul className="hidden items-center gap-1 md:flex">
-          {links.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                className="rounded-xl px-3.5 py-2 text-sm font-semibold text-muted transition-colors hover:bg-lilac hover:text-ink"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <ButtonLink href={site.editorPath} size="md">
-          {/* Short label on phones so the longer wordmark fits. */}
-          <span className="sm:hidden">Create</span>
-          <span className="hidden sm:inline">Create screenshots</span>
-        </ButtonLink>
-      </nav>
+    <header className="fixed inset-x-0 top-0 z-50 pt-3">
+      <div className="mx-auto w-full max-w-[calc(1080px+3rem)] px-4 sm:px-6">
+        <nav
+          aria-label="Main"
+          className={`flex h-14 items-center justify-between gap-6 rounded-[18px] border pr-2 pl-4 backdrop-blur-md backdrop-saturate-150 transition-[background-color,border-color,box-shadow,color] duration-300 sm:pl-5 ${
+            scrolled
+              ? "border-white/70 bg-white/75 text-ink shadow-[0_8px_30px_-12px_rgb(19_16_31/0.18)]"
+              : "on-brand border-white/35 bg-white/10 text-white"
+          }`}
+        >
+          <Logo />
+          <ul className="hidden items-center gap-1 whitespace-nowrap lg:flex">
+            {links.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    scrolled ? "text-ink/70 hover:text-ink" : "text-white/85 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <CtaLink href={site.editorPath} size="sm" variant={scrolled ? "primary" : "light"}>
+            <span className="sm:hidden">Create</span>
+            <span className="hidden sm:inline">Create screenshots</span>
+          </CtaLink>
+        </nav>
+      </div>
     </header>
   );
 }

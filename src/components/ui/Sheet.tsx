@@ -35,10 +35,10 @@ export function Sheet({ open, title, onClose, children }: SheetProps) {
     >
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-white px-5 pt-3 pb-3">
         <span aria-hidden="true" className="absolute top-2 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-line" />
-        <h2 id="sheet-title" className="mt-2 font-display text-xl font-extrabold tracking-[-0.02em]">
+        <h2 id="sheet-title" className="mt-2 font-display text-xl font-medium tracking-[-0.02em]">
           {title}
         </h2>
-        <button type="button" onClick={onClose} className="mt-2 rounded-xl border border-line px-3 py-1.5 text-sm font-bold">
+        <button type="button" onClick={onClose} className="mt-2 rounded-xl border border-line px-3 py-1.5 text-sm font-medium">
           Done
         </button>
       </div>

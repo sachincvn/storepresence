@@ -44,15 +44,15 @@ function BrandImage({ slot, image, onChange }: { slot: ImageSlotKey; image?: Scr
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold">{title}</span>
+        <span className="block text-sm font-medium">{title}</span>
         <span className="block truncate text-xs text-muted">{image ? image.name : hint}</span>
         <span className="mt-1 flex gap-3">
-          <button type="button" onClick={() => input.current?.click()} className="rounded text-xs font-bold text-blue hover:underline">
+          <button type="button" onClick={() => input.current?.click()} className="rounded text-xs font-medium text-brand-500 hover:underline">
             {image ? "Replace" : "Upload"}
             <span className="sr-only"> {title.toLowerCase()}</span>
           </button>
           {image && (
-            <button type="button" onClick={() => onChange(slot, null)} className="rounded text-xs font-bold text-muted hover:text-ink hover:underline">
+            <button type="button" onClick={() => onChange(slot, null)} className="rounded text-xs font-medium text-muted hover:text-ink hover:underline">
               Remove<span className="sr-only"> {title.toLowerCase()}</span>
             </button>
           )}

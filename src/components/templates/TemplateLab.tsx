@@ -45,24 +45,24 @@ export function TemplateLab() {
     <div className="mx-auto flex max-w-[1400px] flex-col gap-8 px-4 py-8 sm:px-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-extrabold tracking-[-0.04em]">Template Lab</h1>
+          <h1 className="font-display text-4xl font-semibold tracking-[-0.04em]">Template Lab</h1>
           <p className="mt-1 text-muted">
             Dev only. Edit JSON in <code className="rounded bg-white px-1.5 py-0.5 text-sm">src/templates/</code> and this page reloads.
           </p>
         </div>
-        <Link href="/editor" className="text-sm font-bold text-blue underline">
+        <Link href="/editor" className="text-sm font-medium text-brand-500 underline">
           Open editor
         </Link>
       </header>
 
       <section aria-label="Validation" className={`rounded-2xl border p-4 ${issueCount ? "border-[#F3B5CC] bg-[#FFF0F5]" : "border-[#B6E6CD] bg-[#EFFBF4]"}`}>
         {issueCount === 0 ? (
-          <p className="font-bold text-[#166B45]">
+          <p className="font-medium text-[#166B45]">
             All {templates.length} templates and {layouts.length} layouts are valid.
           </p>
         ) : (
           <>
-            <p className="font-bold text-[#9E1846]">
+            <p className="font-medium text-[#9E1846]">
               {issueCount} problem{issueCount === 1 ? "" : "s"} in {templateIssues.length} file{templateIssues.length === 1 ? "" : "s"}. Invalid files are hidden from the editor.
             </p>
             <ul className="mt-2 flex flex-col gap-1 font-mono text-sm text-[#9E1846]">
@@ -75,7 +75,7 @@ export function TemplateLab() {
       </section>
 
       <section aria-label="Test settings" className="sticky top-0 z-10 -mx-4 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line bg-canvas/95 px-4 py-3 backdrop-blur sm:-mx-8 sm:px-8">
-        <label className="flex items-center gap-2 text-sm font-bold">
+        <label className="flex items-center gap-2 text-sm font-medium">
           Screenshots
           <select value={ratio} onChange={(e) => setRatio(e.target.value as Ratio)} className="rounded-xl border border-line bg-white px-3 py-1.5 font-medium">
             <option value="mixed">Mixed: one of each ratio</option>
@@ -91,7 +91,7 @@ export function TemplateLab() {
       </section>
 
       <section aria-labelledby="lab-templates" className="flex flex-col gap-10">
-        <h2 id="lab-templates" className="font-display text-2xl font-extrabold tracking-[-0.03em]">
+        <h2 id="lab-templates" className="font-display text-2xl font-semibold tracking-[-0.03em]">
           Templates
         </h2>
         {samples.length > 0 &&
@@ -100,7 +100,7 @@ export function TemplateLab() {
 
       <section aria-labelledby="lab-layouts" className="flex flex-col gap-4">
         <div>
-          <h2 id="lab-layouts" className="font-display text-2xl font-extrabold tracking-[-0.03em]">
+          <h2 id="lab-layouts" className="font-display text-2xl font-semibold tracking-[-0.03em]">
             Layouts
           </h2>
           <p className="text-sm text-muted">Element boxes: blue text, pink screenshots. Boxes may bleed past the edge on purpose.</p>
@@ -140,13 +140,13 @@ function TemplateRow({
   return (
     <article aria-labelledby={`lab-${template.id}`}>
       <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h3 id={`lab-${template.id}`} className="font-display text-xl font-extrabold">
+        <h3 id={`lab-${template.id}`} className="font-display text-xl font-semibold">
           {template.name}
         </h3>
         <span className="text-sm text-muted">
           {template.category}, {template.designs.length} slide designs, {template.panorama.length} panorama elements
         </span>
-        <Link href={`/editor?template=${template.id}`} className="text-sm font-bold text-blue underline">
+        <Link href={`/editor?template=${template.id}`} className="text-sm font-medium text-brand-500 underline">
           Edit
         </Link>
       </div>
@@ -201,7 +201,7 @@ function LayoutWireframe({ layout, samples }: { layout: Layout; samples: Screens
           {layout.elements.map((el) => (
             <div
               key={el.id}
-              className={`absolute border-2 border-dashed ${el.type === "text" ? "border-blue bg-blue/10" : el.type === "screenshot" ? "border-pink bg-pink/10" : "border-ink/40"}`}
+              className={`absolute border-2 border-dashed ${el.type === "text" ? "border-brand-500 bg-brand-500/10" : el.type === "screenshot" ? "border-pink bg-pink/10" : "border-ink/40"}`}
               style={{
                 left: `${(el.x / W) * 100}%`,
                 top: `${(el.y / H) * 100}%`,
@@ -210,13 +210,13 @@ function LayoutWireframe({ layout, samples }: { layout: Layout; samples: Screens
                 transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
               }}
             >
-              <span className="absolute top-0 left-0 bg-ink px-1 text-[10px] leading-4 font-bold text-white">{el.id}</span>
+              <span className="absolute top-0 left-0 bg-ink px-1 text-[10px] leading-4 font-medium text-white">{el.id}</span>
             </div>
           ))}
         </div>
       </div>
       <figcaption className="mt-2 text-sm">
-        <span className="font-bold">{layout.id}</span>
+        <span className="font-medium">{layout.id}</span>
         <span className="block text-xs text-muted">
           {layout.variables.map((v) => v.key).join(", ")}; {layout.elements.filter((e) => e.type === "screenshot").length} screenshot
           {layout.elements.filter((e) => e.type === "screenshot").length === 1 ? "" : "s"}
@@ -228,8 +228,8 @@ function LayoutWireframe({ layout, samples }: { layout: Layout; samples: Screens
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (on: boolean) => void }) {
   return (
-    <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)} className="flex items-center gap-2 text-sm font-bold">
-      <span aria-hidden="true" className={`relative h-6 w-11 rounded-full transition-colors ${checked ? "bg-blue" : "bg-line"}`}>
+    <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)} className="flex items-center gap-2 text-sm font-medium">
+      <span aria-hidden="true" className={`relative h-6 w-11 rounded-full transition-colors ${checked ? "bg-brand-500" : "bg-line"}`}>
         <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-[left] ${checked ? "left-[22px]" : "left-0.5"}`} />
       </span>
       {label}

@@ -1,280 +1,266 @@
-import type { ReactNode } from "react";
-import { Sticker } from "./Decor";
-import { StorePoster } from "./StorePoster";
-import { getPoster, posters, type PosterStyle } from "./posters";
-
-type Tone = "white" | "ink" | "sky" | "pop" | "mint";
-
-const tones: Record<Tone, { card: string; body: string }> = {
-  white: { card: "clay bg-white", body: "text-muted" },
-  ink: { card: "clay-dark bg-ink text-white", body: "text-white/65" },
-  sky: { card: "clay bg-sky", body: "text-muted" },
-  pop: { card: "border-2 border-ink bg-white shadow-pop", body: "text-muted" },
-  mint: { card: "clay bg-mint", body: "text-muted" },
-};
+import type { CSSProperties } from "react";
+import { OUTPUT_SIZES } from "@/templates/sizes";
+import { templates } from "@/templates/registry";
+import { Card, CheckIcon, container, Icon, SectionHeader, Tag } from "./Section";
 
 export function Features() {
   return (
-    <section id="features" aria-labelledby="features-title" className="scroll-mt-24 px-4 py-20 sm:px-6 lg:px-10 lg:py-28">
-      <div className="mx-auto max-w-[1200px]">
-        <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-          <h2
-            id="features-title"
-            className="font-display text-[clamp(2.1rem,3.8vw,3.4rem)] leading-[1.02] font-extrabold tracking-[-0.04em] text-balance lg:col-span-7"
-          >
-            Built for the tedious parts.
-          </h2>
-          <p className="max-w-[28rem] text-lg leading-relaxed text-muted lg:col-span-5 lg:justify-self-end">
-            Fitting, sizing and exporting are handled for you. A new release only
-            means new screenshots.
-          </p>
-        </div>
+    <section id="features" aria-labelledby="features-title" className="scroll-mt-24 py-20 lg:py-28">
+      <div className={container}>
+        <SectionHeader
+          id="features-title"
+          eyebrow="Features"
+          icon={<Icon name="sparkle" />}
+          title="Your screenshots."
+          accent="Ready for the store."
+          lede="Fitting, sizing, framing and exporting are done for you. Templates own the layout; you bring the content."
+        />
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-12">
-          <FeatureCard
-            tone="white"
+        <div className="mt-12 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-12">
+          <Card
             className="md:col-span-2 lg:col-span-7"
-            layout="split"
-            title="Any size in. Perfect fit out."
-            body="Tall, standard or landscape. Every screenshot is scaled into its slot with proportions intact, never stretched."
-          >
-            <FitDemo />
-          </FeatureCard>
-
-          <FeatureCard
-            tone="ink"
-            className="md:col-span-2 lg:col-span-5"
-            title="Exact pixels, every time"
-            body="Exports match the template to the pixel, whatever your zoom level or screen size."
-          >
-            <PixelDemo />
-          </FeatureCard>
-
-          <FeatureCard
-            tone="sky"
+            visual={<FitVisual />}
+            visualClassName="h-72"
+            title="Any screenshot, perfect fit"
+            body="Tall, standard or landscape. Every screenshot is scaled into its slot with its proportions intact."
+            tags={["Any aspect ratio", "Never stretched", "Auto crop", "Rounded corners", "Shadows"]}
+          />
+          <Card
+            className="lg:col-span-5"
+            visual={<SizesVisual />}
+            visualClassName="h-72"
+            title="Every store size"
+            body="Design once, export for Google Play and the App Store at exact pixels."
+            tags={["Google Play", "iPhone 6.9″", "iPhone 6.5″", "iPad 13″"]}
+          />
+          <Card
             className="lg:col-span-4"
-            title="Stays on your device"
-            body="Rendering happens in your browser. Screenshots are never uploaded or stored."
-          >
-            <PrivacyDemo />
-          </FeatureCard>
-
-          <FeatureCard
-            tone="pop"
-            className="lg:col-span-4"
-            title="Whole set, one ZIP"
-            body="Every screenshot exported at once, numbered in order and ready for the console."
-          >
-            <ZipDemo />
-          </FeatureCard>
-
-          <FeatureCard
-            tone="mint"
-            className="md:col-span-2 lg:col-span-4"
+            visual={<TextVisual />}
             title="Your words, your colors"
-            body="Change the headline and theme color. The template handles the layout."
-          >
-            <CustomizeDemo />
-          </FeatureCard>
+            body="Edit headlines and the theme color. The layout takes care of itself."
+          />
+          <Card
+            className="lg:col-span-4"
+            visual={<PrivacyVisual />}
+            title="Stays in your browser"
+            body="Rendering happens on your device. Screenshots are never uploaded."
+          />
+          <Card
+            className="md:col-span-2 lg:col-span-4"
+            visual={<BatchVisual />}
+            title="Whole set, one click"
+            body="Every slide exported at once, numbered in order and zipped."
+          />
+          <Card
+            className="md:col-span-2 lg:col-span-7"
+            visual={<TemplatesVisual />}
+            visualClassName="h-56"
+            title={`${templates.length} templates, one click apart`}
+            body="Switch the whole set's look without touching your screenshots or text."
+          />
+          <Card
+            className="md:col-span-2 lg:col-span-5"
+            visual={<UndoVisual />}
+            visualClassName="h-56"
+            title="Undo anything, lose nothing"
+            body="Full undo and redo, and your project autosaves in this browser."
+          />
         </div>
       </div>
     </section>
   );
 }
 
-function FeatureCard({
-  tone,
-  title,
-  body,
-  className,
-  layout = "stack",
-  children,
-}: {
-  tone: Tone;
-  title: string;
-  body: string;
-  className: string;
-  /** "split" puts text beside the visual on wider screens. */
-  layout?: "stack" | "split";
-  children: ReactNode;
-}) {
-  const split = layout === "split";
+/* ---------- Visuals (decorative) ---------- */
+
+/** A raw app screenshot drawn with CSS. */
+function RawShot({ className = "" }: { className?: string }) {
   return (
-    <article
-      className={`relative overflow-hidden rounded-[32px] p-6 sm:p-8 ${
-        split ? "grid gap-6 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:items-center sm:gap-8" : "flex flex-col"
-      } ${tones[tone].card} ${className}`}
-    >
-      <div>
-        <h3 className="font-display text-2xl font-extrabold tracking-[-0.03em]">{title}</h3>
-        <p className={`mt-2 max-w-[26rem] leading-relaxed ${tones[tone].body}`}>{body}</p>
+    <div className={`flex flex-col gap-[6%] overflow-hidden bg-white p-[8%] ${className}`}>
+      <div className="flex items-center justify-between">
+        <div className="h-[5px] w-1/3 rounded-full bg-ink/70" />
+        <div className="aspect-square w-[14%] rounded-full bg-brand-100" />
       </div>
-      <div aria-hidden="true" className={`flex justify-center ${split ? "" : "mt-6 flex-1 items-end"}`}>
-        {children}
+      <div className="rounded-[10%/16%] bg-[linear-gradient(135deg,#8b64ff,#5024c8)] p-[8%]">
+        <div className="h-[4px] w-1/2 rounded-full bg-white/60" />
+        <div className="mt-[8%] h-[7px] w-3/4 rounded-full bg-white" />
       </div>
-    </article>
-  );
-}
-
-/* ---------- Visual demos (decorative) ---------- */
-
-function FakeShot({ className = "" }: { className?: string }) {
-  return (
-    <div className={`flex flex-col overflow-hidden rounded-[4px] bg-white ring-[1.5px] ring-ink ${className}`}>
-      <div className="h-[16%] min-h-2 bg-blue" />
-      <div className="flex flex-1 flex-col gap-[8%] p-[10%]">
-        <div className="aspect-square w-[28%] rounded-full bg-pink ring-[1.5px] ring-ink" />
-        <div className="h-1 w-full rounded-full bg-ink/15" />
-        <div className="h-1 w-3/4 rounded-full bg-ink/15" />
-        <div className="h-1 w-1/2 rounded-full bg-ink/15" />
-      </div>
-    </div>
-  );
-}
-
-const sources = [
-  // `fit` sizes the shot inside a 9:16 slot the way contain would.
-  { label: "9 : 19.5", src: "h-full aspect-[9/19.5]", fit: "h-full aspect-[9/19.5]", slot: "bg-blue" },
-  { label: "3 : 4", src: "h-[78%] aspect-[3/4]", fit: "w-full aspect-[3/4]", slot: "bg-peach" },
-  { label: "16 : 10", src: "w-full aspect-[16/10]", fit: "w-full aspect-[16/10]", slot: "bg-lilac" },
-];
-
-function FitDemo() {
-  return (
-    <div className="grid w-full max-w-[360px] grid-cols-3 gap-3 sm:gap-4">
-      {sources.map((s) => (
-        <div key={s.label} className="flex flex-col items-center">
-          <div className="flex h-16 w-full max-w-[84px] items-end justify-center">
-            <FakeShot className={s.src} />
-          </div>
-          <Sticker className="mt-2.5 bg-white px-1.5! py-0.5! text-[10px]! shadow-none! sm:text-[11px]!">{s.label}</Sticker>
-          <svg viewBox="0 0 24 40" className="my-2 h-6 w-4 text-ink">
-            <path d="M12 2v32m0 0-7-7m7 7 7-7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <div className={`relative flex aspect-[9/16] w-full max-w-[104px] flex-col rounded-xl p-[9%] ring-2 ring-ink ${s.slot}`}>
-            <div className="h-1.5 w-4/5 rounded-full bg-ink/80" />
-            <div className="mt-1 h-1.5 w-3/5 rounded-full bg-ink/80" />
-            <div className="mt-[14%] flex min-h-0 flex-1 items-center justify-center">
-              <FakeShot className={`${s.fit} max-w-full shadow-pop-sm`} />
-            </div>
-          </div>
+      {[80, 62, 72, 50].map((w) => (
+        <div key={w} className="flex items-center gap-[6%]">
+          <div className="aspect-square w-[16%] shrink-0 rounded-[30%] bg-paper" />
+          <div className="h-[4px] rounded-full bg-ink/12" style={{ width: `${w}%` }} />
         </div>
       ))}
     </div>
   );
 }
 
-function PixelDemo() {
+function FitVisual() {
   return (
-    <div className="relative grid w-full place-items-center pt-8">
-      <div className="relative h-[220px] aspect-[9/16]">
-        {/* width rule */}
-        <div className="absolute -top-7 right-0 left-0 flex items-center gap-2 text-sky">
-          <span className="h-3 w-0.5 bg-sky" />
-          <span className="h-0.5 flex-1 bg-sky" />
-          <span className="font-display text-sm font-extrabold tabular-nums">1080</span>
-          <span className="h-0.5 flex-1 bg-sky" />
-          <span className="h-3 w-0.5 bg-sky" />
-        </div>
-        {/* height rule */}
-        <div className="absolute top-0 -right-9 bottom-0 flex flex-col items-center gap-2 text-sky">
-          <span className="h-0.5 w-3 bg-sky" />
-          <span className="w-0.5 flex-1 bg-sky" />
-          <span className="font-display text-sm font-extrabold tabular-nums [writing-mode:vertical-rl]">1920</span>
-          <span className="w-0.5 flex-1 bg-sky" />
-          <span className="h-0.5 w-3 bg-sky" />
-        </div>
-        <StorePoster poster={getPoster("lilac")} className="ring-2 ring-white/90" />
+    <div className="absolute inset-0 flex items-center justify-center gap-5 px-6 pt-8 sm:gap-10">
+      <div className="flex flex-col items-center gap-2.5">
+        <RawShot className="h-40 w-[74px] rounded-lg border border-hairline shadow-card sm:h-48 sm:w-[88px]" />
+        <Tag>1170 × 2532</Tag>
       </div>
-      <div className="halftone absolute -bottom-10 -left-10 size-48 text-white opacity-20 [mask-image:radial-gradient(circle_at_30%_70%,black_15%,transparent_65%)]" />
-    </div>
-  );
-}
-
-function PrivacyDemo() {
-  return (
-    <div className="relative flex h-36 w-full max-w-[300px] items-center justify-center">
-      {/* clay padlock */}
-      <div className="relative flex flex-col items-center">
-        <div className="h-11 w-14 rounded-t-full border-[9px] border-b-0 border-[#9aa6cf]" />
-        <div className="clay -mt-1 grid h-[72px] w-24 place-items-center rounded-[20px] bg-white">
-          <span className="relative block h-9 w-4">
-            <span className="absolute top-0 left-1/2 size-4 -translate-x-1/2 rounded-full bg-ink" />
-            <span className="absolute top-3 left-1/2 h-6 w-2 -translate-x-1/2 rounded-full bg-ink" />
-          </span>
+      <svg viewBox="0 0 40 16" aria-hidden="true" className="anim-nudge w-8 shrink-0 text-brand-400 sm:w-10">
+        <path d="M2 8h34m0 0-6-6m6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <div className="anim-float relative flex h-52 w-[118px] flex-col items-center overflow-hidden rounded-xl bg-[linear-gradient(180deg,#7c5cee,#5530d6)] px-3 pt-4 shadow-card-hover sm:h-60 sm:w-[136px]">
+        <p className="text-center font-display text-[13px] leading-tight font-medium text-white">Plan your day in seconds</p>
+        <div className="mt-3 w-[78%] flex-1 rounded-t-[14px] border-[3px] border-b-0 border-ink bg-ink pt-1">
+          <RawShot className="h-full rounded-t-[10px]" />
         </div>
       </div>
-      <Sticker className="absolute top-2 left-0 -rotate-6 bg-white text-xs!">0 uploads</Sticker>
-      <Sticker className="absolute right-0 bottom-2 rotate-6 bg-white text-xs!">0 servers</Sticker>
-    </div>
-  );
-}
-
-function ZipDemo() {
-  return (
-    <div className="flex w-full flex-col items-center">
-      <div className="relative h-32 w-full max-w-[240px]">
-        {posters.map((poster, i) => (
-          <StorePoster
-            key={poster.id}
-            poster={poster}
-            className="absolute! bottom-0 w-[30%] ring-2 ring-ink shadow-pop-sm"
-            style={{
-              left: `${i * 17.5}%`,
-              transform: `rotate(${(i - 2) * 7}deg) translateY(${Math.abs(i - 2) * 8}px)`,
-              zIndex: 5 - Math.abs(i - 2),
-            }}
-          />
-        ))}
-      </div>
-      <span className="relative z-10 -mt-3 inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-ink px-3.5 py-2 text-sm font-bold text-white shadow-[3px_3px_0_#3D5AFE]">
-        <svg viewBox="0 0 16 16" className="size-4">
-          <path d="M8 2v8m0 0-3-3m3 3 3-3M3 13h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        my-app-screenshots.zip
+      <span className="anim-toast absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1.5 text-xs font-medium whitespace-nowrap text-green-700 shadow-card">
+        Fitted automatically · never stretched
       </span>
     </div>
   );
 }
 
-const themeVariants: { color: string; fg: string }[] = [
-  { color: "#3D5AFE", fg: "#FFFFFF" },
-  { color: "#FF6FAE", fg: "#16131F" },
-  { color: "#9BE7C4", fg: "#16131F" },
-];
-
-function CustomizeDemo() {
-  const base = getPoster("sunny");
-  const variants: PosterStyle[] = themeVariants.map((v, i) => ({
-    ...base,
-    id: `${base.id}-${i}`,
-    background: v.color,
-    foreground: v.fg,
-    accent: v.fg === "#FFFFFF" ? v.color : "#16131F",
-    decoration: "none",
-  }));
-
+function SizesVisual() {
   return (
-    <div className="flex w-full flex-col items-center gap-4">
-      <div className="relative h-32 w-full max-w-[200px]">
-        {variants.map((poster, i) => (
-          <StorePoster
-            key={poster.id}
-            poster={poster}
-            className="absolute! bottom-0 w-[38%] ring-2 ring-ink"
-            style={{ left: `${i * 31}%`, transform: `rotate(${(i - 1) * 6}deg)`, zIndex: i === 1 ? 3 : 1 }}
-          />
-        ))}
+    <div className="absolute inset-0 flex items-center justify-center p-5">
+      <ul className="relative w-full max-w-[320px] rounded-2xl border border-hairline bg-white p-1.5 shadow-card">
+        <li aria-hidden="true" className="anim-rows pointer-events-none absolute inset-x-1.5 top-1.5 h-9 rounded-lg bg-brand-50" />
+        {OUTPUT_SIZES.map((s, i) => {
+          const tall = s.height >= s.width;
+          return (
+            <li key={s.id} className="relative flex h-9 items-center gap-3 rounded-lg px-2.5 text-[13px]">
+              <span className="grid w-4 place-items-center">
+                <span
+                  className={`block rounded-[2px] border-[1.5px] ${i === 0 ? "border-brand-500" : "border-ink/35"}`}
+                  style={tall ? { height: 15, width: (15 * s.width) / s.height } : { width: 17, height: (17 * s.height) / s.width }}
+                />
+              </span>
+              <span className="truncate">
+                {s.store === "Google Play" ? "Play" : "App Store"} · {s.label}
+              </span>
+              <span className="ml-auto text-xs text-ink/45 tabular-nums">
+                {s.width} × {s.height}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function TextVisual() {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-center gap-3 p-5">
+      <span className="w-max rounded-md border border-brand-100 bg-white px-2 py-1 font-mono text-[11px] text-brand-600">Headline</span>
+      <div className="rounded-xl border border-hairline bg-white p-1.5 shadow-card">
+        <div className="rounded-lg border border-brand-200 px-3 py-2.5 text-sm shadow-[0_0_0_3px_rgb(109_63_240/0.12)]">
+          Never miss a <span className="rounded bg-brand-100 px-0.5 text-brand-700">deadline</span>
+          <span className="anim-blink ml-px inline-block h-4 w-px translate-y-0.5 bg-brand-500" />
+        </div>
+        <div className="flex items-center gap-2 px-2 pt-3 pb-1.5">
+          {["#6D3FF0", "#16131F", "#22A55B", "#FF6FAE", "#FFB020", "#3D5AFE"].map((c, i) => (
+            <span
+              key={c}
+              className={`size-5 rounded-full ${i === 0 ? "ring-2 ring-brand-500 ring-offset-2" : "ring-1 ring-black/10"}`}
+              style={{ background: c }}
+            />
+          ))}
+        </div>
       </div>
-      <div className="flex gap-2.5">
-        {["#3D5AFE", "#FF6FAE", "#9BE7C4", "#16131F", "#FFFFFF"].map((c, i) => (
+    </div>
+  );
+}
+
+function PrivacyVisual() {
+  return (
+    <div className="absolute inset-0 grid place-items-center">
+      <div className="anim-spin absolute size-44 rounded-full border border-dashed border-brand-300" />
+      <div className="absolute size-28 rounded-full bg-brand-50" />
+      <div className="anim-pulse-ring absolute size-20 rounded-full bg-brand-200/60" />
+      <div className="relative grid size-16 place-items-center rounded-[18px] bg-[linear-gradient(var(--color-brand-400),var(--color-brand-600))] text-white shadow-[0_0_0_1px_var(--color-brand-800),inset_0_1px_0_rgb(255_255_255/0.3),0_12px_24px_-10px_rgb(98_50_224/0.7)]">
+        <Icon name="laptop" className="size-7" />
+      </div>
+      <span className="anim-float absolute top-[22%] right-[24%] grid size-8 place-items-center rounded-lg bg-white text-brand-500 shadow-card">
+        <Icon name="image" className="size-4" />
+      </span>
+      <span className="anim-float absolute top-[52%] left-[18%] grid size-8 [--d:-2.5s] place-items-center rounded-lg bg-white text-pink shadow-card">
+        <Icon name="phone" className="size-4" />
+      </span>
+      <span className="absolute bottom-[12%] flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium shadow-card">
+        <Icon name="cloudOff" className="size-3.5" />0 uploads
+      </span>
+    </div>
+  );
+}
+
+const batchColors = ["#6D3FF0", "#8B64FF", "#5024C8", "#7C5CEE", "#FF8A65", "#3D5AFE", "#22A55B", "#C9B8FF", "#FFB020", "#9BE7C4", "#16131F", "#FF6FAE"];
+
+function BatchVisual() {
+  return (
+    <div className="absolute inset-0 flex flex-col justify-center gap-3 p-5">
+      <div className="grid grid-cols-6 gap-1.5">
+        {batchColors.map((c, i) => (
           <span
             key={c}
-            className={`size-8 rounded-full ${i === 0 ? "ring-2 ring-ink ring-offset-2 ring-offset-mint" : "ring-1 ring-ink/15"}`}
-            style={{ background: c }}
-          />
+            className="anim-tile grid aspect-[9/14] place-items-center rounded-md text-white ring-1 ring-black/5"
+            style={{ background: c, "--d": `${i * 220}ms` } as CSSProperties}
+          >
+            <CheckIcon className="size-3" />
+          </span>
         ))}
       </div>
+      <div className="rounded-xl border border-hairline bg-white px-3 py-2.5 shadow-card">
+        <div className="flex justify-between text-xs">
+          <span className="font-medium">Exporting 12 slides</span>
+          <span className="text-ink/50">my-app-screenshots.zip</span>
+        </div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-paper">
+          <div className="anim-fill h-full w-full rounded-full bg-[linear-gradient(90deg,var(--color-brand-400),var(--color-brand-600))]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TemplatesVisual() {
+  const shown = templates.slice(0, 8);
+  // Each row holds its chips twice and scrolls by half for a seamless loop.
+  return (
+    <div className="absolute inset-0 flex flex-col justify-center gap-2.5 overflow-hidden py-5 [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+      {[shown.slice(0, 4), shown.slice(4, 8)].map((row, r) => (
+        <div key={r} className={`marquee marquee-slow flex w-max gap-2.5 pr-2.5 ${r === 1 ? "marquee-reverse" : ""}`}>
+          {[...row, ...row].map((t, i) => (
+            <span
+              key={`${t.id}-${i}`}
+              className={`flex shrink-0 items-center gap-2 rounded-xl border bg-white px-3 py-2 text-[13px] shadow-card ${r === 0 && i % 4 === 1 ? "border-brand-300 text-brand-700 ring-2 ring-brand-500/20" : "border-hairline"}`}
+            >
+              <span className="size-4 rounded-[5px] ring-1 ring-black/10" style={{ background: t.theme.background }} />
+              {t.name}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UndoVisual() {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+      <div className="flex gap-2.5">
+        {["Ctrl", "Z"].map((k, i) => (
+          <kbd
+            key={k}
+            style={{ "--d": `${i * 90}ms` } as CSSProperties}
+            className="anim-key grid h-14 min-w-14 place-items-center rounded-xl border border-hairline bg-white px-3 font-sans text-lg font-medium text-ink shadow-[0_2px_0_var(--color-hairline),0_8px_16px_-10px_rgb(19_16_31/0.3)]"
+          >
+            {k}
+          </kbd>
+        ))}
+      </div>
+      <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-green-700 shadow-card">
+        <CheckIcon className="size-3.5" />
+        Saved in this browser
+      </span>
     </div>
   );
 }

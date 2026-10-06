@@ -49,24 +49,24 @@ export function ExportDialog({ open, onClose, slideCount, sizes, onSizesChange, 
       className="m-auto w-[min(440px,calc(100vw-32px))] rounded-[28px] bg-white p-0 text-ink shadow-[0_30px_80px_-30px_rgb(22_19_31/0.5)] backdrop:bg-ink/40"
     >
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
-        <h2 id={titleId} className="font-display text-xl font-extrabold tracking-[-0.02em]">
+        <h2 id={titleId} className="font-display text-xl font-medium tracking-[-0.02em]">
           Export
         </h2>
-        <button type="button" onClick={onClose} disabled={busy} className="rounded-xl border border-line px-3 py-1.5 text-sm font-bold disabled:opacity-40">
+        <button type="button" onClick={onClose} disabled={busy} className="rounded-xl border border-line px-3 py-1.5 text-sm font-medium disabled:opacity-40">
           Close
         </button>
       </div>
       <div className="flex flex-col gap-5 px-6 py-5">
         {STORES.map((store) => (
           <fieldset key={store} className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-bold text-muted">{store}</legend>
+            <legend className="mb-1 text-sm font-medium text-muted">{store}</legend>
             {OUTPUT_SIZES.filter((s) => s.store === store).map((s) => {
               const checked = sizes.includes(s.id);
               const only = checked && sizes.length === 1;
               return (
-                <label key={s.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 ${checked ? "border-blue bg-blue/5" : "border-line"}`}>
-                  <input type="checkbox" checked={checked} disabled={only || busy} onChange={(e) => toggle(s.id, e.target.checked)} className="size-5 accent-blue" />
-                  <span className="flex-1 text-sm font-bold">{s.label}</span>
+                <label key={s.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 ${checked ? "border-brand-500 bg-brand-500/5" : "border-line"}`}>
+                  <input type="checkbox" checked={checked} disabled={only || busy} onChange={(e) => toggle(s.id, e.target.checked)} className="size-5 accent-brand-500" />
+                  <span className="flex-1 text-sm font-medium">{s.label}</span>
                   <span className="text-xs text-muted tabular-nums">
                     {s.width} × {s.height}
                   </span>
