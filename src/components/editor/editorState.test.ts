@@ -110,3 +110,19 @@ describe("editorReducer backdrop and device", () => {
     expect(s.project).toMatchObject({ deviceModel: "phone-island", deviceColor: undefined });
   });
 });
+
+describe("editorReducer pop-out areas", () => {
+  const studio = templates.find((t) => t.id === "studio-blue")!;
+  const start = (): EditorState => ({ ...editorReducer(initialEditorState(studio.id), { type: "samplesReady", samples }), slide: 3 });
+  const regionsOf = (s: EditorState) => s.project.calloutRegions?.[s.project.screenshots[3].id];
+
+  it("sets, hides and restores the current slide's area", () => {
+    const region = { x: 0.1, y: 0.2, w: 0.5, h: 0.1 };
+    let s = editorReducer(start(), { type: "calloutRegion", id: "callout", region });
+    expect(regionsOf(s)).toEqual({ callout: region });
+    s = editorReducer(s, { type: "calloutRegion", id: "callout", region: null });
+    expect(regionsOf(s)).toEqual({ callout: null });
+    s = editorReducer(s, { type: "calloutRegion", id: "callout", region: undefined });
+    expect(regionsOf(s)).toEqual({});
+  });
+});

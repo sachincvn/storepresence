@@ -9,6 +9,7 @@ import type {
   ElementOverride,
   ImageSlotKey,
   Layout,
+  NormRect,
   ResolvedSlideDesign,
   ResolvedTemplate,
   ScreenshotElement,
@@ -176,6 +177,11 @@ export function designFor(template: ResolvedTemplate, slideIndex: number, projec
   return template.designs[plan ? plan.design : slideIndex % template.designs.length];
 }
 
+/** Pop-out (callout) elements on a slide's design. */
+export function slideCallouts(template: ResolvedTemplate, slideIndex: number, project?: SlideSource): CalloutElement[] {
+  return designFor(template, slideIndex, project).elements.filter((el): el is CalloutElement => el.type === "callout");
+}
+
 /** Image slot keys the template uses. */
 export function usedImageSlots(template: ResolvedTemplate): ImageSlotKey[] {
   const all = [...template.panorama, ...template.designs.flatMap((d) => d.elements)];
@@ -246,6 +252,7 @@ export function slideContext(template: ResolvedTemplate, project: Project, slide
   const ctx: ResolveContext = {
     color,
     values: getSlideValues(template, project, slideIndex),
+    regions: project.calloutRegions?.[getSlideKey(template, project, slideIndex)] ?? {},
     deviceFrame: project.deviceFrame,
     deviceModel: project.deviceModel,
     deviceColor: project.deviceColor,
@@ -254,13 +261,14 @@ export function slideContext(template: ResolvedTemplate, project: Project, slide
   };
   return {
     design,
+    regions: ctx.regions,
     resolve: (el: TemplateElement) => resolveElement(el, ctx),
     background: resolveBackground(project.backdrop ? backdropBackground(project.backdrop, theme) : design.background, color),
   };
 }
 
 export function resolveSlide(template: ResolvedTemplate, project: Project, slideIndex: number): SlideSpec {
-  const { design, resolve, background } = slideContext(template, project, slideIndex);
+  const { design, regions, resolve, background } = slideContext(template, project, slideIndex);
   const plan = getSlides(template, project)[slideIndex];
   const slotShots = slotScreenshots(template, project, slideIndex);
   // Phones in the panorama show screenshots by their place in the upload list.
@@ -272,7 +280,8 @@ export function resolveSlide(template: ResolvedTemplate, project: Project, slide
     return { ...el, slot: slotShots.length + panoramaShots.length - 1 };
   });
   const screenshots = [...slotShots, ...panoramaShots];
-  const elements = design.elements.map(resolve);
+  // A pop-out set to null is hidden on this slide.
+  const elements = design.elements.filter((el) => !(el.type === "callout" && regions[el.id] === null)).map(resolve);
 
   return {
     canvas: template.canvas,
@@ -347,6 +356,8 @@ function resolveShadow(shadow: Shadow | undefined, color: ColorFn): Shadow | und
 type ResolveContext = {
   color: ColorFn;
   values: Record<string, string>;
+  /** User pop-out areas for this slide, by element id. */
+  regions: Record<string, NormRect | null>;
   deviceFrame: boolean;
   deviceModel: Project["deviceModel"];
   deviceColor: string | undefined;
@@ -355,7 +366,7 @@ type ResolveContext = {
   accent: string;
 };
 
-function resolveElement(el: TemplateElement, { color, values, deviceFrame, deviceModel, deviceColor, headlineFont, accent }: ResolveContext): TemplateElement {
+function resolveElement(el: TemplateElement, { color, values, regions, deviceFrame, deviceModel, deviceColor, headlineFont, accent }: ResolveContext): TemplateElement {
   const fill = (text: string) => fillPlaceholders(text, values);
   switch (el.type) {
     case "text":
@@ -397,6 +408,7 @@ function resolveElement(el: TemplateElement, { color, values, deviceFrame, devic
     case "callout":
       return {
         ...el,
+        region: regions[el.id] ?? el.region,
         fill: el.fill && color(el.fill),
         stroke: el.stroke && { ...el.stroke, color: color(el.stroke.color) },
         shadow: resolveShadow(el.shadow, color),

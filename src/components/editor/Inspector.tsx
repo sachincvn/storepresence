@@ -3,10 +3,11 @@
 import type { Dispatch, ReactNode } from "react";
 import type { ResolvedTemplate, ThemeKey } from "@/types/template";
 import { HEADLINE_FONT_KEYS, HEADLINE_FONTS } from "@/templates/headlineFonts";
-import { getSlideValues, themeFor, variablesForSlide } from "@/templates/resolve";
+import { getSlideKey, getSlideValues, slideCallouts, slotScreenshots, themeFor, variablesForSlide } from "@/templates/resolve";
 import type { EditorAction, EditorState } from "./editorState";
 import { BackgroundControls } from "./BackgroundControls";
 import { DeviceControls } from "./DeviceControls";
+import { RegionPicker } from "./RegionPicker";
 
 const COLOR_LABELS: Record<ThemeKey, string> = {
   background: "Background",
@@ -47,6 +48,10 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
   const hasDevice = template.designs.some((d) => d.elements.some((el) => el.type === "screenshot" && el.device));
   const theme = themeFor(template, project);
   const hasColorChanges = template.editableColors.some((key) => project.theme[key]);
+  // Pop-outs magnify part of the slide's screenshot; the user picks which part.
+  const callouts = slideCallouts(template, slide, project);
+  const regions = project.calloutRegions?.[getSlideKey(template, project, slide)] ?? {};
+  const slotShots = slotScreenshots(template, project, slide);
   // The template's own headline font, so "Template" previews what it really uses.
   const templateFont =
     template.designs[0].elements.flatMap((el) => (el.type === "text" && HEADLINE_FONT_KEYS.includes(el.font) ? [el.font] : []))[0] ?? "display";
@@ -101,6 +106,52 @@ export function Inspector({ template, state, dispatch, screenshotPanel, projectF
                     <p className="mt-1 text-right text-xs text-muted tabular-nums">
                       {value.length}/{v.maxLength}
                     </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      )}
+
+      {sections.includes("text") && callouts.length > 0 && slotShots.some(Boolean) && (
+        <Section
+          title={`Pop-out, slide ${slide + 1}`}
+          action={
+            callouts.some((el) => el.id in regions) && (
+              <button
+                type="button"
+                onClick={() => callouts.forEach((el) => dispatch({ type: "calloutRegion", id: el.id, region: undefined }))}
+                className="rounded-md text-xs font-medium text-brand-500 hover:underline"
+              >
+                Reset
+              </button>
+            )
+          }
+        >
+          <div className="flex flex-col gap-5">
+            {callouts.map((el, i) => {
+              const name = callouts.length > 1 ? `Pop-out ${i + 1}` : "Pop-out";
+              const visible = regions[el.id] !== null;
+              const shot = slotShots[el.slot];
+              return (
+                <div key={el.id} className="flex flex-col gap-3">
+                  <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium">
+                    {`Show ${name.toLowerCase()}`}
+                    <input
+                      type="checkbox"
+                      checked={visible}
+                      onChange={(e) => dispatch({ type: "calloutRegion", id: el.id, region: e.target.checked ? undefined : null })}
+                      className="size-5 accent-brand-500"
+                    />
+                  </label>
+                  {visible && shot && (
+                    <RegionPicker
+                      src={shot.url}
+                      label={`${name} area`}
+                      value={regions[el.id] ?? el.region}
+                      onChange={(region) => dispatch({ type: "calloutRegion", id: el.id, region })}
+                    />
                   )}
                 </div>
               );

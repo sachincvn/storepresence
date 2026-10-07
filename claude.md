@@ -14,32 +14,27 @@ Do not turn this into a general-purpose design editor.
 
 ## Design System
 
-The UI MUST follow the mixed direction in `design.md`:
-
-**Soft Claymorphism + Neo-Pop accents + light Neo-Brutalism + Bento + Editorial**
+The UI (landing page and editor) follows `new_design.md`: a calm, premium,
+native-app feel. It replaced the earlier clay/neo-brutalist direction in `design.md`.
 
 Visual requirements:
 
-- Claymorphism at medium strength in the hero only (`clay-hero`); light `clay` elsewhere
-- Neo-brutalist 2px ink border + hard offset shadow only on CTAs, stickers, badges
-- Electric blue `#3D5AFE` as the single dominant accent
-- Yellow `#FFD43B` only inside the hero; pastels (lilac, mint, peach, sky) for tiles
-- Bricolage Grotesque display (800) + Plus Jakarta Sans body, mid-size editorial type
-- Bento feature grid with varied tile sizes
-- Pop-art details: halftone dots, starburst badges
-- Strong whitespace, premium visual hierarchy
+- Violet brand ramp (`brand-50` … `brand-800`, main `#6D3FF0`) on a soft paper canvas `#F4F3F9`
+- Geist display (weight 500, tight tracking) + Inter body
+- Two-line headlines, line 2 in `brand-500`; eyebrow → headline → one-line lede → proof visual
+- White cards: 1px hairline border, radius 26, soft layered shadow, recessed visual panel; hover lifts with a violet glow
+- Gradient CTAs with a trailing arrow tile; light and dark variants
+- Violet gradient bands (hero, comparison, final CTA) with clouds, film grain and torn-paper edges; grain only on those bands
+- Every section shows the product working (coded mini-UIs), with scroll reveals and short looping micro-demos
+- Respect `prefers-reduced-motion`: no reveals, loops stop in their finished state
 
-Tokens and utilities live in `src/app/globals.css`. Decorative shapes live in `src/components/landing/Decor.tsx`.
-
-Avoid generic SaaS styling.
+Tokens, grain, reveal and micro-demo keyframes live in `src/app/globals.css`. Landing building blocks (Card, SectionHeader, TornEdge, icons) live in `src/components/landing/Section.tsx`.
 
 Do not:
 
-- Use oversized wide/black display type
-- Put thick borders + hard shadows on every card
-- Apply heavy claymorphism everywhere
-- Use yellow fills below the hero
-- Overuse glassmorphism, blur, pills or generic purple gradients
+- Bring back neo-brutalist ink borders, hard offset shadows, clay shapes or yellow accents in the UI
+- Lay grain over the whole page
+- Use oversized black display type
 
 ---
 
@@ -363,10 +358,10 @@ Implement:
 - When an AI agent runs `next dev`, Next.js appends a managed block to `AGENTS.md`. Prefer `npm run build` + `npx next start` for verification.
 - `next.config.ts` pins `turbopack.root` because a stray lockfile exists in the user's home directory.
 - Brand name: "StorePresence" (repo `storepresence`), set in `src/lib/site.ts`.
-- Landing page: `src/components/landing/`. The template gallery renders real templates (`TemplateSetPreview`); hero, steps, features and CTA use decorative CSS mocks (`StorePoster` + `posters.ts`).
+- Landing page: `src/components/landing/`. The hero mock and template gallery render real templates (`TemplateSetPreview`); other sections use coded mini-UIs. Scroll reveals come from `RevealOnScroll.tsx`.
 - Editor state: `editorState.ts` (pure reducer) wrapped by `history.ts` (undo/redo). Autosave: `useAutosave.ts` + `src/lib/projectStore.ts` (IndexedDB, this browser only). Uploaded images are freed only when no undo step references them, never directly on remove.
 - Slides: `getSlides()` in `src/templates/resolve.ts` is the single source of the slide list (keys, designs, screenshots). One slide per screenshot; text-only designs appear in place.
-- Keep the editor minimal (Screenshots, Text, Style: font, brand images, background, colors, device). Canvas editing, a blocks menu, slide arranging, per-slide layout/pop-out pickers, device angle, collage and brand-match controls were tried and removed on purpose. Richer looks belong in templates, not in more editor controls.
+- Keep the editor minimal (Screenshots, Text, Style: font, brand images, background, colors, device). Canvas editing, a blocks menu, slide arranging, a per-slide layout picker, device angle, collage and brand-match controls were tried and removed on purpose. Richer looks belong in templates, not in more editor controls. Exception: the per-slide pop-out area picker (show/hide + `RegionPicker`) was brought back on request; areas live in `project.calloutRegions`.
 - Store sizes: `src/templates/sizes.ts` (`OUTPUT_SIZES`, `adaptSpec` reflow) and `featureGraphic.ts`; templates stay designed at 1080 × 1920. Export dialog: `src/components/export/ExportDialog.tsx`.
 - Editor: `/editor` (`src/components/editor/`). Templates: `src/templates/` (JSON + `registry.ts`). Renderer: `src/renderer/` (pure TS, no React).
 - Adding or editing templates: follow `templates.md`, then check `/dev/templates` (Template Lab, dev only; `TEMPLATE_LAB=1 npx next start` opens it on a production build).

@@ -3,7 +3,7 @@ import type { CalloutElement, Layout, ScreenshotElement, Template } from "@/type
 import type { Project, Screenshot } from "@/types/project";
 import { calloutGeometry, clampRegion, MIN_REGION, regionCenterY } from "@/renderer/calloutRenderer";
 import { templates } from "./registry";
-import { resolveSlide, resolveTemplate } from "./resolve";
+import { resolveSlide, resolveTemplate, slideCallouts } from "./resolve";
 import { validateLayout, validateTemplate } from "./validate";
 
 const shotEl: ScreenshotElement = { type: "screenshot", id: "shot", slot: 0, x: 200, y: 400, width: 680, height: 1400, fit: "cover", align: "top" };
@@ -64,6 +64,26 @@ describe("callout resolve", () => {
     const followed = resolveTemplate({ ...template, overrides: { callout: { follow: "y" } } }, [layout]);
     const el = resolveSlide(followed, project(), 0).elements.find((e) => e.type === "callout") as CalloutElement;
     expect(el.y + el.height / 2).toBeCloseTo(400 + 0.55 * 1400);
+  });
+
+  it("user areas apply per slide and follow the screenshot", () => {
+    const region = { x: 0, y: 0, w: 0.5, h: 0.2 };
+    const p = project({ calloutRegions: { b: { callout: region } } });
+    expect(calloutOf(p, 1)!.region).toEqual(region);
+    expect(calloutOf(p, 0)!.region).toEqual(callout.region);
+    // Reordered: the area stays with screenshot "b".
+    const swapped = { ...p, screenshots: [shot("b"), shot("a")] };
+    expect(calloutOf(swapped, 0)!.region).toEqual(region);
+  });
+
+  it("null hides the pop-out on that slide only", () => {
+    const p = project({ calloutRegions: { a: { callout: null } } });
+    expect(calloutOf(p, 0)).toBeUndefined();
+    expect(calloutOf(p, 1)).toBeDefined();
+  });
+
+  it("slideCallouts lists a slide's pop-outs", () => {
+    expect(slideCallouts(resolved, 0, project()).map((el) => el.id)).toEqual(["callout"]);
   });
 
   it("Studio Blue's pop-out slide has its callout", () => {

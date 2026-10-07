@@ -48,6 +48,11 @@ function groupOf(action: HistoryAction, state: EditorState): string | null {
     return template ? `variable:${action.key}:${getSlideKey(template, state.project, state.slide)}` : null;
   }
   if (action.type === "color") return `color:${action.key}`;
+  // Dragging a pop-out area is one undo step per slide.
+  if (action.type === "calloutRegion" && action.region) {
+    const template = getTemplate(state.project.templateId);
+    return template ? `callout:${action.id}:${getSlideKey(template, state.project, state.slide)}` : null;
+  }
   return null;
 }
 
