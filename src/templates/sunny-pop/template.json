@@ -2,7 +2,7 @@
   "id": "sunny-pop",
   "name": "Sunny Pop",
   "category": "Bold",
-  "description": "Loud pop colors, hard shadows and halftone dots.",
+  "description": "Warm sunshine yellow with soft light, bold type and floating cards.",
   "canvas": {
     "width": 1080,
     "height": 1920
@@ -19,9 +19,24 @@
     "accent"
   ],
   "background": {
-    "type": "solid",
-    "color": "$background"
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "#FFE57A",
+        "at": 0
+      },
+      {
+        "color": "$background",
+        "at": 0.55
+      },
+      {
+        "color": "#FFC21A",
+        "at": 1
+      }
+    ]
   },
+  "grain": 0.05,
   "overrides": {
     "shot": {
       "shadow": {
@@ -57,35 +72,7 @@
       "defaults": {
         "headline": "Plan your day in **seconds**",
         "description": "Every task sorted by what matters most."
-      },
-      "elements": [
-        {
-          "type": "shape",
-          "id": "dots",
-          "shape": "circle",
-          "x": 620,
-          "y": -260,
-          "width": 720,
-          "height": 720,
-          "fill": "#16131F",
-          "style": "halftone",
-          "opacity": 0.2
-        },
-        {
-          "type": "shape",
-          "id": "ring",
-          "shape": "circle",
-          "x": -140,
-          "y": 1080,
-          "width": 400,
-          "height": 400,
-          "fill": "transparent",
-          "stroke": {
-            "color": "#16131F",
-            "width": 10
-          }
-        }
-      ]
+      }
     },
     {
       "layout": "badge-hero",
@@ -94,24 +81,6 @@
         "headline": "See your progress ==grow==",
         "description": "Clear stats that keep you going."
       },
-      "background": {
-        "type": "solid",
-        "color": "$accent"
-      },
-      "elements": [
-        {
-          "type": "shape",
-          "id": "dots",
-          "shape": "circle",
-          "x": -260,
-          "y": 1100,
-          "width": 760,
-          "height": 760,
-          "fill": "#FFFFFF",
-          "style": "halftone",
-          "opacity": 0.35
-        }
-      ],
       "overrides": {
         "headline": {
           "emphasis": {
@@ -126,62 +95,78 @@
       "defaults": {
         "headline": "Stay in sync with your **team**",
         "description": "Chat and share without switching apps."
-      },
-      "elements": [
-        {
-          "type": "shape",
-          "id": "ring",
-          "shape": "circle",
-          "x": 760,
-          "y": 1460,
-          "width": 440,
-          "height": 440,
-          "fill": "transparent",
-          "stroke": {
-            "color": "#16131F",
-            "width": 10
-          }
-        },
-        {
-          "type": "shape",
-          "id": "dots",
-          "shape": "circle",
-          "x": -200,
-          "y": -200,
-          "width": 600,
-          "height": 600,
-          "fill": "#16131F",
-          "style": "halftone",
-          "opacity": 0.18
-        }
-      ]
+      }
     },
     {
       "layout": "zoom",
       "defaults": {
         "headline": "Never miss a ==deadline==",
         "description": "Smart reminders, right on time."
-      },
-      "background": {
-        "type": "solid",
-        "color": "#A7C7FF"
-      },
-      "elements": [
-        {
-          "type": "shape",
-          "id": "dot",
-          "shape": "circle",
-          "x": -50,
-          "y": 1600,
-          "width": 240,
-          "height": 240,
-          "fill": "$accent",
-          "stroke": {
-            "color": "#16131F",
-            "width": 10
-          }
-        }
-      ]
+      }
+    }
+  ],
+  "panorama": [
+    {
+      "type": "shape",
+      "id": "light-1",
+      "shape": "circle",
+      "x": 120,
+      "y": -420,
+      "width": 1000,
+      "height": 1000,
+      "fill": "#FFFFFF",
+      "blur": 200,
+      "opacity": 0.55
+    },
+    {
+      "type": "shape",
+      "id": "rose-1",
+      "shape": "circle",
+      "x": 820,
+      "y": 1300,
+      "width": 920,
+      "height": 920,
+      "fill": "$accent",
+      "blur": 220,
+      "opacity": 0.3
+    },
+    {
+      "type": "shape",
+      "id": "light-2",
+      "shape": "circle",
+      "x": 2120,
+      "y": -360,
+      "width": 980,
+      "height": 980,
+      "fill": "#FFFFFF",
+      "blur": 200,
+      "opacity": 0.5
+    },
+    {
+      "type": "shape",
+      "id": "rose-2",
+      "shape": "circle",
+      "x": 3100,
+      "y": 1240,
+      "width": 960,
+      "height": 960,
+      "fill": "$accent",
+      "blur": 220,
+      "opacity": 0.26
+    },
+    {
+      "type": "shape",
+      "id": "ring-1",
+      "shape": "circle",
+      "x": 1520,
+      "y": 900,
+      "width": 1400,
+      "height": 1400,
+      "fill": "transparent",
+      "stroke": {
+        "color": "rgba(22,19,31,0.08)",
+        "width": 3
+      }
     }
   ]
 }

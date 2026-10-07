@@ -2,7 +2,7 @@
   "id": "playful-learning",
   "name": "Playful Learning",
   "category": "Playful",
-  "description": "Grass green, sunny yellow, bouncy clay blobs and chat-bubble pop-outs.",
+  "description": "Grass green and sunny yellow with soft light, chat-bubble pop-outs and big stats.",
   "canvas": {
     "width": 1080,
     "height": 1920
@@ -32,6 +32,7 @@
       }
     ]
   },
+  "grain": 0.05,
   "overrides": {
     "headline": {
       "weight": 800,
@@ -92,60 +93,65 @@
   "panorama": [
     {
       "type": "shape",
-      "id": "blob-1",
+      "id": "sun-1",
       "shape": "circle",
-      "x": 880,
-      "y": 1460,
-      "width": 380,
-      "height": 380,
+      "x": 620,
+      "y": 1260,
+      "width": 960,
+      "height": 960,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 210,
+      "opacity": 0.4
     },
     {
       "type": "shape",
-      "id": "blob-2",
+      "id": "light-1",
       "shape": "circle",
-      "x": 2010,
-      "y": 210,
-      "width": 230,
-      "height": 230,
-      "fill": "#FF8FB1",
-      "style": "clay"
-    },
-    {
-      "type": "shape",
-      "id": "blob-3",
-      "shape": "circle",
-      "x": 3080,
-      "y": 1560,
-      "width": 330,
-      "height": 330,
+      "x": 1820,
+      "y": -340,
+      "width": 960,
+      "height": 960,
       "fill": "#FFFFFF",
-      "style": "clay",
-      "opacity": 0.95
+      "blur": 200,
+      "opacity": 0.22
     },
     {
       "type": "shape",
-      "id": "blob-4",
+      "id": "mint-1",
       "shape": "circle",
-      "x": 4130,
-      "y": 1640,
-      "width": 240,
-      "height": 240,
+      "x": 2820,
+      "y": 1260,
+      "width": 960,
+      "height": 960,
+      "fill": "#7CF2A8",
+      "blur": 210,
+      "opacity": 0.4
+    },
+    {
+      "type": "shape",
+      "id": "sun-2",
+      "shape": "circle",
+      "x": 3780,
+      "y": -200,
+      "width": 880,
+      "height": 880,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 210,
+      "opacity": 0.3
     },
     {
       "type": "shape",
-      "id": "dots",
+      "id": "ring-1",
       "shape": "circle",
-      "x": 1700,
-      "y": 1250,
-      "width": 620,
-      "height": 620,
-      "fill": "#FFFFFF",
-      "style": "halftone",
-      "opacity": 0.18
+      "x": 1460,
+      "y": 880,
+      "width": 1460,
+      "height": 1460,
+      "fill": "transparent",
+      "stroke": {
+        "color": "rgba(255,255,255,0.16)",
+        "width": 3
+      }
     }
   ],
   "slides": [

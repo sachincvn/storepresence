@@ -2,7 +2,7 @@
   "id": "social-pop",
   "name": "Social Pop",
   "category": "Bright",
-  "description": "Sunset gradient, fanned phones, floating review and pop-out cards.",
+  "description": "Sunset gradient with warm light, fanned phones, a floating review and pop-out cards.",
   "canvas": {
     "width": 1080,
     "height": 1920
@@ -33,6 +33,7 @@
       }
     ]
   },
+  "grain": 0.06,
   "overrides": {
     "headline": {
       "weight": 800,
@@ -89,61 +90,65 @@
   "panorama": [
     {
       "type": "shape",
-      "id": "bubble-1",
+      "id": "sun-1",
       "shape": "circle",
-      "x": 900,
-      "y": 640,
-      "width": 300,
-      "height": 300,
+      "x": 520,
+      "y": 180,
+      "width": 960,
+      "height": 960,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 210,
+      "opacity": 0.42
     },
     {
       "type": "shape",
-      "id": "bubble-2",
+      "id": "light-1",
       "shape": "circle",
-      "x": 1980,
-      "y": 1580,
-      "width": 260,
-      "height": 260,
+      "x": 1700,
+      "y": 1250,
+      "width": 980,
+      "height": 980,
       "fill": "#FFFFFF",
-      "style": "clay",
-      "opacity": 0.95
+      "blur": 210,
+      "opacity": 0.2
     },
     {
       "type": "shape",
-      "id": "bubble-3",
+      "id": "sun-2",
       "shape": "circle",
-      "x": 3100,
-      "y": 1480,
-      "width": 220,
-      "height": 220,
+      "x": 2820,
+      "y": 120,
+      "width": 940,
+      "height": 940,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 210,
+      "opacity": 0.36
     },
     {
       "type": "shape",
-      "id": "chat-1",
-      "shape": "pill",
-      "x": 980,
-      "y": 1700,
-      "width": 220,
-      "height": 90,
-      "fill": "#FFFFFF",
-      "opacity": 0.35,
-      "rotation": -8
+      "id": "rose-1",
+      "shape": "circle",
+      "x": 3720,
+      "y": 1200,
+      "width": 1000,
+      "height": 1000,
+      "fill": "$primary",
+      "blur": 210,
+      "opacity": 0.55
     },
     {
       "type": "shape",
-      "id": "chat-2",
-      "shape": "pill",
-      "x": 3880,
-      "y": 1640,
-      "width": 260,
-      "height": 100,
-      "fill": "#FFFFFF",
-      "opacity": 0.35,
-      "rotation": 6
+      "id": "ring-1",
+      "shape": "circle",
+      "x": 1500,
+      "y": 700,
+      "width": 1500,
+      "height": 1500,
+      "fill": "transparent",
+      "stroke": {
+        "color": "rgba(255,255,255,0.16)",
+        "width": 3
+      }
     }
   ],
   "slides": [

@@ -30,6 +30,7 @@
     ],
     "seed": 7
   },
+  "grain": 0.03,
   "overrides": {
     "headline": {
       "font": "serif",
@@ -58,38 +59,27 @@
   "panorama": [
     {
       "type": "shape",
-      "id": "pebble-1",
+      "id": "light-1",
       "shape": "circle",
-      "style": "clay",
-      "x": 860,
-      "y": 1440,
-      "width": 360,
-      "height": 360,
-      "fill": "#FFC9DA"
+      "x": 700,
+      "y": 1150,
+      "width": 900,
+      "height": 900,
+      "fill": "#FFFFFF",
+      "blur": 180,
+      "opacity": 0.75
     },
     {
       "type": "shape",
-      "id": "pebble-2",
+      "id": "light-2",
       "shape": "circle",
-      "style": "clay",
-      "x": 2070,
-      "y": 420,
-      "width": 170,
-      "height": 170,
-      "fill": "#C9B8FF",
-      "layer": "front"
-    },
-    {
-      "type": "shape",
-      "id": "pebble-3",
-      "shape": "pill",
-      "style": "clay",
-      "x": 3120,
-      "y": 1500,
-      "width": 300,
-      "height": 120,
-      "rotation": -18,
-      "fill": "#BFE8D2"
+      "x": 2800,
+      "y": 1050,
+      "width": 900,
+      "height": 900,
+      "fill": "#FFFFFF",
+      "blur": 180,
+      "opacity": 0.7
     }
   ],
   "slides": [

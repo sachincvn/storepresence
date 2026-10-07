@@ -2,7 +2,7 @@
   "id": "studio-blue",
   "name": "Studio Blue",
   "category": "Product",
-  "description": "Electric blue with clay shapes that bridge every slide.",
+  "description": "Electric blue with soft light and fine rings that flow across the set.",
   "canvas": {
     "width": 1080,
     "height": 1920
@@ -19,56 +19,112 @@
     "accent"
   ],
   "background": {
-    "type": "solid",
-    "color": "$background"
+    "type": "linear",
+    "angle": 180,
+    "stops": [
+      {
+        "color": "#5A72FF",
+        "at": 0
+      },
+      {
+        "color": "$background",
+        "at": 0.45
+      },
+      {
+        "color": "$primary",
+        "at": 1
+      }
+    ]
   },
+  "grain": 0.06,
   "panorama": [
     {
       "type": "shape",
-      "id": "sun",
+      "id": "light-1",
       "shape": "circle",
-      "x": 840,
-      "y": 1330,
-      "width": 480,
-      "height": 480,
+      "x": 60,
+      "y": -460,
+      "width": 980,
+      "height": 980,
+      "fill": "#FFFFFF",
+      "blur": 200,
+      "opacity": 0.3
+    },
+    {
+      "type": "shape",
+      "id": "warm-1",
+      "shape": "circle",
+      "x": 520,
+      "y": 1240,
+      "width": 960,
+      "height": 960,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 210,
+      "opacity": 0.32
     },
     {
       "type": "shape",
-      "id": "dots",
+      "id": "ring-1",
       "shape": "circle",
-      "x": 1820,
-      "y": 120,
-      "width": 660,
-      "height": 660,
-      "fill": "#FFFFFF",
-      "style": "halftone",
-      "opacity": 0.28
+      "x": 640,
+      "y": 860,
+      "width": 1500,
+      "height": 1500,
+      "fill": "transparent",
+      "stroke": {
+        "color": "rgba(255,255,255,0.18)",
+        "width": 3
+      }
     },
     {
       "type": "shape",
-      "id": "pill",
-      "shape": "pill",
-      "x": 3000,
-      "y": 1440,
-      "width": 470,
-      "height": 170,
-      "rotation": -24,
+      "id": "light-2",
+      "shape": "circle",
+      "x": 1960,
+      "y": -380,
+      "width": 1000,
+      "height": 1000,
+      "fill": "#9DB0FF",
+      "blur": 200,
+      "opacity": 0.55
+    },
+    {
+      "type": "shape",
+      "id": "rose-1",
+      "shape": "circle",
+      "x": 2860,
+      "y": 1220,
+      "width": 980,
+      "height": 980,
       "fill": "#FF6FAE",
-      "style": "clay",
-      "layer": "front"
+      "blur": 210,
+      "opacity": 0.3
     },
     {
       "type": "shape",
-      "id": "pearl",
+      "id": "ring-2",
       "shape": "circle",
-      "x": 3310,
-      "y": 1180,
-      "width": 150,
-      "height": 150,
+      "x": 2700,
+      "y": 240,
+      "width": 1300,
+      "height": 1300,
+      "fill": "transparent",
+      "stroke": {
+        "color": "rgba(255,255,255,0.16)",
+        "width": 3
+      }
+    },
+    {
+      "type": "shape",
+      "id": "light-3",
+      "shape": "circle",
+      "x": 3640,
+      "y": -300,
+      "width": 900,
+      "height": 900,
       "fill": "#FFFFFF",
-      "style": "clay"
+      "blur": 200,
+      "opacity": 0.24
     }
   ],
   "slides": [
@@ -83,20 +139,6 @@
       "defaults": {
         "headline": "See your progress ==grow==",
         "description": "Clear stats that keep you going."
-      },
-      "background": {
-        "type": "linear",
-        "angle": 180,
-        "stops": [
-          {
-            "color": "$background",
-            "at": 0
-          },
-          {
-            "color": "$primary",
-            "at": 1
-          }
-        ]
       }
     },
     {
@@ -111,20 +153,6 @@
       "defaults": {
         "headline": "Never miss a ==deadline==",
         "description": "Smart reminders, right on time."
-      },
-      "background": {
-        "type": "linear",
-        "angle": 160,
-        "stops": [
-          {
-            "color": "$primary",
-            "at": 0
-          },
-          {
-            "color": "$background",
-            "at": 1
-          }
-        ]
       },
       "overrides": {
         "callout": {

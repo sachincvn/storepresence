@@ -1,8 +1,8 @@
 {
   "id": "lilac-clay",
-  "name": "Lilac Clay",
+  "name": "Lilac Mist",
   "category": "Soft",
-  "description": "Soft lilac gradient and glossy clay shapes across the set.",
+  "description": "Soft lilac gradient with pastel light drifting across the set.",
   "canvas": {
     "width": 1080,
     "height": 1920
@@ -23,7 +23,7 @@
     "angle": 180,
     "stops": [
       {
-        "color": "#EEE8FF",
+        "color": "#F4F0FF",
         "at": 0
       },
       {
@@ -32,6 +32,7 @@
       }
     ]
   },
+  "grain": 0.04,
   "overrides": {
     "shot": {
       "shadow": {
@@ -65,49 +66,65 @@
   "panorama": [
     {
       "type": "shape",
-      "id": "sphere-1",
+      "id": "rose-1",
       "shape": "circle",
-      "x": 800,
-      "y": 1380,
-      "width": 500,
-      "height": 500,
+      "x": 380,
+      "y": 1180,
+      "width": 1050,
+      "height": 1050,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 190,
+      "opacity": 0.5
     },
     {
       "type": "shape",
-      "id": "sphere-2",
+      "id": "light-1",
       "shape": "circle",
-      "x": 1990,
-      "y": 520,
-      "width": 210,
-      "height": 210,
-      "fill": "$primary",
-      "style": "clay",
-      "layer": "front"
-    },
-    {
-      "type": "shape",
-      "id": "pill",
-      "shape": "pill",
-      "x": 3060,
-      "y": 1300,
-      "width": 420,
-      "height": 160,
-      "rotation": 20,
+      "x": 1640,
+      "y": -360,
+      "width": 980,
+      "height": 980,
       "fill": "#FFFFFF",
-      "style": "clay"
+      "blur": 180,
+      "opacity": 0.85
     },
     {
       "type": "shape",
-      "id": "sphere-3",
+      "id": "blue-1",
       "shape": "circle",
-      "x": 4060,
-      "y": 1480,
-      "width": 340,
-      "height": 340,
+      "x": 2360,
+      "y": 1260,
+      "width": 980,
+      "height": 980,
+      "fill": "$primary",
+      "blur": 210,
+      "opacity": 0.18
+    },
+    {
+      "type": "shape",
+      "id": "rose-2",
+      "shape": "circle",
+      "x": 3420,
+      "y": 120,
+      "width": 940,
+      "height": 940,
       "fill": "$accent",
-      "style": "clay"
+      "blur": 190,
+      "opacity": 0.42
+    },
+    {
+      "type": "shape",
+      "id": "ring-1",
+      "shape": "circle",
+      "x": 1500,
+      "y": 980,
+      "width": 1300,
+      "height": 1300,
+      "fill": "transparent",
+      "stroke": {
+        "color": "rgba(255,255,255,0.7)",
+        "width": 3
+      }
     }
   ],
   "slides": [

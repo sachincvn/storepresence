@@ -153,7 +153,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 **☑ Step 6. Starter template library (5+)**
 - ☑ Set model (4+ slides, per-slide layout/background, panorama, grain, glows, pill badges, serif font).
-- ☑ 6 layouts and 6 premium sets: Aurora, Studio Blue, Sunny Pop, Lilac Clay, Midnight, Fresh Mint.
+- ☑ 6 layouts and 6 premium sets: Aurora, Studio Blue, Sunny Pop, Lilac Mist (was Lilac Clay), Midnight, Fresh Mint.
 - ☑ Authoring guide: `templates.md`.
 - Write `templates.md`: authoring guide ("copy folder → edit theme → register → check Lab").
 - Done when: all pass validation and look right in the Lab for all ratios.

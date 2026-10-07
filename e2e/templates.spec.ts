@@ -8,7 +8,7 @@ const TEMPLATES = [
   ["mono-minimal", "Mono Minimal"],
   ["sunny-pop", "Sunny Pop"],
   ["calm-wellness", "Calm Wellness"],
-  ["lilac-clay", "Lilac Clay"],
+  ["lilac-clay", "Lilac Mist"],
   ["midnight", "Midnight"],
   ["pro-productivity", "Pro Productivity"],
   ["health-stats", "Health Stats"],
